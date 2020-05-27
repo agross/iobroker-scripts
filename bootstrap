@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+wget -O javascript.d.ts https://raw.githubusercontent.com/ioBroker/ioBroker.javascript/master/lib/javascript.d.ts
