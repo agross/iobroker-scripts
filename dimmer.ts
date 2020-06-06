@@ -296,6 +296,7 @@ const remotes = [
       'zigbee.0.0017880106fbbd3e', // Living Room Philips Signe Floor Lamp
       'zigbee.0.00178801067ccd84', // Living Room Philips Signe Desk Lamp
       'zigbee.0.0017880104990734', // Living Room KandyLight
+      'zigbee.0.001788010407dc4d', // Living Room Sideboard Philips Hue Lightstrip
     ],
     on_off: new Toggle(
       'scene.0.Living_Room_Lights_Bright',
