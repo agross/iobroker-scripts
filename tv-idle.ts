@@ -14,8 +14,13 @@ const whitelistedLgApps = [
   'tagesschau',
 ];
 
-const turnOffAfterIdleMinutes = 20;
-const turnOffAfter = turnOffAfterIdleMinutes * 60 * 1000;
+function minutes(val: number) {
+  return val * 60 * 1000;
+}
+const turnOffAfter = minutes(20);
+const popups = [10, 5, 1].map(x => {
+  return { message: x, from: minutes(x), to: minutes(x - 1) };
+});
 
 const cache = 'tv.turnedOffAt';
 
@@ -66,6 +71,29 @@ on({ id: statesToCheck, change: 'ne' }, event => {
   };
 });
 
+function calculateTimeLeft(latest: number, turnOffAfter: number) {
+  const now = Date.now();
+  const idleFor = now - latest;
+  const timeLeft = turnOffAfter - idleFor;
+
+  return { timeLeft, idleFor, now };
+}
+
+function popup(timeLeft: number) {
+  const popup = popups.find(x => timeLeft <= x.from && timeLeft >= x.to);
+
+  if (!popup) {
+    return;
+  }
+
+  let minutes = 'minutes';
+  if (popup.message === 1) {
+    minutes = 'minute';
+  }
+
+  setState('lgtv.0.states.popup', `Turning off in ${popup.message} ${minutes}`);
+}
+
 // Every minute
 on({ time: '*/1 * * * *' }, () => {
   if (!latest) {
@@ -86,16 +114,16 @@ on({ time: '*/1 * * * *' }, () => {
     return;
   }
 
-  const now = Date.now();
+  const lgApp = getState('lgtv.0.states.currentApp').val;
+  if (whitelistedLgApps.indexOf(lgApp) !== -1) {
+    log(`Whitelisted app ${lgApp} active`);
+    return;
+  }
 
-  log(`Checking ${now - latest.state.lc} > ${turnOffAfter}`, 'debug');
-  if (now - latest.state.lc > turnOffAfter) {
-    const lgApp = getState('lgtv.0.states.currentApp').val;
-    if (whitelistedLgApps.indexOf(lgApp) !== -1) {
-      log(`Whitelisted app ${lgApp} active`);
-      return;
-    }
+  const { timeLeft, now } = calculateTimeLeft(latest.state.lc, turnOffAfter);
 
+  popup(timeLeft);
+  if (timeLeft < 0) {
     log(`Timeout, turning off TV`);
     setState(cache, now, true, function (err) {
       if (err) {
