@@ -121,7 +121,7 @@ abstract class Driver {
         interval = undefined;
 
         this.config.lights.forEach(light => {
-          setState(`${light}.transition_time`, 5);
+          setState(`${light}.transition_time`, 3);
         });
       }
     });
@@ -260,8 +260,13 @@ const remotes = [
     device: 'zigbee.0.588e81fffe2bacf4',
     change: BRIGHTNESS_CHANGE,
     lights: [
-      'zigbee.0.f0d1b8000010c9d9', // Kitchen CLA60 RGBW Z3
-      'zigbee.0.f0d1b8000010b1cd', // Dining CLA60 RGBW Z3
+      'zigbee.0.0017880108488e90', // Kitchen #1 5062431P7
+      'zigbee.0.00178801084ceab3', // Kitchen #2 5062431P7
+      'zigbee.0.00178801084ceb60', // Kitchen #3 5062431P7
+      'zigbee.0.00178801084ce9b9', // Kitchen #4 5062431P7
+      'zigbee.0.f0d1b8000010c9d9', // Dining #1 CLA60 RGBW Z3
+      'zigbee.0.f0d1b8000010c4af', // Dining #2 CLA60 RGBW Z3
+      'zigbee.0.f0d1b8000010b1cd', // Dining #3 CLA60 RGBW Z3
     ],
     on_off: new Cycle({
       off: 'scene.0.Kitchen_Lights',
