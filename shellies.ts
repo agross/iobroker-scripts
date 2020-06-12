@@ -90,7 +90,10 @@ const shellies = [
   }),
   new Toggle({
     device: 'hall.power.stat.shelly1-8',
-    control: 'zigbee.0.7cb03eaa00a9df17.state', // Hall CLA60 RGBW OSRAM
+    control: [
+      'zigbee.0.0017880108c48e3e.state', // Hall #1 5062231P7
+      'zigbee.0.0017880108c4c8f2.state', // Hall #2 5062231P7
+    ],
   }),
   new Toggle({
     device: 'office.power.stat.shelly1-4',
