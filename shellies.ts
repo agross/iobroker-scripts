@@ -97,7 +97,11 @@ const shellies = [
   }),
   new Toggle({
     device: 'office.power.stat.shelly1-4',
-    control: 'zigbee.0.f0d1b8000010c4af.state', // Office CLA60 RGBW Z3
+    control: [
+      'zigbee.0.680ae2fffea24937.state', // Office #1 TRADFRI bulb E27 WS opal 1000lm
+      'zigbee.0.588e81fffe15382a.state', // Office #2 TRADFRI bulb E27 WS opal 1000lm
+      'zigbee.0.680ae2fffec237f9.state', // Office #3 TRADFRI bulb E27 WS opal 1000lm
+    ],
   }),
   new OnOff({
     device: ['kitchen.power.stat.shelly1-7', 'kitchen.power.stat.shelly1-9'],
