@@ -97,7 +97,7 @@ function popup(timeLeft: number) {
 // Every minute
 on({ time: '*/1 * * * *' }, () => {
   if (!latest) {
-    log('No timestamp information');
+    log('No timestamp information', 'debug');
     return;
   }
 
@@ -105,22 +105,23 @@ on({ time: '*/1 * * * *' }, () => {
     `Picked ${latest.id} ("${latest.state.val}" from ${new Date(
       latest.state.lc,
     ).toLocaleString()}) as source`,
+    'debug',
   );
 
   const lastTurnedOffAt = getState(cache);
   if (lastTurnedOffAt.val && latest.state.lc < lastTurnedOffAt.val) {
-    log('TV was turned off after picked event, nothing to do');
+    log('TV was turned off after picked event, nothing to do', 'debug');
     return;
   }
 
   const lgApp = getState('lgtv.0.states.currentApp').val;
   if (whitelistedLgApps.indexOf(lgApp) !== -1) {
-    log(`Whitelisted app ${lgApp} active`);
+    log(`Whitelisted app ${lgApp} active`, 'debug');
     return;
   }
 
   const { timeLeft, now } = calculateTimeLeft(latest.state.lc, turnOffAfter);
-  log(`Time left: ${timeLeft}`);
+  log(`Time left: ${timeLeft}`, 'debug');
 
   popup(timeLeft);
   if (timeLeft < 0) {
