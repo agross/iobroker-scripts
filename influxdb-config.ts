@@ -382,4 +382,20 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
 
     check(enabledDataPoints, id, expect);
   });
+
+  $('state[id=lgtv.*.states.power]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `Living Room TV Power`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 });
