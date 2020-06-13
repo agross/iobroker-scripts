@@ -3,9 +3,7 @@ const dryRun: boolean = false;
 function deviceName(id: string, initialId?: string): string {
   const deviceId = id.replace(/\.[^.]*$/, '');
   if (deviceId == id) {
-    throw new Error(
-      `${initialId}: Expected device in parent chain, but got none`,
-    );
+    return initialId;
   }
 
   const device = getObject(deviceId);
@@ -151,40 +149,42 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
   });
 
   // Power plugs.
-  $('state[id=mqtt.*.stat.gosund*.POWER]').each(id => {
-    const purpose = function (id: string) {
-      switch (id) {
-        case 'mqtt.0.home.living-room.power.stat.gosund-sp111-1.POWER':
-          return 'Living Room Media';
+  $('state[id=javascript.0.transformed-mqtt.*.tele.gosund*.STATE.State]').each(
+    id => {
+      const purpose = function (id: string) {
+        switch (id) {
+          case 'javascript.0.transformed-mqtt.0.home.living-room.power.tele.gosund-sp111-1.STATE.State':
+            return 'Living Room Media';
 
-        case 'mqtt.0.home.kitchen.power.stat.gosund-sp111-2.POWER':
-          return 'Kitchen Down Light';
+          case 'javascript.0.transformed-mqtt.0.home.kitchen.power.tele.gosund-sp111-2.STATE.State':
+            return 'Kitchen Down Light';
 
-        case 'mqtt.0.home.bathroom.power.stat.gosund-sp111-3.POWER':
-          return 'Bathroom Washing Machine';
+          case 'javascript.0.transformed-mqtt.0.home.bathroom.power.tele.gosund-sp111-3.STATE.State':
+            return 'Bathroom Washing Machine';
 
-        case 'mqtt.0.home.office.power.stat.gosund-sp111-4.POWER':
-          return 'Office Desk';
+          case 'javascript.0.transformed-mqtt.0.home.office.power.tele.gosund-sp111-4.STATE.State':
+            return 'Office Desk';
 
-        default:
-          throw new Error(`No mapping from ${id} to purpose`);
-      }
-    };
+          default:
+            throw new Error(`No mapping from ${id} to purpose`);
+        }
+      };
 
-    const expect = {
-      enabled: true,
-      changesOnly: false,
-      debounce: 0,
-      maxLength: 10,
-      retention: 63072000,
-      changesRelogInterval: 60,
-      changesMinDelta: 0,
-      storageType: false,
-      aliasId: `${purpose(id)} Power`,
-    };
+      const expect = {
+        enabled: true,
+        changesOnly: true,
+        debounce: 0,
+        maxLength: 10,
+        retention: 63072000,
+        changesRelogInterval: 60,
+        changesMinDelta: 0,
+        storageType: false,
+        aliasId: `${purpose(id)} Power`,
+      };
 
-    check(enabledDataPoints, id, expect);
-  });
+      check(enabledDataPoints, id, expect);
+    },
+  );
 
   // HomeMatic.
   $('state[id=hm-rpc.*.0.UNREACH]').each(id => {
@@ -372,6 +372,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       enabled: true,
       changesOnly: false,
       debounce: 0,
+      maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
