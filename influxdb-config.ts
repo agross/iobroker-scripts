@@ -74,7 +74,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Available`,
+      aliasId: `${deviceName(id)} Availability`,
     };
 
     check(enabledDataPoints, id, expect);
