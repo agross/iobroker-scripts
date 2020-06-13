@@ -6,6 +6,7 @@
     "rxjs": "^6.5.5"
   },
   "devDependencies": {
+    "@types/node": "^10.17.26",
     "prettier": "^2.0.5"
   },
   "author": "Alexander Groß <agross@therightstuff.de>",
