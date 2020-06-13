@@ -266,7 +266,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     check(enabledDataPoints, id, expect);
   });
 
-  // HomeMatic wall thermostats.
+  // HomeMatic thermostats.
   $('state[id=hm-rpc.*.1.ACTUAL_TEMPERATURE]').each(id => {
     if (id.match(/^admin\./) || id.match(/_STATUS$/)) {
       return;
