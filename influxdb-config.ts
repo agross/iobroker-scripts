@@ -337,7 +337,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Target Temperature`,
+      aliasId: `${deviceName(id)} Valve`,
     };
 
     check(enabledDataPoints, id, expect);
