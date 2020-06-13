@@ -11,6 +11,7 @@ interface CycleConfig {
   off: string;
   on: string[];
 }
+
 class Cycle extends OnOffStrategy {
   private readonly config: CycleConfig;
 
@@ -63,7 +64,7 @@ class Toggle extends OnOffStrategy {
 interface Config {
   device: string;
   change: number;
-  lights: string[];
+  lights: string[] | DimmableLights;
   on_off?: OnOffStrategy;
 }
 
@@ -254,20 +255,75 @@ class Philips extends Driver {
   }
 }
 
+interface DimmableLightsConfig {
+  rooms: string | string[];
+  functions: string | string[];
+}
+
+class DimmableLights {
+  private config: DimmableLightsConfig;
+
+  constructor(config: DimmableLightsConfig) {
+    this.config = config;
+  }
+
+  forEach(
+    callbackfn: (value: string, index: number, array: string[]) => void,
+    thisArg?: any,
+  ): void {
+    this.toArray().forEach(callbackfn, thisArg);
+  }
+
+  map<U>(
+    callbackfn: (value: string, index: number, array: string[]) => U,
+    thisArg?: any,
+  ): U[] {
+    return this.toArray().map(callbackfn, thisArg);
+  }
+
+  toArray(): string[] {
+    const states: {
+      source: string;
+      state: iobJS.AbsentState | iobJS.State;
+    }[] = [];
+
+    $(this.query('state.id=*.state')).each(id => {
+      states.push({ source: id, state: getState(id) });
+    });
+
+    const objectIdFromStateId = function (id: string) {
+      return id.replace(/\.state$/, '');
+    };
+
+    const hasTransitionTime = function (id: string) {
+      return existsState(id + '.transition_time');
+    };
+    const hasBrightness = function (id: string) {
+      return existsState(id + '.brightness');
+    };
+
+    const turnedOn = states
+      .filter(x => !x.state.notExist)
+      .filter(x => x.state.val === true)
+      .map(x => x.source)
+      .map(id => objectIdFromStateId(id))
+      .filter(object => hasTransitionTime(object))
+      .filter(object => hasBrightness(object));
+
+    return turnedOn;
+  }
+
+  private query(stateQuery: string): string {
+    return `channel[${stateQuery}](rooms=${this.config.rooms})(functions=${this.config.functions})`;
+  }
+}
+
 const remotes = [
   new Tradfi({
     // Kitchen TRADFRI on/off switch
     device: 'zigbee.0.588e81fffe2bacf4',
     change: BRIGHTNESS_CHANGE,
-    lights: [
-      'zigbee.0.0017880108488e90', // Kitchen #1 5062431P7
-      'zigbee.0.00178801084ceab3', // Kitchen #2 5062431P7
-      'zigbee.0.00178801084ceb60', // Kitchen #3 5062431P7
-      'zigbee.0.00178801084ce9b9', // Kitchen #4 5062431P7
-      'zigbee.0.f0d1b8000010c9d9', // Dining #1 CLA60 RGBW Z3
-      'zigbee.0.f0d1b8000010c4af', // Dining #2 CLA60 RGBW Z3
-      'zigbee.0.f0d1b8000010b1cd', // Dining #3 CLA60 RGBW Z3
-    ],
+    lights: new DimmableLights({ rooms: 'Kitchen', functions: 'funcLight' }),
     on_off: new Cycle({
       off: 'scene.0.Kitchen_Lights',
       on: [
@@ -283,9 +339,7 @@ const remotes = [
     // Bedroom TRADFRI on/off switch
     device: 'zigbee.0.588e81fffe17a8ca',
     change: BRIGHTNESS_CHANGE,
-    lights: [
-      'zigbee.0.0017880108376b6c', // Bedroom Philips Hue LCA001
-    ],
+    lights: new DimmableLights({ rooms: 'Bedroom', functions: 'funcLight' }),
     on_off: new Toggle(
       'zigbee.0.0017880108376b6c.state', // Bedroom Philips Hue LCA001
     ),
@@ -294,19 +348,17 @@ const remotes = [
     // Hue Remote RWL021
     device: 'zigbee.0.001788010872fbc4',
     change: BRIGHTNESS_CHANGE,
-    lights: [
-      'zigbee.0.00178801082e99a8', // Living Room Philips Hue LCA001 #1
-      'zigbee.0.00178801061d8f64', // Living Room Philips Hue LCA001 #2
-      'zigbee.0.0017880106a0aaf5', // Living Room Philips Hue LCA001 #3
-      'zigbee.0.0017880106fbbd3e', // Living Room Philips Signe Floor Lamp
-      'zigbee.0.00178801067ccd84', // Living Room Philips Signe Desk Lamp
-      'zigbee.0.0017880104990734', // Living Room KandyLight
-      'zigbee.0.001788010407dc4d', // Living Room Sideboard Philips Hue Lightstrip
-    ],
-    on_off: new Toggle(
-      'scene.0.Living_Room_Lights_Bright',
-      'scene.0.Living_Room_Lights',
-    ),
+    lights: new DimmableLights({
+      rooms: 'Living Room',
+      functions: 'funcLight',
+    }),
+    on_off: new Cycle({
+      off: 'scene.0.Living_Room_Lights',
+      on: [
+        'scene.0.Living_Room_Lights_Bright',
+        'scene.0.Living_Room_Lights_TV',
+      ],
+    }),
   }),
 ];
 
