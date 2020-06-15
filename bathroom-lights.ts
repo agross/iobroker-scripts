@@ -29,6 +29,11 @@ on(
       scene = 'scene.0.Bathroom_Lights_Ultra_Low';
     }
 
+    // If any light is on, use a brighter scene.
+    if (getState('scene.0.All_Lights').val !== false) {
+      scene = 'scene.0.Bathroom_Lights_Default';
+    }
+
     log(`Bathroom occupied, turning on ${scene}`);
     setState(scene, true);
   },
