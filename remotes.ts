@@ -8,6 +8,9 @@ import {
   distinctUntilChanged,
   timeInterval,
   share,
+  tap,
+  switchMap,
+  take,
 } from 'rxjs/operators';
 
 const BRIGHTNESS_CHANGE = 5;
@@ -530,7 +533,12 @@ class Shelly extends Remote {
           observer.next(event);
         });
       },
-    ).pipe(share());
+    ).pipe(
+      tap(_ => {
+        log(`switch`);
+      }),
+      share(),
+    );
 
     const anyLightOn = new Observable<iobJS.State>(observer => {
       on({ id: config.cycle.off, ack: true }, event =>
@@ -545,28 +553,46 @@ class Shelly extends Remote {
       distinctUntilChanged(),
     );
 
-    const doSomething = shellySwitched.pipe(withLatestFrom(anyLightOn));
+    const doSomething = shellySwitched.pipe(
+      timeInterval(),
+      withLatestFrom(anyLightOn),
+    );
 
     const turnOn = doSomething.pipe(
       filter(([_, anyLightOn]) => anyLightOn === false),
+      tap(_ => {
+        log(`switch on: ${JSON.stringify(_)}`);
+      }),
     );
 
     const cycleNext = doSomething.pipe(
       filter(([_, anyLightOn]) => anyLightOn === true),
-      timeInterval(),
-      filter(interval => interval.interval < 2000),
+      filter(([interval, _]) => interval.interval < 5000),
+      tap(_ => {
+        log(`switch next: ${JSON.stringify(_)}`);
+      }),
+    );
+
+    const next = merge(turnOn, cycleNext);
+
+    const turnOff = next.pipe(
+      debounceTime(5000),
+      tap(_ => {
+        log(`5 secs after on or cycle: ${JSON.stringify(_)}`);
+      }),
+      switchMap(_ => shellySwitched.pipe(take(1))),
+      tap(_ => {
+        log(`switch off: ${JSON.stringify(_)}`);
+      }),
     );
 
     return {
-      off: doSomething.pipe(
-        filter(([_, anyLightOn]) => anyLightOn === true),
-        timeInterval(),
-        filter(interval => interval.interval > 2000),
+      off: turnOff.pipe(
         map(_ => {
           return { device: config.device, state: config.cycle.off };
         }),
       ),
-      next: merge(turnOn, cycleNext).pipe(
+      next: next.pipe(
         map(_ => {
           return { device: config.device, states: config.cycle.on };
         }),
