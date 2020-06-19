@@ -755,7 +755,11 @@ const remotes = [
     device: 'mqtt.0.home.bedroom.power.stat.shelly1-2',
     cycle: {
       off: 'scene.0.Bedroom_Lights',
-      on: ['scene.0.Bedroom_Lights_Bright'],
+      on: [
+        'scene.0.Bedroom_Lights_Bright',
+        'scene.0.Bedroom_Lights_Low',
+        'scene.0.Bedroom_Lights_Cozy',
+      ],
     },
   }),
   new Shelly({
