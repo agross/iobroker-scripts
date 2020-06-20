@@ -304,7 +304,7 @@ class Tradfi extends Remote {
     config: DeviceConfig & ToggleDeviceConfig,
   ): ToggleStreams {
     const stateChanges = new Observable<iobJS.ChangedStateObject>(observer => {
-      on({ id: `${config.device}.state`, change: 'ne', ack: true }, event => {
+      on({ id: `${config.device}.state`, ack: true }, event => {
         observer.next(event);
       });
     }).pipe(share());
