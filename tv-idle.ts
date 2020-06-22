@@ -1,157 +1,315 @@
-const statesToCheck = [
+import { interval, Observable, of, empty, concat, combineLatest } from 'rxjs';
+import {
+  share,
+  distinctUntilChanged,
+  tap,
+  map,
+  timestamp,
+  debounceTime,
+  withLatestFrom,
+  filter,
+} from 'rxjs/operators';
+
+const activityIndicators = [
   'kodi.0.info.playing_time',
   'lgtv.0.states.channelId',
   'lgtv.0.states.currentApp',
   'lgtv.0.states.volume',
 ];
 
+const tvDevice = 'lgtv.0';
 const whitelistedLgApps = [
-  'netflix',
+  'airplay',
   'amazon',
-  'youtube.leanback.v4',
   'ard.mediathek',
   'de.zdf.app.zdfm3',
+  'netflix',
   'tagesschau',
+  'youtube.leanback.v4',
 ];
 
-function minutes(val: number): number {
-  return val * 60 * 1000;
+const turnOffAfter = 20;
+const timeoutPopups = [10, 5, 1];
+
+const debugSpeedUp = 1; // 30;
+
+function minutesToMs(val: number): number {
+  return (val * 60 * 1000) / debugSpeedUp;
 }
-
-const turnOffAfter = minutes(20);
-const popups = [10, 5, 1].map(x => {
-  return { message: x, from: minutes(x), to: minutes(x - 1) };
-});
-
-const cache = 'tv.turnedOffAt';
-
-createState(cache, undefined, {
-  name: 'Timestamp when the TV has been switched off by script',
-  type: 'number',
-  role: 'date',
-});
 
 interface StateWithId {
   id: string;
   state: iobJS.State;
 }
 
-let latest: StateWithId = undefined;
+class WhitelistedApp {
+  private device: string;
+  private apps: string[];
+  private _stream: Observable<boolean>;
 
-// Load initial states, taking newest.
-statesToCheck.forEach(stateToCheck => {
-  const state = getState(stateToCheck);
-  if (state.notExist) {
-    log(`${stateToCheck} does not exist`);
-    return;
+  constructor(device: string, ...apps: string[]) {
+    this.device = device;
+    this.apps = apps;
+
+    this._stream = concat(this.initialValue, this.changes).pipe(
+      distinctUntilChanged(),
+    );
   }
 
-  if (!latest) {
-    log(`Assigned initial state ${JSON.stringify(state)}`);
-    latest = {
-      id: stateToCheck,
-      state: state as iobJS.State,
-    };
+  private isWhitelisted(app: string): boolean {
+    if (this.apps.indexOf(app) !== -1) {
+      log(`Whitelisted LG app ${app} active`);
+      return true;
+    }
 
-    return;
-  }
+    if (app.length > 0) {
+      log(`LG app ${app} active`);
+    }
 
-  if (latest.state.lc < state.lc) {
-    log(`Found newer state ${JSON.stringify(state)}`);
-    latest = {
-      id: stateToCheck,
-      state: state as iobJS.State,
-    };
-  }
-});
-
-on({ id: statesToCheck, change: 'ne' }, event => {
-  latest = {
-    id: event.id,
-    state: event.state,
-  };
-});
-
-function tatort(): boolean {
-  const now = new Date();
-  const SUNDAY = 0;
-
-  if (now.getDay() != SUNDAY) {
     return false;
   }
 
-  if (now.getHours() >= 20 && now.getHours() < 23) {
-    return true;
+  private get stateId(): string {
+    return `${this.device}.states.currentApp`;
   }
 
-  return false;
+  private get initialValue(): Observable<boolean> {
+    const current = getState(this.stateId);
+    if (current.notExist) {
+      return empty();
+    }
+
+    return of(this.isWhitelisted(current.val));
+  }
+
+  private get changes(): Observable<boolean> {
+    return new Observable<boolean>(observer => {
+      on({ id: this.stateId, change: 'ne', ack: true }, event => {
+        const whitelisted = this.isWhitelisted(event.state.val);
+
+        observer.next(whitelisted);
+      });
+    }).pipe(share());
+  }
+
+  public get stream(): Observable<boolean> {
+    return this._stream;
+  }
 }
 
-function calculateTimeLeft(latest: number, turnOffAfter: number) {
-  const now = Date.now();
-  const idleFor = now - latest;
-  const timeLeft = turnOffAfter - idleFor;
+class Tatort {
+  public get stream(): Observable<boolean> {
+    return concat(this.initialValue, this.changes).pipe(distinctUntilChanged());
+  }
 
-  return { timeLeft, idleFor, now };
+  private get initialValue(): Observable<boolean> {
+    return of(this.isTatortTimeWindow(new Date()));
+  }
+
+  private get changes(): Observable<boolean> {
+    return interval(minutesToMs(1)).pipe(
+      timestamp(),
+      map(val => {
+        const now = new Date(val.timestamp);
+        return this.isTatortTimeWindow(now);
+      }),
+    );
+  }
+
+  private isSunday(date: Date): boolean {
+    return date.getDay() == 0;
+  }
+
+  private isTatortTimeWindow(date: Date): boolean {
+    return this.isSunday(date) && date.getHours() >= 20 && date.getHours() < 23;
+  }
 }
 
-function popup(timeLeft: number) {
-  const popup = popups.find(x => timeLeft <= x.from && timeLeft >= x.to);
+class TV {
+  private device: string;
+  private _stream: Observable<boolean>;
 
-  if (!popup) {
-    return;
+  constructor(device: string) {
+    this.device = device;
+
+    this._stream = concat(this.initialValue, this.changes).pipe(
+      distinctUntilChanged(),
+    );
   }
 
-  let minutes = 'minutes';
-  if (popup.message === 1) {
-    minutes = 'minute';
+  public get stream(): Observable<boolean> {
+    return this._stream;
   }
 
-  setState('lgtv.0.states.popup', `Turning off in ${popup.message} ${minutes}`);
+  private get initialValue(): Observable<boolean> {
+    const current = getState(`${this.device}.states.on`);
+    if (current.notExist) {
+      return empty();
+    }
+
+    return of(current.val);
+  }
+
+  private get changes(): Observable<boolean> {
+    return new Observable<boolean>(observer => {
+      on({ id: `${this.device}.states.on`, change: 'ne', ack: true }, event => {
+        observer.next(event.state.val);
+      });
+    }).pipe(share());
+  }
+
+  public message(message: string): void {
+    setState(`${this.device}.states.popup`, message);
+  }
+
+  public turnOff(): void {
+    setState(`${this.device}.states.power`, false, false);
+  }
 }
 
-// Every minute
-on({ time: '*/1 * * * *' }, () => {
-  if (!latest) {
-    log('No timestamp information', 'debug');
-    return;
+class ActivityIndicator {
+  private ids: string[];
+  private _stream: Observable<StateWithId>;
+
+  constructor(...ids: string[]) {
+    this.ids = ids;
+
+    this._stream = concat(this.initialValue, this.changes).pipe(
+      distinctUntilChanged((last, next) => last.state.lc === next.state.lc),
+    );
   }
 
-  log(
-    `Picked ${latest.id} ("${latest.state.val}" from ${new Date(
-      latest.state.lc,
-    ).toLocaleString()}) as source`,
-    'debug',
-  );
-
-  const lastTurnedOffAt = getState(cache);
-  if (lastTurnedOffAt.val && latest.state.lc < lastTurnedOffAt.val) {
-    log('TV was turned off after picked event, nothing to do', 'debug');
-    return;
+  public get stream(): Observable<StateWithId> {
+    return this._stream;
   }
 
-  const lgApp = getState('lgtv.0.states.currentApp').val;
-  if (whitelistedLgApps.indexOf(lgApp) !== -1) {
-    log(`Whitelisted app ${lgApp} active`, 'debug');
-    return;
+  private get initialValue(): Observable<StateWithId> {
+    const latest = activityIndicators
+      .map(indicator => {
+        return {
+          id: indicator,
+          state: getState(indicator),
+        };
+      })
+      .filter(state => {
+        if (state.state.notExist) {
+          log(`${state.id} does not exist`);
+          return false;
+        }
+        return true;
+      })
+      .map(state => {
+        return {
+          id: state.id,
+          state: state.state as iobJS.State,
+        };
+      })
+      .reduce((latest, state) => {
+        if (!latest) {
+          return state;
+        }
+
+        if (state.state.lc > latest.state.lc) {
+          log(
+            `Preferred ${state.id} over ${latest.id} (${state.state.lc} > ${latest.state.lc})`,
+          );
+          return state;
+        }
+
+        return latest;
+      }, undefined);
+
+    if (latest) {
+      log(
+        `Found latest activity from ${new Date(
+          latest.state.lc,
+        ).toLocaleString()}: ${JSON.stringify(latest)}`,
+      );
+      return of(latest);
+    } else {
+      log('No known latest activity');
+      return empty();
+    }
   }
 
-  if (tatort()) {
-    log('Disabled due to Tatort');
-    return;
-  }
+  private get changes(): Observable<StateWithId> {
+    return new Observable<StateWithId>(observer => {
+      on({ id: this.ids, ack: true }, event => {
+        const state = {
+          id: event.id,
+          state: event.state,
+        };
 
-  const { timeLeft, now } = calculateTimeLeft(latest.state.lc, turnOffAfter);
-  log(`Time left: ${timeLeft}`, 'debug');
-
-  popup(timeLeft);
-  if (timeLeft < 0) {
-    log(`Timeout, turning off TV`);
-    setState(cache, now, true, function (err) {
-      if (err) {
-        log(err);
-      }
-    });
-    setState('lgtv.0.states.power', false, false);
+        observer.next(state);
+      });
+    }).pipe(share());
   }
+}
+
+const tv = new TV(tvDevice);
+
+const tvLog = tv.stream.pipe(tap(x => log(`TV on: ${x}`))).subscribe();
+
+const timerDisabled = combineLatest(
+  new WhitelistedApp(tvDevice, ...whitelistedLgApps).stream,
+  new Tatort().stream,
+).pipe(
+  map(flags => flags.some(f => f)),
+  distinctUntilChanged(),
+);
+
+const timerDisabledNotifications = timerDisabled
+  .pipe(
+    tap(x => log(`Timer disabled: ${x}`)),
+    tap(x => tv.message(`TV Idle ${x ? 'disabled' : 'enabled'}`)),
+  )
+  .subscribe();
+
+const activity = new ActivityIndicator(...activityIndicators).stream;
+
+const activityLog = activity
+  .pipe(
+    withLatestFrom(tv.stream),
+    filter(([_state, tvOn]) => tvOn),
+    map(([state, _tvOn]) => state),
+    tap(x => log(`Activity: ${x.id}`)),
+  )
+  .subscribe();
+
+const timeoutNotifications = timeoutPopups.map(left => {
+  return activity
+    .pipe(
+      debounceTime(minutesToMs(turnOffAfter - left)),
+      withLatestFrom(timerDisabled),
+      filter(([_state, disabled]) => !disabled),
+      withLatestFrom(tv.stream),
+      filter(([_state, tvOn]) => tvOn),
+      map(([state, _tvOn]) => state),
+      tap(_ => log(`Time left: ${left}`)),
+      tap(_ => {
+        const message = `Turning off in ${left} minute${left > 1 ? 's' : ''}`;
+
+        tv.message(message);
+      }),
+    )
+    .subscribe();
+});
+
+const turnOff = activity
+  .pipe(
+    debounceTime(minutesToMs(turnOffAfter)),
+    withLatestFrom(timerDisabled),
+    filter(([_state, disabled]) => !disabled),
+    withLatestFrom(tv.stream),
+    filter(([_state, tvOn]) => tvOn),
+    map(([state, _tvOn]) => state),
+    tap(() => log('Turning off TV')),
+    tap(_ => tv.turnOff()),
+  )
+  .subscribe();
+
+onStop(() => {
+  [timerDisabledNotifications, turnOff, tvLog, activityLog]
+    .concat(timeoutNotifications)
+    .forEach(subscription => subscription.unsubscribe());
 });
