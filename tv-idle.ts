@@ -14,9 +14,10 @@ const whitelistedLgApps = [
   'tagesschau',
 ];
 
-function minutes(val: number) {
+function minutes(val: number): number {
   return val * 60 * 1000;
 }
+
 const turnOffAfter = minutes(20);
 const popups = [10, 5, 1].map(x => {
   return { message: x, from: minutes(x), to: minutes(x - 1) };
@@ -71,6 +72,21 @@ on({ id: statesToCheck, change: 'ne' }, event => {
   };
 });
 
+function tatort(): boolean {
+  const now = new Date();
+  const SUNDAY = 0;
+
+  if (now.getDay() != SUNDAY) {
+    return false;
+  }
+
+  if (now.getHours() >= 20 && now.getHours() < 23) {
+    return true;
+  }
+
+  return false;
+}
+
 function calculateTimeLeft(latest: number, turnOffAfter: number) {
   const now = Date.now();
   const idleFor = now - latest;
@@ -117,6 +133,11 @@ on({ time: '*/1 * * * *' }, () => {
   const lgApp = getState('lgtv.0.states.currentApp').val;
   if (whitelistedLgApps.indexOf(lgApp) !== -1) {
     log(`Whitelisted app ${lgApp} active`, 'debug');
+    return;
+  }
+
+  if (tatort()) {
+    log('Disabled due to Tatort');
     return;
   }
 
