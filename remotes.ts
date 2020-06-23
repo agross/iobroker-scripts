@@ -533,12 +533,7 @@ class Shelly extends Remote {
           observer.next(event);
         });
       },
-    ).pipe(
-      tap(_ => {
-        log(`switch`);
-      }),
-      share(),
-    );
+    ).pipe(share());
 
     const anyLightOn = new Observable<iobJS.State>(observer => {
       on({ id: config.cycle.off, ack: true }, event =>
