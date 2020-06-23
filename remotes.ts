@@ -764,53 +764,42 @@ const remotes = [
   }),
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-3',
-    cycle: {
-      off: 'scene.0.Bathroom_Lights',
-      on: ['scene.0.Bathroom_Lights_Bright'],
+    toggle: {
+      states: ['scene.0.Bathroom_Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-8',
-    toggle: {
-      states: new ObjectsWithStateQuery({
-        rooms: 'Hall',
-        functions: 'funcLight',
-      }),
-    },
+    toggle: { states: ['scene.0.Everything_Off'] },
   }),
   new Shelly({
-    device: 'mqtt.0.home.kitchen.power.stat.shelly1-7',
-    cycle: {
-      off: 'scene.0.Kitchen_Lights',
-      on: ['scene.0.Kitchen_Lights_Bright'],
+    device: 'mqtt.0.home.hall.power.stat.shelly1-7',
+    toggle: {
+      states: ['scene.0.Kitchen_Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.kitchen.power.stat.shelly1-9',
-    cycle: {
-      off: 'scene.0.Kitchen_Lights',
-      on: ['scene.0.Kitchen_Lights_Bright'],
+    toggle: {
+      states: ['scene.0.Kitchen_Lights_Bright'],
     },
   }),
   new Shelly({
-    device: 'mqtt.0.living-room.power.stat.shelly1-5',
-    cycle: {
-      off: 'scene.0.Living_Room_Lights',
-      on: ['scene.0.Living_Room_Lights_Bright'],
+    device: 'mqtt.0.home.living-room.power.stat.shelly1-5',
+    toggle: {
+      states: ['scene.0.Living_Room_Lights_Bright'],
     },
   }),
   new Shelly({
-    device: 'mqtt.0.living-room.power.stat.shelly1-6',
-    cycle: {
-      off: 'scene.0.Living_Room_Lights',
-      on: ['scene.0.Living_Room_Lights_Bright'],
+    device: 'mqtt.0.home.hall.power.stat.shelly1-6',
+    toggle: {
+      states: ['scene.0.Hall_Lights_Bright'],
     },
   }),
   new Shelly({
-    device: 'mqtt.0.kitchen.power.stat.shelly1-10',
-    cycle: {
-      off: 'scene.0.Living_Room_Lights',
-      on: ['scene.0.Living_Room_Lights_Bright'],
+    device: 'mqtt.0.home.kitchen.power.stat.shelly1-10',
+    toggle: {
+      states: ['scene.0.Living_Room_Lights_Bright'],
     },
   }),
 ];
