@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "ioBroker Scripts",
   "dependencies": {
-    "rxjs": "^6.5.5"
+    "rxjs": "^6.6.2"
   },
   "devDependencies": {
     "@types/node": "^10.17.26",
