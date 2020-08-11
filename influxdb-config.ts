@@ -245,7 +245,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     check(enabledDataPoints, id, expect);
   });
 
-  // HomeMatic battery-powered devices..
+  // HomeMatic battery-powered devices.
   $('state[id=hm-rpc.*.0.LOW_BAT]').each(id => {
     if (id.match(/^admin\./) || id.match(/_ALARM$/)) {
       return;
