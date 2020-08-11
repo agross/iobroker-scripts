@@ -127,12 +127,8 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     check(enabledDataPoints, id, expect);
   });
 
-  // Some lights are logged. Enable/check only if config is enabled.
-  $('state[id=zigbee.*.state]').each(id => {
-    if (!enabledDataPoints[id]) {
-      return;
-    }
-
+  // Lights.
+  $('state[id=zigbee.*.state](functions=funcLight)').each(id => {
     const expect = {
       enabled: true,
       changesOnly: false,
@@ -142,7 +138,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${room(id)} Light On`,
+      aliasId: `${deviceName(id)} Light On`,
     };
 
     check(enabledDataPoints, id, expect);
