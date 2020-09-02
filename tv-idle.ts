@@ -309,6 +309,8 @@ const turnOff = activity
   .subscribe();
 
 onStop(() => {
+  tv.message(`TV Idle disabled`);
+
   [timerDisabledNotifications, turnOff, tvLog, activityLog]
     .concat(timeoutNotifications)
     .forEach(subscription => subscription.unsubscribe());
