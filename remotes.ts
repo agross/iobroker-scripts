@@ -699,11 +699,13 @@ const remotes = [
         }).values(),
       ),
     },
-    toggle: {
-      states: new ObjectsWithStateQuery({
-        rooms: 'Bedroom',
-        functions: 'funcLight',
-      }),
+    cycle: {
+      off: 'scene.0.Bedroom_Lights',
+      on: [
+        'scene.0.Bedroom_Lights_Bright',
+        'scene.0.Bedroom_Lights_Low',
+        'scene.0.Bedroom_Lights_Cozy',
+      ],
     },
   }),
   new Philips({
