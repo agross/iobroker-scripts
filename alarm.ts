@@ -10,6 +10,7 @@ import {
 } from 'rxjs/operators';
 
 const nobodyAtHome = 'nobody-at-home';
+const hmPresence = 'hm-rega.0.950';
 const presenceIndicators = ['ping.0.iobroker.172_16_0_15'];
 const triggerAlarmOn = ['zigbee.0.00158d00045bedc5.opened'];
 
@@ -45,6 +46,7 @@ const presence = combineLatest(presenceIndicatorChanges)
     tap(present => {
       const delayByMinutes = present ? 0 : 5;
 
+      setStateDelayed(hmPresence, present, delayByMinutes * 60 * 1000, true);
       setStateDelayed(nobodyAtHome, !present, delayByMinutes * 60 * 1000, true);
     }),
   )
