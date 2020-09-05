@@ -784,10 +784,7 @@ const remotes = [
   new Shelly({
     device: 'mqtt.0.home.utility-room.power.stat.shelly1-1',
     toggle: {
-      states: new ObjectsWithStateQuery({
-        rooms: 'Utility Room',
-        functions: 'funcLight',
-      }),
+      states: ['scene.0.Utility_Room_Entered'],
     },
   }),
   new Shelly({
