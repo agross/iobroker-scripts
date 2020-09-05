@@ -139,7 +139,11 @@ class ToggleAndSwitch implements IFeature {
           .filter(state => !state.notExist)
           .some(state => state.val);
 
-        log(`${device}: ${someOn ? 'Some' : 'No'} toggled objects are on`);
+        log(
+          `${device}: ${someOn ? 'Some' : 'No'} of ${
+            states.length
+          } toggled objects are on`,
+        );
         states.forEach(state => setState(state, !someOn));
       }),
     );
@@ -664,6 +668,10 @@ class ObjectsWithStateQuery {
     });
 
     return states;
+  }
+
+  public get length(): number {
+    return this.values().length;
   }
 
   private query(stateQuery: string): string {
