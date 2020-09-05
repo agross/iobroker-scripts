@@ -700,7 +700,7 @@ class DimmableLights {
 const remotes = [
   new Tradfi({
     // Kitchen TRADFRI on/off switch
-    device: 'zigbee.0.588e81fffe2bacf4',
+    device: 'zigbee.1.588e81fffe2bacf4',
     dim: {
       brightnessChange: BRIGHTNESS_CHANGE,
       lights: DimmableLights.for(
@@ -723,7 +723,7 @@ const remotes = [
   }),
   new Tradfi({
     // Bedroom TRADFRI on/off switch
-    device: 'zigbee.0.588e81fffe17a8ca',
+    device: 'zigbee.1.588e81fffe17a8ca',
     dim: {
       brightnessChange: BRIGHTNESS_CHANGE,
       lights: DimmableLights.for(
@@ -744,7 +744,7 @@ const remotes = [
   }),
   new Philips({
     // Hue Remote RWL021
-    device: 'zigbee.0.001788010872fbc4',
+    device: 'zigbee.1.001788010872fbc4',
     dim: {
       brightnessChange: BRIGHTNESS_CHANGE,
       lights: DimmableLights.for(

@@ -12,7 +12,7 @@ import {
 const nobodyAtHome = 'nobody-at-home';
 const hmPresence = 'hm-rega.0.950';
 const presenceIndicators = ['ping.0.iobroker.172_16_0_15'];
-const triggerAlarmOn = ['zigbee.0.00158d00045bedc5.opened'];
+const triggerAlarmOn = ['zigbee.1.00158d00045bedc5.opened'];
 
 createState(nobodyAtHome, undefined, {
   name: 'Flag indicating that nobody is home',

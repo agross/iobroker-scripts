@@ -1,4 +1,4 @@
-const sensor = 'zigbee.0.00158d00045bedc5.opened'; // Entrance Door Contact
+const sensor = 'zigbee.1.00158d00045bedc5.opened'; // Entrance Door Contact
 const scene = 'scene.0.Late_Night_Entry';
 
 function atNight() {
