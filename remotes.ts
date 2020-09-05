@@ -1,4 +1,4 @@
-import { Observable, merge, combineLatest } from 'rxjs';
+import { Observable, merge, combineLatest, Subscription } from 'rxjs';
 import {
   filter,
   debounceTime,
@@ -16,7 +16,7 @@ import {
 const BRIGHTNESS_CHANGE = 5;
 
 interface IFeature {
-  setUp(): void;
+  setUp(): Subscription;
 }
 
 type States = string[] | ObjectsWithStateQuery;
@@ -40,31 +40,40 @@ class Cycle implements IFeature {
     this.config = config;
   }
 
-  public setUp(): void {
-    this.config.off.subscribe(({ device, state }) => {
-      log(`${device}: Turned off`);
+  public setUp(): Subscription {
+    const off = this.config.off.pipe(
+      tap(({ device, state }) => {
+        log(`${device}: Turned off`);
 
-      setState(state, false);
-    });
+        setState(state, false);
+      }),
+    );
 
-    this.config.next.subscribe(({ device, states }) => {
-      const currentIndex = states
-        .map(obj => {
-          return { object: obj, state: getState(obj) };
-        })
-        .reduce((acc, state, index) => {
-          if (acc < 0 && state.state.val === true) {
-            return index;
-          }
+    const next = this.config.next.pipe(
+      tap(({ device, states }) => {
+        const currentIndex = states
+          .map(obj => {
+            return { object: obj, state: getState(obj) };
+          })
+          .reduce((acc, state, index) => {
+            if (acc < 0 && state.state.val === true) {
+              return index;
+            }
 
-          return acc;
-        }, -1);
+            return acc;
+          }, -1);
 
-      const activate = states[currentIndex + 1] || states[0];
-      log(`${device}: Cycle next: ${activate}`);
+        const activate = states[currentIndex + 1] || states[0];
+        log(`${device}: Cycle next: ${activate}`);
 
-      setState(activate, true);
-    });
+        setState(activate, true);
+      }),
+    );
+
+    return [off, next].reduce((acc, $) => {
+      acc.add($.subscribe());
+      return acc;
+    }, new Subscription());
   }
 }
 
@@ -85,18 +94,27 @@ class ToggleAndFollowRemoteState implements IFeature {
     this.config = config;
   }
 
-  public setUp(): void {
-    this.config.turnedOn.subscribe(({ device, states }) => {
-      log(`${device}: Turned on. States to set: ${JSON.stringify(states)}`);
+  public setUp(): Subscription {
+    const on = this.config.turnedOn.pipe(
+      tap(({ device, states }) => {
+        log(`${device}: Turned on. States to set: ${JSON.stringify(states)}`);
 
-      states.forEach(state => setState(state, true));
-    });
+        states.forEach(state => setState(state, true));
+      }),
+    );
 
-    this.config.turnedOff.subscribe(({ device, states }) => {
-      log(`${device}: Turned off. States to set: ${JSON.stringify(states)}`);
+    const off = this.config.turnedOff.pipe(
+      tap(({ device, states }) => {
+        log(`${device}: Turned off. States to set: ${JSON.stringify(states)}`);
 
-      states.forEach(state => setState(state, false));
-    });
+        states.forEach(state => setState(state, false));
+      }),
+    );
+
+    return [on, off].reduce((acc, $) => {
+      acc.add($.subscribe());
+      return acc;
+    }, new Subscription());
   }
 }
 
@@ -111,9 +129,9 @@ class ToggleAndSwitch implements IFeature {
     this.config = config;
   }
 
-  public setUp(): void {
-    merge(this.config.turnedOn, this.config.turnedOff).subscribe(
-      ({ device, states }) => {
+  public setUp(): Subscription {
+    const toggled = merge(this.config.turnedOn, this.config.turnedOff).pipe(
+      tap(({ device, states }) => {
         log(`${device}: Toggled. States to set: ${JSON.stringify(states)}`);
 
         const someOn = states
@@ -123,8 +141,10 @@ class ToggleAndSwitch implements IFeature {
 
         log(`${device}: ${someOn ? 'Some' : 'No'} toggled objects are on`);
         states.forEach(state => setState(state, !someOn));
-      },
+      }),
     );
+
+    return toggled.subscribe();
   }
 }
 
@@ -148,40 +168,43 @@ class Dimmer implements IFeature {
     this.config = config;
   }
 
-  public setUp(): void {
+  public setUp(): Subscription {
     let interval = undefined;
 
-    this.config.darker
+    const darker = this.config.darker
       .pipe(withLatestFrom(this.config.lights))
-      .subscribe(([device, states]) => {
-        if (!interval) {
-          log(`${device}: Starting darker dimmer`);
+      .pipe(
+        tap(([device, states]) => {
+          if (!interval) {
+            log(`${device}: Starting darker dimmer`);
 
-          states.forEach(light => {
-            setState(`${light}.transition_time`, 0.2);
-          });
+            states.forEach(light => {
+              setState(`${light}.transition_time`, 0.2);
+            });
 
-          interval = setInterval(() => this.makeDarker(states), 200);
-        }
-      });
+            interval = setInterval(() => this.makeDarker(states), 200);
+          }
+        }),
+      );
 
-    this.config.brighter
+    const brighter = this.config.brighter
       .pipe(withLatestFrom(this.config.lights))
-      .subscribe(([device, states]) => {
-        if (!interval) {
-          log(`${device}: Starting brighter dimmer`);
+      .pipe(
+        tap(([device, states]) => {
+          if (!interval) {
+            log(`${device}: Starting brighter dimmer`);
 
-          states.forEach(light => {
-            setState(`${light}.transition_time`, 0.2);
-          });
+            states.forEach(light => {
+              setState(`${light}.transition_time`, 0.2);
+            });
 
-          interval = setInterval(() => this.makeBrighter(states), 200);
-        }
-      });
+            interval = setInterval(() => this.makeBrighter(states), 200);
+          }
+        }),
+      );
 
-    this.config.stop
-      .pipe(withLatestFrom(this.config.lights))
-      .subscribe(([device, states]) => {
+    const stop = this.config.stop.pipe(withLatestFrom(this.config.lights)).pipe(
+      tap(([device, states]) => {
         if (interval) {
           log(`Stopping ${device} dimmer`);
 
@@ -192,7 +215,13 @@ class Dimmer implements IFeature {
             setState(`${light}.transition_time`, 3);
           });
         }
-      });
+      }),
+    );
+
+    return [darker, brighter, stop].reduce((acc, $) => {
+      acc.add($.subscribe());
+      return acc;
+    }, new Subscription());
   }
 
   private makeDarker(states: States) {
@@ -267,8 +296,13 @@ interface CycleDeviceConfig {
 abstract class Remote {
   private readonly features: IFeature[] = [];
 
-  public setUp(): void {
-    this.features.forEach(f => f.setUp());
+  public setUp(): Subscription {
+    return this.features
+      .map(f => f.setUp())
+      .reduce((acc: Subscription, $) => {
+        acc.add($);
+        return acc;
+      }, new Subscription());
   }
 
   protected addFeature(...feature: IFeature[]): void {
@@ -801,4 +835,8 @@ const remotes = [
   }),
 ];
 
-remotes.forEach(remote => remote.setUp());
+const subscriptions = remotes.map(remote => remote.setUp());
+
+onStop(() => {
+  subscriptions.forEach(subscription => subscription.unsubscribe());
+});
