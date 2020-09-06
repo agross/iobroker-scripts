@@ -790,13 +790,13 @@ const remotes = [
       ),
     },
     cycle: {
-      off: 'scene.0.Kitchen_Lights',
+      off: 'scene.0.Kitchen.Lights',
       on: [
-        'scene.0.Kitchen_Lights_Low',
-        'scene.0.Kitchen_Lights_Downlight',
-        'scene.0.Kitchen_Lights_Downlight_+_Dining',
-        'scene.0.Kitchen_Lights_Downlight_+_Kitchen',
-        'scene.0.Kitchen_Lights_Bright',
+        'scene.0.Kitchen.Lights_Low',
+        'scene.0.Kitchen.Lights_Downlight',
+        'scene.0.Kitchen.Lights_Downlight_+_Dining',
+        'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
+        'scene.0.Kitchen.Lights_Bright',
       ],
     },
   }),
@@ -813,11 +813,11 @@ const remotes = [
       ),
     },
     cycle: {
-      off: 'scene.0.Bedroom_Lights',
+      off: 'scene.0.Bedroom.Lights',
       on: [
-        'scene.0.Bedroom_Lights_Bright',
-        'scene.0.Bedroom_Lights_Low',
-        'scene.0.Bedroom_Lights_Cozy',
+        'scene.0.Bedroom.Lights_Bright',
+        'scene.0.Bedroom.Lights_Low',
+        'scene.0.Bedroom.Lights_Cozy',
       ],
     },
   }),
@@ -834,46 +834,46 @@ const remotes = [
       ),
     },
     cycle: {
-      off: 'scene.0.Living_Room_Lights',
+      off: 'scene.0.Living Room.Lights',
       on: [
-        'scene.0.Living_Room_Lights_Bright',
-        'scene.0.Living_Room_Lights_TV',
+        'scene.0.Living Room.Lights_Bright',
+        'scene.0.Living Room.Lights_TV',
       ],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.office.power.stat.shelly1-4',
     cycle: {
-      off: 'scene.0.Office_Lights',
+      off: 'scene.0.Office.Lights',
       on: [
-        'scene.0.Office_Lights_Low',
-        'scene.0.Office_Lights_Ultra_Low',
-        'scene.0.Office_Lights_Bright',
+        'scene.0.Office.Lights_Cozy',
+        'scene.0.Office.Lights_Low',
+        'scene.0.Office.Lights_Bright',
       ],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.utility-room.power.stat.shelly1-1',
     toggle: {
-      states: ['scene.0.Utility_Room_Entered'],
+      states: ['scene.0.Utility Room.Entered'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.bedroom.power.stat.shelly1-2',
     cycle: {
-      off: 'scene.0.Bedroom_Lights',
+      off: 'scene.0.Bedroom.Lights',
       on: [
-        'scene.0.Bedroom_Lights_Bright',
-        'scene.0.Bedroom_Lights_Low',
-        'scene.0.Bedroom_Lights_Cozy',
+        'scene.0.Bedroom.Lights_Bright',
+        'scene.0.Bedroom.Lights_Low',
+        'scene.0.Bedroom.Lights_Cozy',
       ],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-3',
     toggle: {
-      off: ['scene.0.Bathroom_Lights'],
-      states: ['scene.0.Bathroom_Lights_Bright'],
+      off: ['scene.0.Bathroom.Lights'],
+      states: ['scene.0.Bathroom.Lights_Bright'],
     },
   }),
   new Shelly({
@@ -883,36 +883,36 @@ const remotes = [
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-7',
     toggle: {
-      off: ['scene.0.Kitchen_Lights'],
-      states: ['scene.0.Kitchen_Lights_Bright'],
+      off: ['scene.0.Kitchen.Lights'],
+      states: ['scene.0.Kitchen.Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.kitchen.power.stat.shelly1-9',
     toggle: {
-      off: ['scene.0.Kitchen_Lights'],
-      states: ['scene.0.Kitchen_Lights_Bright'],
+      off: ['scene.0.Kitchen.Lights'],
+      states: ['scene.0.Kitchen.Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.living-room.power.stat.shelly1-5',
     toggle: {
-      off: ['scene.0.Living_Room_Lights'],
-      states: ['scene.0.Living_Room_Lights_Bright'],
+      off: ['scene.0.Living Room.Lights'],
+      states: ['scene.0.Living Room.Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-6',
     toggle: {
-      off: ['scene.0.Hall_Lights'],
-      states: ['scene.0.Hall_Lights_Bright'],
+      off: ['scene.0.Hall.Lights'],
+      states: ['scene.0.Hall.Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.kitchen.power.stat.shelly1-10',
     toggle: {
-      off: ['scene.0.Living_Room_Lights'],
-      states: ['scene.0.Living_Room_Lights_Bright'],
+      off: ['scene.0.Living Room.Lights'],
+      states: ['scene.0.Living Room.Lights_Bright'],
     },
   }),
 ];

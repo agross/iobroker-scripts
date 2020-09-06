@@ -6,7 +6,7 @@ on(
   },
   event => {
     // Overridden by switch?
-    if (getState('scene.0.Bathroom_Lights_Bright').val === true) {
+    if (getState('scene.0.Bathroom.Lights_Bright').val === true) {
       log('Bathroom lights overridden by switch');
       return;
     }
@@ -14,7 +14,7 @@ on(
     // Bathroom empty?
     if (event.state.val === false) {
       log('Bathroom empty, turning off lights');
-      setState('scene.0.Bathroom_Lights', false);
+      setState('scene.0.Bathroom.Lights', false);
       return;
     }
 
@@ -23,15 +23,15 @@ on(
       return;
     }
 
-    let scene = 'scene.0.Bathroom_Lights_Low';
+    let scene = 'scene.0.Bathroom.Lights_Low';
 
     if (compareTime('1:00', '6:00', 'between')) {
-      scene = 'scene.0.Bathroom_Lights_Ultra_Low';
+      scene = 'scene.0.Bathroom.Lights_Ultra_Low';
     }
 
     // If any light is on, use a brighter scene.
-    if (getState('scene.0.All_Lights').val !== false) {
-      scene = 'scene.0.Bathroom_Lights_Default';
+    if (getState('scene.0.Lights.All_Lights_Off').val !== true) {
+      scene = 'scene.0.Bathroom.Lights_Default';
     }
 
     log(`Bathroom occupied, turning on ${scene}`);
