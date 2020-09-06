@@ -78,19 +78,25 @@ class Cycle implements IFeature {
 }
 
 interface ToggleConfig {
+  off?: States;
   states: States;
 }
 
-interface ToggleStreams {
+interface ToggleAndFollowRemoteStreams {
   turnedOn: Observable<{ device: string; states: States }>;
   turnedOff: Observable<{ device: string; states: States }>;
 }
 
+interface ToggleAndSwitchStreams {
+  turnedOn: Observable<{ device: string; states: States; off?: States }>;
+  turnedOff: Observable<{ device: string; states: States; off?: States }>;
+}
+
 // The state is determined by the stateful remote.
 class ToggleAndFollowRemoteState implements IFeature {
-  private readonly config: ToggleStreams;
+  private readonly config: ToggleAndFollowRemoteStreams;
 
-  constructor(config: ToggleStreams) {
+  constructor(config: ToggleAndFollowRemoteStreams) {
     this.config = config;
   }
 
@@ -121,34 +127,91 @@ class ToggleAndFollowRemoteState implements IFeature {
 // Whenever the remote switches state, either turn on states (if none is on)
 // or off (if any is on).
 // For Shellies the state that was switched to does not matter, rather the
-// state of toggled objects. If some are on, turn all off.
+// state of toggled objects.
+// There are two variations:
+//   1. The "any is on" state is determined by `states` states
+//
+//      If any is on, set `states` to false , otherwise set `states` to true.
+//
+//   2. The "any is on" state is determined by the optional `off` states
+//
+//      If any is on, set `off` to false, otherwise set `states` to true.
+//
+//      This allows you to have a scene that controls light states by having set
+//      points for true and false where true turns everything on and false turns
+//      everything off. If any light is on, the scene becomes `true` or
+//      `uncertain` ("any is on" == true). By turning off that scene all lights
+//      are then turned off.
 class ToggleAndSwitch implements IFeature {
-  private readonly config: ToggleStreams;
+  private readonly config: ToggleAndSwitchStreams;
 
-  constructor(config: ToggleStreams) {
+  constructor(config: ToggleAndSwitchStreams) {
     this.config = config;
   }
 
   public setUp(): Subscription {
     const toggled = merge(this.config.turnedOn, this.config.turnedOff).pipe(
-      tap(({ device, states }) => {
-        log(`${device}: Toggled. States to set: ${JSON.stringify(states)}`);
+      map(({ device, states, off }) => {
+        const anyOnDeterminedBy = off || states;
 
-        const someOn = states
+        const anyOn = anyOnDeterminedBy
           .map(object => getState(object))
           .filter(state => !state.notExist)
           .some(state => state.val);
 
         log(
-          `${device}: ${someOn ? 'Some' : 'No'} of ${
-            states.length
-          } toggled objects are on`,
+          `${device}: Toggled. ${
+            anyOn ? 'Some' : 'None'
+          } are on: ${JSON.stringify(anyOnDeterminedBy)}`,
         );
-        states.forEach(state => setState(state, !someOn));
+
+        return { device, states, off, anyOn };
+      }),
+      share(),
+    );
+
+    const noneOn = toggled.pipe(
+      filter(x => !x.anyOn),
+      tap(({ device, states, off, anyOn }) => {
+        log(`${device}: None on. Setting true for ${JSON.stringify(states)}`);
+
+        states.forEach(state => setState(state, true));
       }),
     );
 
-    return toggled.subscribe();
+    const someOn = toggled.pipe(filter(x => x.anyOn));
+
+    const explicitOffTurnedOff = someOn.pipe(
+      filter(x => !!x.off),
+      tap(({ device, states, off, anyOn }) => {
+        log(
+          `${device}: Explicit off. Setting false for ${JSON.stringify(off)}`,
+        );
+
+        off.forEach(state => setState(state, false));
+      }),
+    );
+
+    const implicitOffTurnedOff = someOn.pipe(
+      filter(x => !x.off),
+      tap(({ device, states, off, anyOn }) => {
+        log(
+          `${device}: Implicit off. Setting false for ${JSON.stringify(
+            states,
+          )}`,
+        );
+
+        states.forEach(state => setState(state, false));
+      }),
+    );
+
+    return [noneOn, explicitOffTurnedOff, implicitOffTurnedOff].reduce(
+      (acc, $) => {
+        acc.add($.subscribe());
+        return acc;
+      },
+      new Subscription(),
+    );
   }
 }
 
@@ -340,7 +403,7 @@ class Tradfi extends Remote {
 
   private toggleStreams(
     config: DeviceConfig & ToggleDeviceConfig,
-  ): ToggleStreams {
+  ): ToggleAndFollowRemoteStreams {
     const stateChanges = new Observable<iobJS.ChangedStateObject>(observer => {
       on({ id: `${config.device}.state`, ack: true }, event => {
         observer.next(event);
@@ -447,7 +510,7 @@ class Philips extends Remote {
 
   private toggleStreams(
     config: DeviceConfig & ToggleDeviceConfig,
-  ): ToggleStreams {
+  ): ToggleAndFollowRemoteStreams {
     const stateChanges = new Observable<iobJS.ChangedStateObject>(observer => {
       on({ id: `${config.device}.state`, change: 'ne', ack: true }, event => {
         observer.next(event);
@@ -541,7 +604,7 @@ class Shelly extends Remote {
 
   private toggleStreams(
     config: DeviceConfig & ToggleDeviceConfig,
-  ): ToggleStreams {
+  ): ToggleAndSwitchStreams {
     const stateChanges = new Observable<iobJS.ChangedStateObject>(observer => {
       on({ id: `${config.device}.POWER`, change: 'ne', ack: true }, event => {
         observer.next(event);
@@ -552,13 +615,21 @@ class Shelly extends Remote {
       turnedOn: stateChanges.pipe(
         filter(event => event.state.val === 'ON'),
         map(_event => {
-          return { device: config.device, states: config.toggle.states };
+          return {
+            device: config.device,
+            states: config.toggle.states,
+            off: config.toggle.off,
+          };
         }),
       ),
       turnedOff: stateChanges.pipe(
         filter(event => event.state.val !== 'ON'),
         map(_event => {
-          return { device: config.device, states: config.toggle.states };
+          return {
+            device: config.device,
+            states: config.toggle.states,
+            off: config.toggle.off,
+          };
         }),
       ),
     };
@@ -801,6 +872,7 @@ const remotes = [
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-3',
     toggle: {
+      off: ['scene.0.Bathroom_Lights'],
       states: ['scene.0.Bathroom_Lights_Bright'],
     },
   }),
@@ -811,30 +883,35 @@ const remotes = [
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-7',
     toggle: {
+      off: ['scene.0.Kitchen_Lights'],
       states: ['scene.0.Kitchen_Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.kitchen.power.stat.shelly1-9',
     toggle: {
+      off: ['scene.0.Kitchen_Lights'],
       states: ['scene.0.Kitchen_Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.living-room.power.stat.shelly1-5',
     toggle: {
+      off: ['scene.0.Living_Room_Lights'],
       states: ['scene.0.Living_Room_Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-6',
     toggle: {
+      off: ['scene.0.Hall_Lights'],
       states: ['scene.0.Hall_Lights_Bright'],
     },
   }),
   new Shelly({
     device: 'mqtt.0.home.kitchen.power.stat.shelly1-10',
     toggle: {
+      off: ['scene.0.Living_Room_Lights'],
       states: ['scene.0.Living_Room_Lights_Bright'],
     },
   }),
