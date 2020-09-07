@@ -1,5 +1,7 @@
 const sensor = 'zigbee.1.00158d00045bedc5.opened'; // Entrance Door Contact
 const scene = 'scene.0.Lights.Late_Night_Entry';
+const allLightsOff = 'scene.0.Lights.All_Lights_Off';
+const brightness = 'hm-rpc.1.000C1A49A87471.1.ILLUMINATION'; // Bathroom Presence Detector
 
 function atNight() {
   return compareTime(
@@ -9,16 +11,24 @@ function atNight() {
   );
 }
 
+function darkOutside() {
+  return getState(brightness).val < 50;
+}
+
 on({ id: sensor, val: true, ack: true }, event => {
   if (!atNight()) {
-    log('Daytime, skipping');
-    return;
+    if (darkOutside()) {
+      log('Daytime, but dark outside');
+    } else {
+      log('Daytime, skipping');
+      return;
+    }
   }
 
-  if (getState('scene.0.All_Lights').val !== false) {
+  if (getState(allLightsOff).val !== true) {
     log('Some lights are on, skipping');
     return;
   }
 
-  setState(scene, event.state.val);
+  setState(scene, true);
 });
