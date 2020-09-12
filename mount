@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+
+set -e
+
+script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+host=pi
+remote_dir=/data/iobroker/scripts
+local_dir="$script_dir/pi"
+
+mkdir --parents "$local_dir"
+
+if [ $# = 0 ]; then
+  sshfs "$host:$remote_dir" "$local_dir" -o transform_symlinks
+else
+  umount "$local_dir"
+fi
