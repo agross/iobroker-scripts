@@ -19,7 +19,7 @@ on(
     }
 
     // Disabled by brightness?
-    if (getState('hm-rpc.1.000C1A49A87471.1.ILLUMINATION').val > 5) {
+    if (getState('hm-rpc.1.000C1A49A87471.1.ILLUMINATION').val > 30) {
       return;
     }
 
