@@ -246,9 +246,7 @@ $('state[id=*.4.LEVEL_2]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL_2}').each(
 
       var currentLevel = getState(getLevel).val;
 
-      log(
-        `Tilt level: ${event.newState.val}, reapplying level ${currentLevel}`,
-      );
+      log(`Tilt level: ${event.state.val}, reapplying level ${currentLevel}`);
       setState(setLevel, currentLevel);
     });
   },
