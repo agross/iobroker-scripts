@@ -34,7 +34,7 @@ function lovelace(id: string) {
 const enumsToDeviceAliases: { [enumId: string]: string[] } = {};
 
 // HomeMatic shutters.
-$('state[id=*.4.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
+$('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
   const device = deviceId(stateId);
 
   const aliases: { [state: string]: any } = {
