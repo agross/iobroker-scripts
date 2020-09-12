@@ -214,7 +214,17 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
     let dup: iobJS.StateObject = Object.assign({}, skeleton);
     Object.assign(dup, { common: common });
 
-    setObject(alias(device, state), dup);
+    setObject(alias(device, state), dup, err => {
+      if (err)
+        log(
+          `${err}: ${deviceAlias}.${state}: ${JSON.stringify(
+            dup,
+            undefined,
+            2,
+          )}`,
+          'error',
+        );
+    });
   });
 });
 
