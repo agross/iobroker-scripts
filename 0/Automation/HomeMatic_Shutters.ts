@@ -31,6 +31,8 @@ function lovelace(id: string) {
   return id.replace(/[\.\s\-]/g, '_');
 }
 
+const enumsToDeviceAliases: { [enumId: string]: string[] } = {};
+
 // HomeMatic shutters.
 $('state[id=*.4.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
   const device = deviceId(stateId);
@@ -197,23 +199,16 @@ $('state[id=*.4.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
 
   setObject(deviceAlias, channel);
 
-  // TODO: Might happen in parallel where only the last one survives. Need to batch this.
   getEnumIds(stateId, 'rooms')
     .concat(getEnumIds(stateId, 'functions'))
-    .forEach(enumId => {
-      const _enum = getObject(enumId);
-      const common = (_enum.common as unknown) as { members: string[] };
+    .reduce((acc, enumId) => {
+      if (!acc.hasOwnProperty(enumId)) {
+        acc[enumId] = [];
+      }
 
-      const members = Array.from(common.members);
-      if (!members.includes(deviceAlias)) {
-        log(`Appending ${deviceAlias} to ${enumId}`);
-        members.push(deviceAlias);
-      }
-      if (members.length != common.members.length) {
-        log(`Saving ${enumId}`);
-        extendObject(enumId, { common: { members: members } });
-      }
-    });
+      acc[enumId].push(deviceAlias);
+      return acc;
+    }, enumsToDeviceAliases);
 
   Object.entries(aliases).forEach(([state, common]) => {
     let dup: iobJS.StateObject = Object.assign({}, skeleton);
@@ -222,6 +217,24 @@ $('state[id=*.4.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
     setObject(alias(device, state), dup);
   });
 });
+
+for (let [enumId, deviceAliases] of Object.entries(enumsToDeviceAliases)) {
+  const _enum = getObject(enumId);
+  const common = (_enum.common as unknown) as { members: string[] };
+
+  const members = Array.from(common.members);
+  deviceAliases.forEach(deviceAlias => {
+    if (!members.includes(deviceAlias)) {
+      log(`Appending ${deviceAlias} to ${enumId}`);
+      members.push(deviceAlias);
+    }
+  });
+
+  if (members.length != common.members.length) {
+    log(`Saving ${enumId}`);
+    extendObject(enumId, { common: { members: members } });
+  }
+}
 
 // When only tilt is set we also need to set the current level, otherwise the
 // new tilt is not applied.
