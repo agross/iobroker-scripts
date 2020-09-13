@@ -3,7 +3,7 @@
 set -e
 
 script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-host=pi
+host="${MOUNT:-pi}"
 remote_dir=/data/iobroker/scripts
 local_dir="$script_dir/pi"
 
