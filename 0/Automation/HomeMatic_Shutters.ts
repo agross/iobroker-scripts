@@ -72,7 +72,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: 'input_number',
-          name: `${lovelace(device)}_level`,
+          name: `${lovelace(deviceName(stateId))}_Level`,
         },
       },
     },
@@ -92,7 +92,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: 'switch',
-          name: `${lovelace(device)}_close`,
+          name: `${lovelace(deviceName(stateId))}_Close`,
         },
       },
     },
@@ -112,7 +112,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: 'switch',
-          name: `${lovelace(device)}_open`,
+          name: `${lovelace(deviceName(stateId))}_Open`,
         },
       },
     },
@@ -132,7 +132,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: 'switch',
-          name: `${lovelace(device)}_stop`,
+          name: `${lovelace(deviceName(stateId))}_Stop`,
         },
       },
     },
@@ -150,7 +150,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: 'input_number',
-          name: `${lovelace(device)}_tilt_level`,
+          name: `${lovelace(deviceName(stateId))}_Tilt_Level`,
         },
       },
     },
@@ -173,7 +173,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: 'switch',
-          name: `${lovelace(device)}_tilt_close`,
+          name: `${lovelace(deviceName(stateId))}_Tilt_Close`,
         },
       },
     },
@@ -196,7 +196,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: 'switch',
-          name: `${lovelace(device)}_tilt_open`,
+          name: `${lovelace(deviceName(stateId))}_Tilt_Open`,
         },
       },
     },
