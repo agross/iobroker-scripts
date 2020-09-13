@@ -1,3 +1,5 @@
+const testing = false;
+
 function deviceId(id: string, initialId?: string): string {
   const _deviceId = id.replace(/\.[^.]*$/, '');
   if (_deviceId == id) {
@@ -14,12 +16,26 @@ function deviceId(id: string, initialId?: string): string {
   return _deviceId;
 }
 
+function deviceName(id: string): string {
+  const device = getObject(deviceId(id));
+
+  if (!device) {
+    return id;
+  }
+
+  const prefix = testing ? 'Testing ' : '';
+
+  return prefix + device.common.name;
+}
+
 function getEnumIds(id: string, kind: string): string[] {
   return (getObject(id, kind) as any).enumIds;
 }
 
 function alias(device: string, state?: string) {
-  const root = `alias.0.${device}`;
+  const prefix = testing ? 'testing.' : '';
+
+  const root = `alias.0.${prefix}${device}`;
   if (!state) {
     return root;
   }
@@ -195,7 +211,7 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
   const channel: iobJS.Object = {
     type: 'channel',
     native: {},
-    common: { name: device, role: 'blind' },
+    common: { name: deviceName(stateId), role: 'blind' },
   };
 
   const deviceAlias = alias(device);
