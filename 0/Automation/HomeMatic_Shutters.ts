@@ -42,13 +42,16 @@ $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(stateId => {
       alias: {
         id: { read: `${device}.3.LEVEL`, write: `${device}.4.LEVEL` },
         read: 'Math.round(val)',
+        write: 'val',
       },
-      role: 'value.blind',
+      role: 'level.blind',
       type: 'number',
       unit: '%',
       min: 0,
       max: 100,
       name: 'Level of shutters',
+      read: true,
+      write: true,
       custom: {
         'lovelace.0': {
           enabled: true,
