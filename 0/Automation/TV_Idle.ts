@@ -250,10 +250,10 @@ const tv = new TV(tvDevice);
 
 const tvLog = tv.stream.pipe(tap(x => log(`TV on: ${x}`))).subscribe();
 
-const timerDisabled = combineLatest(
+const timerDisabled = combineLatest([
   new WhitelistedApp(tvDevice, ...whitelistedLgApps).stream,
   new Tatort().stream,
-).pipe(
+]).pipe(
   map(flags => flags.some(f => f)),
   distinctUntilChanged(),
 );
