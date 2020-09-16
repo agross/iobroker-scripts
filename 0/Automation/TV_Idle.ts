@@ -1,4 +1,4 @@
-import { interval, Observable, of, empty, concat, combineLatest } from 'rxjs';
+import { interval, Observable, of, EMPTY, concat, combineLatest } from 'rxjs';
 import {
   share,
   distinctUntilChanged,
@@ -76,7 +76,7 @@ class WhitelistedApp {
   private get initialValue(): Observable<boolean> {
     const current = getState(this.stateId);
     if (current.notExist) {
-      return empty();
+      return EMPTY;
     }
 
     return of(this.isWhitelisted(current.val));
@@ -144,7 +144,7 @@ class TV {
   private get initialValue(): Observable<boolean> {
     const current = getState(`${this.device}.states.on`);
     if (current.notExist) {
-      return empty();
+      return EMPTY;
     }
 
     return of(current.val);
@@ -228,7 +228,7 @@ class ActivityIndicator {
       return of(latest);
     } else {
       log('No known latest activity');
-      return empty();
+      return EMPTY;
     }
   }
 
