@@ -1,4 +1,12 @@
-import { interval, Observable, of, EMPTY, concat, combineLatest } from 'rxjs';
+import {
+  interval,
+  Observable,
+  of,
+  EMPTY,
+  concat,
+  combineLatest,
+  merge,
+} from 'rxjs';
 import {
   share,
   distinctUntilChanged,
@@ -11,7 +19,43 @@ import {
 } from 'rxjs/operators';
 
 const activityIndicators = [
-  'kodi.0.info.playing_time',
+  function (): Observable<StateWithId> {
+    // Kodi's playing time with TV input is HDMI 1.
+
+    function input(): Observable<string> {
+      const stateId = 'lgtv.0.states.input';
+
+      const state = getState(stateId);
+      const initialInput = state.notExist ? EMPTY : of(state.val as string);
+
+      const inputChanges = new Observable<string>(observer => {
+        on({ id: stateId, ack: true }, event => {
+          observer.next(event.state.val);
+        });
+      }).pipe(share());
+
+      return concat(initialInput, inputChanges);
+    }
+
+    const playingTime = new Observable<StateWithId>(observer => {
+      on({ id: 'kodi.0.info.playing_time', ack: true }, event => {
+        const state = {
+          id: event.id,
+          state: event.state,
+        };
+
+        observer.next(state);
+      });
+    }).pipe(share());
+
+    const stream = combineLatest([input(), playingTime]).pipe(
+      filter(([input, _time]) => input === 'HDMI_1' || input === '1'),
+      map(([_input, time]) => time),
+      share(),
+    );
+
+    return stream;
+  },
   'lgtv.0.states.channelId',
   'lgtv.0.states.currentApp',
   'lgtv.0.states.volume',
@@ -168,10 +212,10 @@ class TV {
 }
 
 class ActivityIndicator {
-  private ids: string[];
+  private ids: (string | (() => Observable<StateWithId>))[];
   private _stream: Observable<StateWithId>;
 
-  constructor(...ids: string[]) {
+  constructor(...ids: (string | (() => Observable<StateWithId>))[]) {
     this.ids = ids;
 
     this._stream = concat(this.initialValue, this.changes).pipe(
@@ -184,7 +228,7 @@ class ActivityIndicator {
   }
 
   private get initialValue(): Observable<StateWithId> {
-    const latest = activityIndicators
+    const latest = this.stateBasedActivityIndicators
       .map(indicator => {
         return {
           id: indicator,
@@ -233,8 +277,8 @@ class ActivityIndicator {
   }
 
   private get changes(): Observable<StateWithId> {
-    return new Observable<StateWithId>(observer => {
-      on({ id: this.ids, ack: true }, event => {
+    const stateChanges = new Observable<StateWithId>(observer => {
+      on({ id: this.stateBasedActivityIndicators, ack: true }, event => {
         const state = {
           id: event.id,
           state: event.state,
@@ -243,6 +287,20 @@ class ActivityIndicator {
         observer.next(state);
       });
     }).pipe(share());
+
+    return merge(stateChanges, ...this.customActivityIndicators);
+  }
+
+  private get stateBasedActivityIndicators(): string[] {
+    return this.ids
+      .filter(id => typeof id === 'string')
+      .map(id => id.toString());
+  }
+
+  private get customActivityIndicators(): Observable<StateWithId>[] {
+    return this.ids
+      .filter(id => typeof id === 'function')
+      .map((factory: () => Observable<StateWithId>) => factory());
   }
 }
 
