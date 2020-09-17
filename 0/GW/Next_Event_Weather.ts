@@ -44,6 +44,8 @@ const states = {
     type: 'string',
     role: index => `weather.icon.forecast.${index}`,
     source: index => `${weatherSource}.Summary.WeatherIconURL_d${index + 1}`,
+    read: _index =>
+      'val.startsWith("http://") ? val.replace("http://", "https://") : val',
   },
   temp_min: {
     type: 'number',
@@ -108,7 +110,7 @@ channels.forEach((channel, index) => {
       unit: def['unit'],
       alias: {
         id: def.source(index),
-        read: 'val',
+        read: (def['read'] && def['read'](index)) || 'val',
       },
     };
 
