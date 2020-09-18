@@ -2,6 +2,9 @@
   "name": "iobroker-scripts",
   "version": "0.0.1",
   "description": "ioBroker Scripts",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "got": "^11.6.2",
     "rxjs": "^6.6.2"
@@ -10,7 +13,8 @@
     "@types/got": "^9.6.11",
     "@types/node": "^10.17.26",
     "prettier": "^2.0.5",
-    "requests": "^0.3.0"
+    "requests": "^0.3.0",
+    "typescript": "^3.9.7"
   },
   "author": "Alexander Groß <agross@therightstuff.de>",
   "license": "ISC"
