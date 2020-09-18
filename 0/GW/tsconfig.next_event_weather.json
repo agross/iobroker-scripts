@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.json",
+  "files": ["Next_Event_Weather.ts"],
+  "compilerOptions": {
+    "composite": true
+  }
+}

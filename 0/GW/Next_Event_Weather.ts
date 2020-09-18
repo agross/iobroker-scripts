@@ -7,6 +7,8 @@
 // https://github.com/iobroker-community-adapters/ioBroker.accuweather/issues/15
 // https://github.com/ioBroker/ioBroker.type-detector/pull/8
 
+/// <reference path="../../javascript.d.ts" />
+
 import got from 'got';
 
 const locationSource = '0_userdata.0.GW.Next Event.location';
@@ -127,13 +129,13 @@ async function searchLocationKey(
   location: string,
 ): Promise<any[]> {
   try {
-    return ((await got
+    return await got
       .get('http://dataservice.accuweather.com/locations/v1/search', {
         cache: httpRequestCache,
         retry: 0,
         searchParams: { apikey: apiKey, q: location },
       })
-      .json<any[]>()) as unknown) as any[];
+      .json();
   } catch (e) {
     log(e.response.body, 'error');
     return [];

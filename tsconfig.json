@@ -3,6 +3,7 @@
   "exclude": ["*"],
   "references": [
     { "path": "./0/Automation/tsconfig.alarm.json" },
-    { "path": "./0/Automation/tsconfig.influxdb_config.json" }
+    { "path": "./0/Automation/tsconfig.influxdb_config.json" },
+    { "path": "./0/GW/tsconfig.next_event_weather.json" }
   ]
 }
