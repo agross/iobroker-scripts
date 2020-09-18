@@ -1,5 +1,11 @@
 import { concat, EMPTY, Observable, of } from 'rxjs';
-import { filter, share, tap } from 'rxjs/operators';
+import {
+  distinctUntilKeyChanged,
+  filter,
+  scan,
+  share,
+  tap,
+} from 'rxjs/operators';
 
 interface Event {
   _IDID: string;
@@ -7,7 +13,7 @@ interface Event {
   _end: Date;
   event: string; // Summary.
   _section: string; // Description.
-  location: Date;
+  location: string;
   _calName: string;
 }
 
@@ -128,6 +134,29 @@ const subscriptions = Object.entries(channels).map(([channel, eventFilter]) => {
   return events
     .pipe(
       filter(event => eventFilter(event)),
+      scan((closestEvent, candidate) => {
+        if (!closestEvent) {
+          // Initial candidate.
+          return candidate;
+        }
+
+        if (closestEvent._end < new Date()) {
+          // Closest event has passed.
+          return candidate;
+        }
+
+        if (closestEvent._date < candidate._date) {
+          // Candidate starts later than closest event.
+          return closestEvent;
+        }
+
+        return candidate;
+      }),
+      filter(event => event !== undefined),
+      distinctUntilKeyChanged('_IDID'),
+      tap((event: Event) => {
+        log(`New event for ${channel}: ${event.event}`);
+      }),
       tap((event: Event) => {
         Object.entries(states).forEach(([state, def]) => {
           if (def.source)
