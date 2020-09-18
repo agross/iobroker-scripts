@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.json",
+  "files": ["InfluxDB_Config.ts"],
+  "compilerOptions": {
+    "composite": true
+  }
+}

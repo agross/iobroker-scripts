@@ -1,9 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "es2018",
-    "lib": ["es2018"],
-    "module": "commonjs",
-    "sourceMap": false,
-    "outDir": "dist"
-  }
+  "extends": "./tsconfig.base.json",
+  "exclude": ["*"],
+  "references": [
+    { "path": "./0/Automation/tsconfig.alarm.json" },
+    { "path": "./0/Automation/tsconfig.influxdb_config.json" }
+  ]
 }

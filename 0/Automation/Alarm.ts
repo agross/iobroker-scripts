@@ -1,12 +1,14 @@
-import { Observable, combineLatest } from 'rxjs';
+/// <reference path="../../javascript.d.ts" />
+
+import { combineLatest, Observable } from 'rxjs';
 import {
-  share,
-  tap,
-  withLatestFrom,
+  distinctUntilChanged,
   filter,
   map,
+  share,
   startWith,
-  distinctUntilChanged,
+  tap,
+  withLatestFrom,
 } from 'rxjs/operators';
 
 const nobodyAtHome = 'nobody-at-home';

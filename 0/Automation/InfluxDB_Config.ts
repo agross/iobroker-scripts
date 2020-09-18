@@ -1,3 +1,5 @@
+/// <reference path="../../javascript.d.ts" />
+
 const dryRun: boolean = false;
 
 function deviceName(id: string, initialId?: string): string {
