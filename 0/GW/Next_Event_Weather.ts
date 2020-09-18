@@ -133,7 +133,7 @@ async function searchLocationKey(
       .get('http://dataservice.accuweather.com/locations/v1/search', {
         cache: httpRequestCache,
         retry: 0,
-        searchParams: { apikey: apiKey, q: location },
+        searchParams: { apikey: apiKey, q: location, language: 'de' },
       })
       .json<any[]>()) as unknown) as any[];
   } catch (e) {
