@@ -79,36 +79,74 @@ function channelId(channel: string): string {
   return `${channelRoot}.${channel}`;
 }
 
-Object.entries(channels).forEach(([channel, _filter]) => {
-  setObject(channelId(channel), {
-    type: 'channel',
-    common: { name: 'Next Event' },
-    native: {},
-  });
+const allStatesCreated = Object.entries(channels).map(
+  async ([channel, _filter]) => {
+    await new Promise<any>((resolve, reject) => {
+      const id = channelId(channel);
 
-  Object.entries(states).forEach(([state, def]) => {
-    const common = {
-      name: def.name,
-      read: true,
-      write: false,
-      role: 'value',
-      type: def.type as iobJS.CommonType,
-      custom: {
-        'lovelace.0': {
-          enabled: true,
-          entity: 'sensor',
-          name: `${channel} ${state}`,
+      setObject(
+        id,
+        {
+          type: 'channel',
+          common: { name: 'Next Event' },
+          native: {},
         },
-      },
-    };
+        err => {
+          if (err) {
+            log(`Error creating channel ${id}`, 'error');
+            reject(err);
+            return;
+          }
 
-    setObject(`${channelId(channel)}.${state}`, {
-      type: 'state',
-      common: common,
-      native: {},
+          log(`Created channel ${id}`);
+          resolve();
+        },
+      );
     });
-  });
-});
+
+    const statesCreated = Object.entries(states).map(async ([state, def]) => {
+      const common = {
+        name: def.name,
+        read: true,
+        write: false,
+        role: 'value',
+        type: def.type as iobJS.CommonType,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'sensor',
+            name: `${channel} ${state}`,
+          },
+        },
+      };
+
+      return new Promise<any>((resolve, reject) => {
+        const id = `${channelId(channel)}.${state}`;
+
+        setObject(
+          id,
+          {
+            type: 'state',
+            common: common,
+            native: {},
+          },
+          err => {
+            if (err) {
+              log(`Error creating state ${id}`);
+              reject(err);
+              return;
+            }
+
+            log(`Created state ${id}`);
+            resolve();
+          },
+        );
+      });
+    });
+
+    await Promise.all(statesCreated);
+  },
+);
 
 function initialEvents(): Observable<Event> {
   const table = getState(source);
@@ -130,41 +168,47 @@ const eventUpdates = new Observable<Event>(observer => {
 
 const events = concat(initialEvents(), eventUpdates);
 
-const subscriptions = Object.entries(channels).map(([channel, eventFilter]) => {
-  return events
-    .pipe(
-      filter(event => eventFilter(event)),
-      scan((closestEvent, candidate) => {
-        if (!closestEvent) {
-          // Initial candidate.
-          return candidate;
-        }
-
-        if (closestEvent._end < new Date()) {
-          // Closest event has passed.
-          return candidate;
-        }
-
-        if (closestEvent._date < candidate._date) {
-          // Candidate starts later than closest event.
-          return closestEvent;
-        }
-
+const streams = Object.entries(channels).map(([channel, eventFilter]) => {
+  return events.pipe(
+    filter(event => eventFilter(event)),
+    scan((closestEvent, candidate) => {
+      if (!closestEvent) {
+        // Initial candidate.
         return candidate;
-      }),
-      filter(event => event !== undefined),
-      distinctUntilKeyChanged('_IDID'),
-      tap((event: Event) => {
-        log(`New event for ${channel}: ${event.event}`);
-      }),
-      tap((event: Event) => {
-        Object.entries(states).forEach(([state, def]) => {
-          if (def.source)
-            setState(`${channelId(channel)}.${state}`, def.source(event), true);
-        });
-      }),
-    )
-    .subscribe();
+      }
+
+      if (closestEvent._end < new Date()) {
+        // Closest event has passed.
+        return candidate;
+      }
+
+      if (closestEvent._date < candidate._date) {
+        // Candidate starts later than closest event.
+        return closestEvent;
+      }
+
+      return candidate;
+    }),
+    filter(event => event !== undefined),
+    distinctUntilKeyChanged('_IDID'),
+    tap((event: Event) => {
+      log(`New event for ${channel}: ${event.event}`);
+    }),
+    tap((event: Event) => {
+      Object.entries(states).forEach(([state, def]) => {
+        if (def.source)
+          setState(`${channelId(channel)}.${state}`, def.source(event), true);
+      });
+    }),
+  );
 });
 
-onStop(() => subscriptions.forEach(subscription => subscription.unsubscribe()));
+Promise.all(allStatesCreated).then(() => {
+  log('Subscribing to events');
+
+  const subscriptions = streams.map(stream => stream.subscribe());
+
+  onStop(() =>
+    subscriptions.forEach(subscription => subscription.unsubscribe()),
+  );
+});
