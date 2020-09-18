@@ -3,6 +3,7 @@
     "target": "es2018",
     "lib": ["es2018"],
     "module": "commonjs",
-    "sourceMap": false
+    "sourceMap": false,
+    "outDir": "dist"
   }
 }
