@@ -142,40 +142,61 @@ async function searchLocationKey(
   }
 }
 
-on({ id: locationSource, change: 'ne', ack: true }, async location => {
-  const adapterConfigId = `system.adapter.${weatherSource}`;
-  const adapterConfig = getObject(adapterConfigId);
+function updateComputedLocation(locationName: any): Promise<any> {
+  return new Promise((resolve, reject) =>
+    setState(computedLocation, locationName, true, err => {
+      if (err) {
+        log(
+          `Could not set computed location '${locationName}': ${err}`,
+          'error',
+        );
+        reject(err);
+        return;
+      }
 
-  // Get AccuWeather location from address.
-  let searchResult = await searchLocationKey(
-    adapterConfig.native.apiKey,
-    location.state.val,
+      log(`Updated computed location: ${locationName}`);
+      resolve();
+    }),
   );
+}
 
-  if (!searchResult.length) {
-    log(`No location ID for ${location.state.val}`, 'error');
-    return;
-  }
-
-  const locationKey = searchResult[0].Key;
-  extendObject(adapterConfigId, { native: { loKey: locationKey } }, err => {
-    if (err) {
-      log(`Could not set new location key '${locationKey}': ${err}`, 'error');
+on(
+  { id: locationSource, change: 'ne', ack: true },
+  async (location: iobJS.ChangedStateObject<string>) => {
+    const eventLocation = location.state.val;
+    if (!eventLocation.length) {
+      log(`No location for event ${location.id}`);
+      await updateComputedLocation('');
       return;
     }
 
-    log(`Updated location key: ${locationKey}`);
+    const adapterConfigId = `system.adapter.${weatherSource}`;
+    const adapterConfig = getObject(adapterConfigId);
 
-    setState(`${weatherSource}.updateDaily`, true, false);
-  });
+    // Get AccuWeather location from address.
+    let searchResult = await searchLocationKey(
+      adapterConfig.native.apiKey,
+      eventLocation,
+    );
 
-  const locationName = searchResult[0].LocalizedName;
-  setState(computedLocation, locationName, true, err => {
-    if (err) {
-      log(`Could not set computed location '${locationName}': ${err}`, 'error');
+    if (!searchResult.length) {
+      log(`No location ID for ${location.state.val}`, 'error');
       return;
     }
 
-    log(`Updated computed location: ${locationName}`);
-  });
-});
+    const locationKey = searchResult[0].Key;
+    extendObject(adapterConfigId, { native: { loKey: locationKey } }, err => {
+      if (err) {
+        log(`Could not set new location key '${locationKey}': ${err}`, 'error');
+        return;
+      }
+
+      log(`Updated location key: ${locationKey}`);
+
+      setState(`${weatherSource}.updateDaily`, true, false);
+    });
+
+    const locationName = searchResult[0].LocalizedName;
+    updateComputedLocation(locationName);
+  },
+);
