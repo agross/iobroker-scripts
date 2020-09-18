@@ -143,21 +143,43 @@ async function searchLocationKey(
 }
 
 function updateComputedLocation(locationName: any): Promise<any> {
-  return new Promise((resolve, reject) =>
+  const inUserData = new Promise((resolve, reject) =>
     setState(computedLocation, locationName, true, err => {
       if (err) {
         log(
-          `Could not set computed location '${locationName}': ${err}`,
+          `Could not set computed location '${locationName}' in user data: ${err}`,
           'error',
         );
         reject(err);
         return;
       }
 
-      log(`Updated computed location: ${locationName}`);
+      log(`Updated computed location in user data: ${locationName}`);
       resolve();
     }),
   );
+
+  const inWeatherForecast = new Promise((resolve, reject) =>
+    extendObject(
+      lovelaceCompatibleWeatherDevice,
+      { common: { smartName: locationName } },
+      err => {
+        if (err) {
+          log(
+            `Could not set computed location '${locationName}' in weather forecast: ${err}`,
+            'error',
+          );
+          reject(err);
+          return;
+        }
+
+        log(`Updated computed location in weather forecast: ${locationName}`);
+        resolve();
+      },
+    ),
+  );
+
+  return Promise.all([inUserData, inWeatherForecast]);
 }
 
 on(
