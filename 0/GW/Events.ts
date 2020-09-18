@@ -42,7 +42,7 @@ const states = {
     },
   },
   computed_location: {
-    name: 'Computed event location (e.g. from API)',
+    name: 'Computed event location',
     type: 'string',
     source: undefined,
   },
