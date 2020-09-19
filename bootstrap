@@ -1,3 +1,10 @@
 #!/usr/bin/env sh
 
-wget -O javascript.d.ts https://raw.githubusercontent.com/ioBroker/ioBroker.javascript/master/lib/javascript.d.ts
+target=iobroker.d.ts
+
+wget -O "$target" https://raw.githubusercontent.com/ioBroker/ioBroker.javascript/master/lib/javascript.d.ts
+
+printf '%bPlease comment or remove the "console" declaration in %s!%b\n' \
+      '\e[1;31m' \
+       "$target" \
+       '\e[0m'

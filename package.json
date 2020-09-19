@@ -9,7 +9,8 @@
   "devDependencies": {
     "@types/got": "^9.6.11",
     "@types/node": "^10.17.26",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "requests": "^0.3.0"
   },
   "author": "Alexander Groß <agross@therightstuff.de>",
   "license": "ISC"
