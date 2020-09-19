@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.json",
+  "files": ["../../../iobroker.d.ts", "../../global/Object_Creator.ts", "WOL_AXL.ts"],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "../../"
+  }
+}

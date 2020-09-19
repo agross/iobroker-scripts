@@ -70,7 +70,7 @@ class Cycle implements IFeature {
       }),
     );
 
-    return [off, next].reduce((acc, $) => {
+    return [off, next].reduce((acc, $: Observable<any>) => {
       acc.add($.subscribe());
       return acc;
     }, new Subscription());

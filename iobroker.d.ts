@@ -564,8 +564,8 @@ declare global {
 	// available functions in the sandbox
 	// =======================================================
 
-	// The already pre-loaded request module
-	const request: typeof import("request");
+	// // The already pre-loaded request module
+	// const request: typeof import("request");
 
 	/**
 	 * The instance number of the JavaScript adapter this script runs in
@@ -594,18 +594,18 @@ declare global {
 	 */
 	function log(message: string, severity?: iobJS.LogLevel): void;
 
-	// console functions
-	// @ts-ignore We need this variable although it conflicts with the node typings
-	namespace console {
-		/** log message with debug level */
-		function debug(message: string): void;
-		/** log message with info level (default output level for all adapters) */
-		function info(message: string): void;
-		/** log message with warning severity */
-		function warn(message: string): void;
-		/** log message with error severity */
-		function error(message: string): void;
-	}
+	// // console functions
+	// // @ts-ignore We need this variable although it conflicts with the node typings
+	// namespace console {
+	// 	/** log message with debug level */
+	// 	function debug(message: string): void;
+	// 	/** log message with info level (default output level for all adapters) */
+	// 	function info(message: string): void;
+	// 	/** log message with warning severity */
+	// 	function warn(message: string): void;
+	// 	/** log message with error severity */
+	// 	function error(message: string): void;
+	// }
 
 	/**
 	 * Executes a system command

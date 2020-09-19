@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "ioBroker Scripts",
   "scripts": {
-    "build": "tsc --build"
+    "build": "tsc --build --verbose"
   },
   "dependencies": {
     "got": "^11.6.2",

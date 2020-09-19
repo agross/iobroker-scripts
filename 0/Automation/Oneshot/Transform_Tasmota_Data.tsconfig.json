@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.json",
+  "files": ["../../../iobroker.d.ts", "../../global/Object_Creator.ts", "Transform_Tasmota_Data.ts"],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "../../"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "files": ["../../iobroker.d.ts", "../global/Object_Creator.ts", "Utility_Room_Lights.ts"],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "../"
+  }
+}
