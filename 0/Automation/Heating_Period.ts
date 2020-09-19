@@ -13,7 +13,7 @@ schedule('0 0 1 5 *', () => {
 
 // October 1st.
 schedule('0 0 1 10 *', () => {
-  setState(heatingPeriod, false);
+  setState(heatingPeriod, true);
 
   sendTo('pushbullet', {
     message: 'Heating period started',
