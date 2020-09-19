@@ -81,30 +81,18 @@ function channelId(channel: string): string {
 
 const allStatesCreated = Object.entries(channels).map(
   async ([channel, _filter]) => {
-    await new Promise<any>((resolve, reject) => {
-      const id = channelId(channel);
+    const id = channelId(channel);
 
-      setObject(
-        id,
-        {
-          type: 'channel',
-          common: { name: 'Next Event' },
-          native: {},
-        },
-        err => {
-          if (err) {
-            log(`Error creating channel ${id}`, 'error');
-            reject(err);
-            return;
-          }
-
-          log(`Created channel ${id}`);
-          resolve();
-        },
-      );
+    await setObjectAsync(id, {
+      type: 'channel',
+      common: { name: 'Next Event' },
+      native: {},
     });
+    log(`Created channel ${id}`);
 
     const statesCreated = Object.entries(states).map(async ([state, def]) => {
+      const id = `${channelId(channel)}.${state}`;
+
       const common = {
         name: def.name,
         read: true,
@@ -120,31 +108,15 @@ const allStatesCreated = Object.entries(channels).map(
         },
       };
 
-      return new Promise<any>((resolve, reject) => {
-        const id = `${channelId(channel)}.${state}`;
-
-        setObject(
-          id,
-          {
-            type: 'state',
-            common: common,
-            native: {},
-          },
-          err => {
-            if (err) {
-              log(`Error creating state ${id}`);
-              reject(err);
-              return;
-            }
-
-            log(`Created state ${id}`);
-            resolve();
-          },
-        );
+      await setObjectAsync(id, {
+        type: 'state',
+        common: common,
+        native: {},
       });
+      log(`Created state ${id}`);
     });
 
-    await Promise.all(statesCreated);
+    return Promise.all(statesCreated);
   },
 );
 
