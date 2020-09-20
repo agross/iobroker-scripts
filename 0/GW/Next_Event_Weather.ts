@@ -16,11 +16,6 @@ const computedLocation = '0_userdata.0.GW.Next Event.computed_location';
 const weatherSource = 'accuweather.0';
 const lovelaceCompatibleWeatherDevice = 'alias.0.GW.Next Event Weather';
 
-type ObjectDefinitionRoot = { [id: string]: ObjectDefinition };
-type ObjectDefinition = iobJS.Object & {
-  nested?: ObjectDefinitionRoot;
-};
-
 const objects: ObjectDefinitionRoot = {
   'Next Event Weather': {
     type: 'device',
@@ -127,39 +122,6 @@ const objects: ObjectDefinitionRoot = {
       }, {} as ObjectDefinitionRoot),
   },
 };
-
-class ObjectCreator {
-  public static async create(
-    definition: ObjectDefinitionRoot,
-    baseId: string,
-  ): Promise<void> {
-    const promises = Object.entries(definition).map(async ([id, def]) => {
-      const objectId = this.contextualId(baseId, id);
-      const data = this.definition(def);
-
-      log(`Creating ${objectId} from ${JSON.stringify(data)}`, 'debug');
-      await setObjectAsync(objectId, data);
-      log(`Created ${objectId}`);
-
-      if (def.nested) {
-        await this.create(def.nested, objectId);
-      }
-    });
-
-    await Promise.all(promises);
-  }
-
-  private static contextualId(base: string, id: string) {
-    return `${base}.${id}`;
-  }
-
-  private static definition(definition: ObjectDefinition): iobJS.Object {
-    const dup = Object.assign({} as ObjectDefinition, definition);
-    delete dup.nested;
-
-    return dup;
-  }
-}
 
 const httpRequestCache = new Map();
 
