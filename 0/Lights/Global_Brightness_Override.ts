@@ -67,10 +67,7 @@ const onLights = combineLatest(lightStates).pipe(
   map(states => {
     return states
       .filter(state => state.on)
-      .reduce((acc, curr) => {
-        acc.push(curr.id);
-        return acc;
-      }, [] as string[]);
+      .reduce((acc, curr) => acc.concat(curr.id), [] as string[]);
   }),
   distinctUntilChanged(),
   tap(lights => log(`${lights.length} lights turned on`)),
