@@ -6,6 +6,22 @@ type ObjectDefinition = iobJS.Object & {
   enumIds?: string[];
 };
 
+namespace iobJS {
+  export type AliasCommon = {
+    alias?:
+      | string
+      | {
+          read?: string;
+          write?: string;
+          id: string | { read?: string; write?: string };
+        };
+  };
+
+  export type CustomCommon = {
+    custom?: {};
+  };
+}
+
 type EnumIdsToObjects = { [id: string]: string[] };
 
 class ObjectCreator {
@@ -17,6 +33,12 @@ class ObjectCreator {
 
     await this.createObjects(definition, baseId, enums);
     await this.assignEnums(enums);
+  }
+
+  public static getEnumIds(objectId: string, ...kinds: string[]): string[] {
+    return kinds
+      .map(kind => (getObject(objectId, kind) as any).enumIds as string[])
+      .reduce((acc, ids) => acc.concat(ids));
   }
 
   private static async createObjects(
