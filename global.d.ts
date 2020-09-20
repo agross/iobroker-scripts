@@ -3,6 +3,7 @@ type ObjectDefinition = iobJS.Object & {
   // Those properties are removed before passing the object to ioBroker.
   nested?: ObjectDefinitionRoot;
   script?: any;
+  enumIds?: string[];
 };
 
 declare class ObjectCreator {

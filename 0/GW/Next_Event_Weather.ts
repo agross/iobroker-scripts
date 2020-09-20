@@ -21,6 +21,7 @@ const objects: ObjectDefinitionRoot = {
     type: 'device',
     common: { name: 'Next Event Weather' },
     native: {},
+    enumIds: ['enum.rooms.fake', 'enum.functions.funcWeather'],
     nested: [...Array(5)]
       .map((_, index) => {
         return [index, index + 1];
