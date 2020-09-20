@@ -8,13 +8,20 @@
 // https://github.com/ioBroker/ioBroker.type-detector/pull/8
 
 import got from 'got';
+import { concat, EMPTY, Observable, of } from 'rxjs';
+import {
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  share,
+  tap,
+} from 'rxjs/operators';
 
 const locationSource = '0_userdata.0.GW.Next Event.location';
 const computedLocation = '0_userdata.0.GW.Next Event.computed_location';
 const weatherSource = 'accuweather.0';
 const lovelaceCompatibleWeatherDevice = 'alias.0.GW.Next Event Weather';
 
-setObject(lovelaceCompatibleWeatherDevice, {
+const deviceCreated = setObjectAsync(lovelaceCompatibleWeatherDevice, {
   type: 'device',
   common: { name: 'Next Event Weather' },
   native: {},
@@ -91,16 +98,19 @@ const states = {
   },
 };
 
-channels.forEach((channel, index) => {
+const allStatesCreated = channels.map(async (channel, index) => {
   const day = index + 1;
 
-  setObject(channel, {
+  await setObjectAsync(channel, {
     type: 'channel',
     common: { name: `Day ${day}` },
     native: {},
   });
+  log(`Created channel ${channel}`);
 
-  Object.entries(states).forEach(([state, def]) => {
+  const statesCreated = Object.entries(states).map(async ([state, def]) => {
+    const id = `${channel}.${state}`;
+
     const common = {
       name: '',
       read: true,
@@ -114,111 +124,119 @@ channels.forEach((channel, index) => {
       },
     };
 
-    setObject(`${channel}.${state}`, {
+    await setObjectAsync(id, {
       type: 'state',
       common: common,
       native: {},
     });
+
+    log(`Created state ${id}`);
   });
+
+  return Promise.all(statesCreated);
 });
 
 const httpRequestCache = new Map();
 
-async function searchLocationKey(
+async function searchLocation(
   apiKey: string,
   location: string,
-): Promise<any[]> {
+): Promise<[string, string]> {
   try {
-    return ((await got
+    const result = ((await got
       .get('http://dataservice.accuweather.com/locations/v1/search', {
         cache: httpRequestCache,
         retry: 0,
         searchParams: { apikey: apiKey, q: location, language: 'de' },
       })
       .json<any[]>()) as unknown) as any[];
+
+    if (!result.length) {
+      log(`No location ID for ${location}`, 'error');
+      return;
+    }
+
+    const key = result[0].Key;
+    const name = result[0].LocalizedName;
+
+    return [key, name];
   } catch (e) {
     log(e.response.body, 'error');
-    return [];
+    return [undefined, undefined];
   }
 }
 
-function updateComputedLocation(locationName: any): Promise<any> {
-  const inUserData = new Promise((resolve, reject) =>
-    setState(computedLocation, locationName, true, err => {
-      if (err) {
-        log(
-          `Could not set computed location '${locationName}' in user data: ${err}`,
-          'error',
-        );
-        reject(err);
-        return;
-      }
+async function updateComputedLocation(locationName: any): Promise<void> {
+  await setStateAsync(computedLocation, locationName, true);
 
-      log(`Updated computed location in user data: ${locationName}`);
-      resolve();
-    }),
-  );
+  log(`Updated computed location in user data: ${locationName}`);
 
-  const inWeatherForecast = new Promise((resolve, reject) =>
-    extendObject(
-      lovelaceCompatibleWeatherDevice,
-      { common: { smartName: locationName } },
-      err => {
-        if (err) {
-          log(
-            `Could not set computed location '${locationName}' in weather forecast: ${err}`,
-            'error',
-          );
-          reject(err);
-          return;
-        }
+  await extendObjectAsync(lovelaceCompatibleWeatherDevice, {
+    common: { smartName: locationName },
+  });
 
-        log(`Updated computed location in weather forecast: ${locationName}`);
-        resolve();
-      },
-    ),
-  );
-
-  return Promise.all([inUserData, inWeatherForecast]);
+  log(`Updated computed location in weather forecast: ${locationName}`);
 }
 
-on(
-  { id: locationSource, change: 'ne', ack: true },
-  async (location: iobJS.ChangedStateObject<string>) => {
-    const eventLocation = location.state.val;
-    if (!eventLocation.length) {
-      log(`No location for event ${location.id}`);
+function initialLocation(): Observable<string> {
+  const location = getState(locationSource);
+
+  if (location.notExist) {
+    return EMPTY;
+  }
+
+  return of(location.val);
+}
+
+const locationUpdates = new Observable<string>(observer => {
+  on({ id: locationSource, change: 'ne', ack: true }, event => {
+    observer.next(event.state.val);
+  });
+}).pipe(share());
+
+const locationChanges = concat(initialLocation(), locationUpdates).pipe(
+  distinctUntilChanged(),
+  tap(async location => {
+    if (!location.length) {
+      log(`No location for event `);
       await updateComputedLocation('');
       return;
     }
 
     const adapterConfigId = `system.adapter.${weatherSource}`;
-    const adapterConfig = getObject(adapterConfigId);
+    const adapterConfig = await getObjectAsync(adapterConfigId);
 
-    // Get AccuWeather location from address.
-    let searchResult = await searchLocationKey(
-      adapterConfig.native.apiKey,
-      eventLocation,
-    );
-
-    if (!searchResult.length) {
-      log(`No location ID for ${location.state.val}`, 'error');
+    if (adapterConfig.common['custom']?.address === location) {
+      log(`Location did not change: ${location}`);
       return;
     }
 
-    const locationKey = searchResult[0].Key;
-    extendObject(adapterConfigId, { native: { loKey: locationKey } }, err => {
-      if (err) {
-        log(`Could not set new location key '${locationKey}': ${err}`, 'error');
-        return;
-      }
+    // Get AccuWeather location from address.
+    let [locationKey, locationName] = await searchLocation(
+      adapterConfig.native.apiKey,
+      location,
+    );
 
-      log(`Updated location key: ${locationKey}`);
+    if (!locationKey || !locationName) {
+      return;
+    }
 
-      setState(`${weatherSource}.updateDaily`, true, false);
+    await extendObjectAsync(adapterConfigId, {
+      native: { loKey: locationKey },
+      common: { custom: { address: location } },
     });
+    log(`Updated location key: ${locationKey}`);
 
-    const locationName = searchResult[0].LocalizedName;
-    updateComputedLocation(locationName);
-  },
+    await setStateAsync(`${weatherSource}.updateDaily`, true, false);
+
+    await updateComputedLocation(locationName);
+  }),
 );
+
+Promise.all([deviceCreated, allStatesCreated]).then(() => {
+  log('Subscribing to events');
+
+  const subscription = locationChanges.subscribe();
+
+  onStop(() => subscription.unsubscribe());
+});
