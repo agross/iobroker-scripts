@@ -20,105 +20,125 @@ interface Event {
 const source = 'ical.0.data.table';
 const channelRoot = '0_userdata.0.GW';
 
-const channels: { [channel: string]: (event: Event) => boolean } = {
-  'Next Event': event => {
-    return event.event.includes('GROSSWEBER');
-  },
-  'Journey From Home': event => {
-    return event.event.startsWith('Journey from Leipzig');
-  },
-  'Journey To Home': event => {
-    return /^Journey\s.*to Leipzig$/.test(event.event);
-  },
-};
+function getObjectDefinition(): ObjectDefinitionRoot {
+  const stateObjects: (channel: string) => ObjectDefinitionRoot = channel => {
+    const channelStates: { [id: string]: any } = {
+      summary: {
+        name: 'Event summary',
+        type: 'string',
+        script: {
+          source: (event: Event) => {
+            return event.event;
+          },
+        },
+      },
+      location: {
+        name: 'Event location',
+        type: 'string',
+        script: {
+          source: (event: Event) => {
+            return event.location;
+          },
+        },
+      },
+      computed_location: {
+        name: 'Computed event location',
+        type: 'string',
+      },
+      start: {
+        name: 'Start date',
+        type: 'object',
+        script: {
+          source: (event: Event) => {
+            return new Date(event._date);
+          },
+        },
+      },
+      end: {
+        name: 'End date',
+        type: 'object',
+        script: {
+          source: (event: Event) => {
+            return new Date(event._end);
+          },
+        },
+      },
+      description: {
+        name: 'Event description',
+        type: 'string',
+        script: {
+          source: (event: Event) => {
+            return event._section;
+          },
+        },
+      },
+    };
 
-const states = {
-  summary: {
-    name: 'Event summary',
-    type: 'string',
-    source: (event: Event) => {
-      return event.event;
+    return Object.entries(channelStates).reduce((acc, [stateId, def]) => {
+      acc[stateId] = {
+        type: 'state',
+        common: {
+          name: def.name,
+          read: true,
+          write: false,
+          role: 'value',
+          type: def.type as iobJS.CommonType,
+          custom: {
+            'lovelace.0': {
+              enabled: true,
+              entity: 'sensor',
+              name: `${channel} ${def.name}`,
+            },
+          },
+        },
+        native: {},
+        script: def.script,
+      };
+
+      return acc;
+    }, {});
+  };
+
+  return {
+    'Next Event': {
+      type: 'channel',
+      common: { name: 'Next Event' },
+      native: {},
+      nested: stateObjects('Next Event'),
+      script: {
+        filter: (event: Event) => {
+          return event.event.includes('GROSSWEBER');
+        },
+      },
     },
-  },
-  location: {
-    name: 'Event location',
-    type: 'string',
-    source: (event: Event) => {
-      return event.location;
+    'Journey From Home': {
+      type: 'channel',
+      common: { name: 'Next Journey From Home' },
+      native: {},
+      nested: stateObjects('Next Journey From Home'),
+      script: {
+        filter: (event: Event) => {
+          return event.event.startsWith('Journey from Leipzig');
+        },
+      },
     },
-  },
-  computed_location: {
-    name: 'Computed event location',
-    type: 'string',
-    source: undefined,
-  },
-  start: {
-    name: 'Start date',
-    type: 'object',
-    source: (event: Event) => {
-      return new Date(event._date);
+    'Journey To Home': {
+      type: 'channel',
+      common: { name: 'Next Journey To Home' },
+      native: {},
+      nested: stateObjects('Next Journey To Home'),
+      script: {
+        filter: (event: Event) => {
+          return /^Journey\s.*to Leipzig$/.test(event.event);
+        },
+      },
     },
-  },
-  end: {
-    name: 'End date',
-    type: 'object',
-    source: (event: Event) => {
-      return new Date(event._end);
-    },
-  },
-  description: {
-    name: 'Event description',
-    type: 'string',
-    source: (event: Event) => {
-      return event._section;
-    },
-  },
-};
+  };
+}
 
 function channelId(channel: string): string {
   return `${channelRoot}.${channel}`;
 }
-
-const allStatesCreated = Object.entries(channels).map(
-  async ([channel, _filter]) => {
-    const id = channelId(channel);
-
-    await setObjectAsync(id, {
-      type: 'channel',
-      common: { name: 'Next Event' },
-      native: {},
-    });
-    log(`Created channel ${id}`);
-
-    const statesCreated = Object.entries(states).map(async ([state, def]) => {
-      const id = `${channelId(channel)}.${state}`;
-
-      const common = {
-        name: def.name,
-        read: true,
-        write: false,
-        role: 'value',
-        type: def.type as iobJS.CommonType,
-        custom: {
-          'lovelace.0': {
-            enabled: true,
-            entity: 'sensor',
-            name: `${channel} ${state}`,
-          },
-        },
-      };
-
-      await setObjectAsync(id, {
-        type: 'state',
-        common: common,
-        native: {},
-      });
-      log(`Created state ${id}`);
-    });
-
-    return Promise.all(statesCreated);
-  },
-);
 
 function initialEvents(): Observable<Event> {
   const table = getState(source);
@@ -140,9 +160,11 @@ const eventUpdates = new Observable<Event>(observer => {
 
 const events = concat(initialEvents(), eventUpdates);
 
-const streams = Object.entries(channels).map(([channel, eventFilter]) => {
+const objects = getObjectDefinition();
+
+const streams = Object.entries(objects).map(([channel, def]) => {
   return events.pipe(
-    filter(event => eventFilter(event)),
+    filter(event => def.script.filter(event)),
     scan((closestEvent, candidate) => {
       if (!closestEvent) {
         // Initial candidate.
@@ -167,15 +189,26 @@ const streams = Object.entries(channels).map(([channel, eventFilter]) => {
       log(`New event for ${channel}: ${event.event}`);
     }),
     tap((event: Event) => {
-      Object.entries(states).forEach(([state, def]) => {
-        if (def.source)
-          setState(`${channelId(channel)}.${state}`, def.source(event), true);
+      Object.entries(def.nested).forEach(([state, def]) => {
+        if (!def.script?.source) {
+          log(`No source for ${state}`);
+          return;
+        }
+
+        const stateId = `${channelId(channel)}.${state}`;
+        const value = def.script.source(event);
+
+        setState(stateId, value, true, err => {
+          if (err) {
+            log(`Could not set ${stateId} to ${value}: ${err}`, 'error');
+          }
+        });
       });
     }),
   );
 });
 
-Promise.all(allStatesCreated).then(() => {
+ObjectCreator.create(objects, channelRoot).then(() => {
   log('Subscribing to events');
 
   const subscriptions = streams.map(stream => stream.subscribe());
