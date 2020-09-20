@@ -193,10 +193,12 @@ const locationChanges = concat(initialLocation(), locationUpdates).pipe(
     const adapterConfigId = `system.adapter.${weatherSource}`;
     const adapterConfig = await getObjectAsync(adapterConfigId);
 
-    if (adapterConfig.common['custom']?.address === location) {
+    const previousLocation = adapterConfig.common['custom']?.address;
+    if (previousLocation === location) {
       log(`Location did not change: ${location}`);
       return;
     }
+    log(`Location changed from "${previousLocation}" to "${location}"`);
 
     // Get AccuWeather location from address.
     let [locationKey, locationName] = await searchLocation(
