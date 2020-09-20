@@ -9,132 +9,157 @@
 
 import got from 'got';
 import { concat, EMPTY, Observable, of } from 'rxjs';
-import {
-  distinctUntilChanged,
-  distinctUntilKeyChanged,
-  share,
-  tap,
-} from 'rxjs/operators';
+import { distinctUntilChanged, share, tap } from 'rxjs/operators';
 
 const locationSource = '0_userdata.0.GW.Next Event.location';
 const computedLocation = '0_userdata.0.GW.Next Event.computed_location';
 const weatherSource = 'accuweather.0';
 const lovelaceCompatibleWeatherDevice = 'alias.0.GW.Next Event Weather';
 
-const deviceCreated = setObjectAsync(lovelaceCompatibleWeatherDevice, {
-  type: 'device',
-  common: { name: 'Next Event Weather' },
-  native: {},
-});
+type ObjectDefinitionRoot = { [id: string]: ObjectDefinition };
+type ObjectDefinition = iobJS.Object & {
+  nested?: ObjectDefinitionRoot;
+};
 
-const channels = [...Array(5)].map((_, i) => {
-  return `${lovelaceCompatibleWeatherDevice}.Day_${i}`;
-});
+const objects: ObjectDefinitionRoot = {
+  'Next Event Weather': {
+    type: 'device',
+    common: { name: 'Next Event Weather' },
+    native: {},
+    nested: [...Array(5)]
+      .map((_, index) => {
+        return [index, index + 1];
+      })
+      .reduce<ObjectDefinitionRoot>((acc, [day, humanizedDay]) => {
+        const state: (def: any) => ObjectDefinition = def => {
+          const common = {
+            name: '',
+            read: true,
+            write: false,
+            role: def.role,
+            type: def.type as iobJS.CommonType,
+            unit: def.unit,
+            alias: {
+              id: def.source,
+              read: def.read || 'val',
+            },
+          };
 
-const states = {
-  location: {
-    type: 'string',
-    role: _index => 'location',
-    source: _index => '0_userdata.0.GW.Next Event.computed_location',
-  },
-  date: {
-    type: 'string',
-    role: index => `date.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.DateTime_d${index + 1}`,
-  },
-  state: {
-    type: 'string',
-    role: index => `weather.state.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.WeatherText_d${index + 1}`,
-  },
-  icon: {
-    type: 'string',
-    role: index => `weather.icon.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.WeatherIconURL_d${index + 1}`,
-    read: _index =>
-      'val.startsWith("http://") ? val.replace("http://", "https://") : val',
-  },
-  temp_min: {
-    type: 'number',
-    unit: '°C',
-    role: index => `value.temperature.min.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.TempMin_d${index + 1}`,
-  },
-  temp_max: {
-    type: 'number',
-    unit: '°C',
-    role: index => `value.temperature.max.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.TempMax_d${index + 1}`,
-  },
-  precipitation_chance: {
-    type: 'number',
-    unit: '%',
-    role: index => `value.precipitation.forecast.${index}`,
-    source: index =>
-      `${weatherSource}.Summary.PrecipitationProbability_d${index + 1}`,
-  },
-  precipitation: {
-    type: 'number',
-    unit: 'mm',
-    role: index => `value.precipitation.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.TotalLiquidVolume_d${index + 1}`,
-  },
-  wind_direction_bearing: {
-    type: 'number',
-    unit: '°',
-    role: index => `value.direction.wind.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.WindDirection_d${index + 1}`,
-  },
-  wind_direction: {
-    type: 'string',
-    role: index => `weather.direction.wind.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.WindDirectionStr_d${index + 1}`,
-  },
-  wind_speed: {
-    type: 'number',
-    unit: 'km/h',
-    role: index => `value.speed.wind.forecast.${index}`,
-    source: index => `${weatherSource}.Summary.WindSpeed_d${index + 1}`,
+          return {
+            type: 'state',
+            common: common,
+            native: {},
+          };
+        };
+
+        acc[`Day_${humanizedDay}`] = {
+          type: 'channel',
+          common: { name: `Day ${humanizedDay}` },
+          native: {},
+          nested: {
+            location: state({
+              type: 'string',
+              role: 'location',
+              source: '0_userdata.0.GW.Next Event.computed_location',
+            }),
+            date: state({
+              type: 'string',
+              role: `date.forecast.${day}`,
+              source: `${weatherSource}.Summary.DateTime_d${humanizedDay}`,
+            }),
+            state: state({
+              type: 'string',
+              role: `weather.state.forecast.${day}`,
+              source: `${weatherSource}.Summary.WeatherText_d${humanizedDay}`,
+            }),
+            icon: state({
+              type: 'string',
+              role: `weather.icon.forecast.${day}`,
+              source: `${weatherSource}.Summary.WeatherIconURL_d${humanizedDay}`,
+              read:
+                'val.startsWith("http://") ? val.replace("http://", "https://") : val',
+            }),
+            temp_min: state({
+              type: 'number',
+              unit: '°C',
+              role: `value.temperature.min.forecast.${day}`,
+              source: `${weatherSource}.Summary.TempMin_d${humanizedDay}`,
+            }),
+            temp_max: state({
+              type: 'number',
+              unit: '°C',
+              role: `value.temperature.max.forecast.${day}`,
+              source: `${weatherSource}.Summary.TempMax_d${humanizedDay}`,
+            }),
+            precipitation_chance: state({
+              type: 'number',
+              unit: '%',
+              role: `value.precipitation.forecast.${day}`,
+              source: `${weatherSource}.Summary.PrecipitationProbability_d${humanizedDay}`,
+            }),
+            precipitation: state({
+              type: 'number',
+              unit: 'mm',
+              role: `value.precipitation.forecast.${day}`,
+              source: `${weatherSource}.Summary.TotalLiquidVolume_d${humanizedDay}`,
+            }),
+            wind_direction_bearing: state({
+              type: 'number',
+              unit: '°',
+              role: `value.direction.wind.forecast.${day}`,
+              source: `${weatherSource}.Summary.WindDirection_d${humanizedDay}`,
+            }),
+            wind_direction: state({
+              type: 'string',
+              role: `weather.direction.wind.forecast.${day}`,
+              source: `${weatherSource}.Summary.WindDirectionStr_d${humanizedDay}`,
+            }),
+            wind_speed: state({
+              type: 'number',
+              unit: 'km/h',
+              role: `value.speed.wind.forecast.${day}`,
+              source: `${weatherSource}.Summary.WindSpeed_d${humanizedDay}`,
+            }),
+          },
+        };
+
+        return acc;
+      }, {} as ObjectDefinitionRoot),
   },
 };
 
-const allStatesCreated = channels.map(async (channel, index) => {
-  const day = index + 1;
+class ObjectCreator {
+  public static async create(
+    definition: ObjectDefinitionRoot,
+    baseId: string,
+  ): Promise<void> {
+    const promises = Object.entries(definition).map(async ([id, def]) => {
+      const objectId = this.contextualId(baseId, id);
+      const data = this.definition(def);
 
-  await setObjectAsync(channel, {
-    type: 'channel',
-    common: { name: `Day ${day}` },
-    native: {},
-  });
-  log(`Created channel ${channel}`);
+      log(`Creating ${objectId} from ${JSON.stringify(data)}`, 'debug');
+      await setObjectAsync(objectId, data);
+      log(`Created ${objectId}`);
 
-  const statesCreated = Object.entries(states).map(async ([state, def]) => {
-    const id = `${channel}.${state}`;
-
-    const common = {
-      name: '',
-      read: true,
-      write: false,
-      role: def.role(index),
-      type: def.type as iobJS.CommonType,
-      unit: def['unit'],
-      alias: {
-        id: def.source(index),
-        read: (def['read'] && def['read'](index)) || 'val',
-      },
-    };
-
-    await setObjectAsync(id, {
-      type: 'state',
-      common: common,
-      native: {},
+      if (def.nested) {
+        await this.create(def.nested, objectId);
+      }
     });
 
-    log(`Created state ${id}`);
-  });
+    await Promise.all(promises);
+  }
 
-  return Promise.all(statesCreated);
-});
+  private static contextualId(base: string, id: string) {
+    return `${base}.${id}`;
+  }
+
+  private static definition(definition: ObjectDefinition): iobJS.Object {
+    const dup = Object.assign({} as ObjectDefinition, definition);
+    delete dup.nested;
+
+    return dup;
+  }
+}
 
 const httpRequestCache = new Map();
 
@@ -233,9 +258,8 @@ const locationChanges = concat(initialLocation(), locationUpdates).pipe(
   }),
 );
 
-Promise.all([deviceCreated, allStatesCreated]).then(() => {
+ObjectCreator.create(objects, 'alias.0.GW').then(() => {
   log('Subscribing to events');
-
   const subscription = locationChanges.subscribe();
 
   onStop(() => subscription.unsubscribe());
