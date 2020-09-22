@@ -208,12 +208,64 @@ const streams = Object.entries(objects).map(([channel, def]) => {
   );
 });
 
+async function removePastEvents(): Promise<void> {
+  const now = new Date();
+
+  const noValueForType = (type: iobJS.CommonType) => {
+    switch (type) {
+      case 'string':
+        return '';
+      case 'number':
+        return 0;
+      default:
+        return null;
+    }
+  };
+
+  const channelsCleared = Object.entries(objects).map(
+    async ([channel, def]) => {
+      const stateId = `${channelId(channel)}.end`;
+      const end = await getStateAsync(stateId);
+      if (end.notExist || !end.val) {
+        return;
+      }
+
+      const eventEnd = new Date(end.val);
+      log(`${eventEnd} < ${now}`);
+      if (eventEnd >= now) {
+        return;
+      }
+
+      log(`${channel}: Event is over, clearing states`);
+      const statesCleared = Object.entries(def.nested).map(
+        async ([state, def]) => {
+          const stateId = `${channelId(channel)}.${state}`;
+
+          await setStateAsync(
+            stateId,
+            noValueForType((def.common as iobJS.StateCommon).type),
+          );
+        },
+      );
+
+      await Promise.all(statesCleared);
+    },
+  );
+
+  await Promise.all(channelsCleared);
+}
+
 ObjectCreator.create(objects, channelRoot).then(() => {
   log('Subscribing to events');
 
   const subscriptions = streams.map(stream => stream.subscribe());
 
-  onStop(() =>
-    subscriptions.forEach(subscription => subscription.unsubscribe()),
-  );
+  const removalOfPastEvents = schedule('*/5 * * * *', async () => {
+    await removePastEvents();
+  });
+
+  onStop(() => {
+    clearSchedule(removalOfPastEvents);
+    subscriptions.forEach(subscription => subscription.unsubscribe());
+  });
 });
