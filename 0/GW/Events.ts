@@ -129,7 +129,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       nested: stateObjects('Next Journey To Home'),
       script: {
         filter: (event: Event) => {
-          return /^Journey\s.*to Leipzig$/.test(event.event);
+          return /^Journey\s.*to Leipzig/.test(event.event);
         },
       },
     },
