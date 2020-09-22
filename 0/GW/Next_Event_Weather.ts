@@ -194,9 +194,16 @@ const locationChanges = concat(initialLocation(), locationUpdates).pipe(
     const adapterConfigId = `system.adapter.${weatherSource}`;
     const adapterConfig = await getObjectAsync(adapterConfigId);
 
-    const previousLocation = adapterConfig.common['custom']?.address;
+    const previousLocation = adapterConfig.common['custom']?.location;
     if (previousLocation === location) {
       log(`Location did not change: ${location}`);
+
+      const previousLocationName =
+        adapterConfig.common['custom']?.computed_location;
+      if (previousLocationName) {
+        await updateComputedLocation(previousLocationName);
+      }
+
       return;
     }
     log(`Location changed from "${previousLocation}" to "${location}"`);
@@ -213,7 +220,9 @@ const locationChanges = concat(initialLocation(), locationUpdates).pipe(
 
     await extendObjectAsync(adapterConfigId, {
       native: { loKey: locationKey },
-      common: { custom: { address: location } },
+      common: {
+        custom: { location: location, computed_location: locationName },
+      },
     });
     log(`Updated location key: ${locationKey}`);
 
