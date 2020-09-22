@@ -131,6 +131,8 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         tilt_level: {
           alias: {
             id: { read: `${device}.3.LEVEL_2`, write: `${device}.4.LEVEL_2` },
+            read: 'Math.round(val)',
+            write: 'val',
           },
           role: 'value.blind',
           type: 'number',
