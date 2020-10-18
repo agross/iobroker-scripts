@@ -73,7 +73,7 @@ const onLights = combineLatest(lightStates).pipe(
   tap(lights => log(`${lights.length} lights turned on`)),
 );
 
-brightnessChanges
+const subscription = brightnessChanges
   .pipe(
     withLatestFrom(onLights),
     filter(([_level, lightsToSet]) => lightsToSet.length > 0),
@@ -85,8 +85,12 @@ brightnessChanges
       lightsToSet.forEach(light => {
         const brightness = light.replace(/.state$/, '.brightness');
 
-        setState(brightness, level);
+        if (existsState(brightness)) {
+          setState(brightness, level);
+        }
       });
     }),
   )
   .subscribe();
+
+onStop(() => subscription.unsubscribe());
