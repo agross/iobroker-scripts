@@ -231,7 +231,6 @@ async function removePastEvents(): Promise<void> {
       }
 
       const eventEnd = new Date(end.val);
-      log(`${eventEnd} < ${now}`);
       if (eventEnd >= now) {
         return;
       }
