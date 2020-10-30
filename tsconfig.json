@@ -29,6 +29,9 @@
       "path": "0/Automation/TV_Idle.tsconfig.json"
     },
     {
+      "path": "0/Automation/Washing_Machine.tsconfig.json"
+    },
+    {
       "path": "0/GW/Events.tsconfig.json"
     },
     {
