@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "files": ["../../iobroker.d.ts", "../global/Object_Creator.ts", "Remotes.ts"],
+  "files": ["../../iobroker.d.ts", "../global/Notifier.ts", "../global/Object_Creator.ts", "Remotes.ts"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "../"

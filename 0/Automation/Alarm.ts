@@ -20,14 +20,6 @@ createState(nobodyAtHome, undefined, {
   role: 'indicator.state',
 });
 
-function notify(message: string): void {
-  sendTo('pushbullet', {
-    message: message,
-    title: 'ioBroker',
-    type: 'note',
-  });
-}
-
 const presenceIndicatorChanges = presenceIndicators.map(indicator => {
   return new Observable<boolean>(observer => {
     on({ id: indicator, change: 'ne' }, event => {
@@ -73,7 +65,7 @@ const alarmEnabledNotifications = alarmEnabledChanges
       const message = `Alarm ${enabled ? 'enabled' : 'disabled'}`;
 
       log(message);
-      notify(message);
+      Notifier.notify(message);
     }),
   )
   .subscribe();
@@ -86,7 +78,7 @@ const alarmNotifications = alarmTriggers
     map(device => `Alarm triggered by ${device}`),
     tap(message => {
       log(message, 'warn');
-      notify(message);
+      Notifier.notify(message);
     }),
   )
   .subscribe();

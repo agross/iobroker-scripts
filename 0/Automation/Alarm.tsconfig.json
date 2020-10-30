@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "files": ["../../iobroker.d.ts", "../global/Object_Creator.ts", "Alarm.ts"],
+  "files": ["../../iobroker.d.ts", "../global/Notifier.ts", "../global/Object_Creator.ts", "Alarm.ts"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "../"

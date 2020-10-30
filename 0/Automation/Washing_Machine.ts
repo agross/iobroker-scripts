@@ -13,14 +13,6 @@ const workingThreshold = 5;
 const finishedThreshold = 20;
 const device = 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power';
 
-function notify(message: string): void {
-  sendTo('pushbullet', {
-    message: message,
-    title: 'ioBroker',
-    type: 'note',
-  });
-}
-
 const powerUsage = new Observable<number>(observer => {
   on({ id: device, ack: true }, event => {
     observer.next(event.state.val as number);
@@ -44,7 +36,7 @@ const done = running
   .pipe(
     // Maybe exhaustMap is better?
     switchMap(_ => notRunning.pipe(first())),
-    tap(_ => notify(`Washing machine has finished`)),
+    tap(_ => Notifier.notify(`Washing machine has finished`)),
   )
   .subscribe();
 
