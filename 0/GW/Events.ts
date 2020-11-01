@@ -1,9 +1,12 @@
-import { concat, EMPTY, Observable, of } from 'rxjs';
+import { concat, EMPTY, iif, Observable, of } from 'rxjs';
 import {
+  distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
+  map,
   scan,
   share,
+  switchMap,
   tap,
 } from 'rxjs/operators';
 
@@ -140,131 +143,133 @@ function channelId(channel: string): string {
   return `${channelRoot}.${channel}`;
 }
 
-function initialEvents(): Observable<Event> {
-  const table = getState(source);
+class Stream<T> {
+  private state: string;
+  private _stream: Observable<T>;
 
-  if (table.notExist) {
-    return EMPTY;
+  constructor(state: string) {
+    this.state = state;
+
+    this._stream = concat(this.initialValue, this.changes).pipe(
+      distinctUntilChanged(),
+    );
   }
 
-  return of(...(table.val as Event[]));
+  public get stream(): Observable<T> {
+    return this._stream;
+  }
+
+  private get initialValue(): Observable<T> {
+    const current = getState(this.state);
+    if (current.notExist) {
+      return EMPTY;
+    }
+
+    return of(current.val);
+  }
+
+  private get changes(): Observable<T> {
+    return new Observable<T>(observer => {
+      on({ id: this.state, ack: true }, event => {
+        observer.next(event.state.val);
+      });
+    }).pipe(share());
+  }
 }
 
-const eventUpdates = new Observable<Event>(observer => {
-  on({ id: source, change: 'ne', ack: true }, event => {
-    const events: Event[] = event.state.val;
-
-    events.forEach(e => observer.next(e));
-  });
-}).pipe(share());
-
-const events = concat(initialEvents(), eventUpdates);
+const events = new Stream<Event[]>(source).stream;
 
 const objects = getObjectDefinition();
 
 const streams = Object.entries(objects).map(([channel, def]) => {
   return events.pipe(
-    filter(event => def.script.filter(event)),
-    scan((closestEvent, candidate) => {
-      if (!closestEvent) {
-        // Initial candidate.
-        return candidate;
-      }
+    map(events => events.filter(event => def.script.filter(event))),
+    switchMap(events => {
+      const removeEventData = of(1).pipe(
+        tap(_ => {
+          log(`No events for ${channel}, removing`);
 
-      if (closestEvent._end < new Date()) {
-        // Closest event has passed.
-        return candidate;
-      }
+          Object.entries(def.nested).forEach(([state, def]) => {
+            const stateId = `${channelId(channel)}.${state}`;
+            const type = (def.common as iobJS.StateCommon).type;
+            let value = undefined;
 
-      if (closestEvent._date < candidate._date) {
-        // Candidate starts later than closest event.
-        return closestEvent;
-      }
+            switch (type) {
+              case 'string':
+                value = '';
+                break;
 
-      return candidate;
-    }),
-    filter(event => event !== undefined),
-    distinctUntilKeyChanged('_IDID'),
-    tap((event: Event) => {
-      log(`New event for ${channel}: ${event.event}`);
-    }),
-    tap((event: Event) => {
-      Object.entries(def.nested).forEach(([state, def]) => {
-        if (!def.script?.source) {
-          log(`No source for ${state}`);
-          return;
-        }
+              case 'object':
+                value = null;
+                break;
 
-        const stateId = `${channelId(channel)}.${state}`;
-        const value = def.script.source(event);
+              default:
+                throw new Error(`Unsupported type ${type} for ${stateId}`);
+            }
 
-        setState(stateId, value, true, err => {
-          if (err) {
-            log(`Could not set ${stateId} to ${value}: ${err}`, 'error');
+            setState(stateId, value, true, err => {
+              if (err) {
+                log(`Could not reset ${stateId} to ${value}: ${err}`, 'error');
+              }
+            });
+          });
+        }),
+      );
+
+      const setEventData = of(...events).pipe(
+        scan((closestEvent, candidate) => {
+          if (!closestEvent) {
+            // Initial candidate.
+            return candidate;
           }
-        });
-      });
+
+          if (closestEvent._end < new Date()) {
+            // Closest event has passed.
+            return candidate;
+          }
+
+          if (closestEvent._date < candidate._date) {
+            // Candidate starts later than closest event.
+            return closestEvent;
+          }
+
+          return candidate;
+        }),
+        filter(event => event !== undefined),
+        distinctUntilKeyChanged('_IDID'),
+        tap((event: Event) => {
+          log(`New event for ${channel}: ${event.event}`);
+        }),
+        tap((event: Event) => {
+          Object.entries(def.nested).forEach(([state, def]) => {
+            if (!def.script?.source) {
+              log(`No source for ${state}`);
+              return;
+            }
+
+            const stateId = `${channelId(channel)}.${state}`;
+            const value = def.script.source(event);
+
+            setState(stateId, value, true, err => {
+              if (err) {
+                log(`Could not set ${stateId} to ${value}: ${err}`, 'error');
+              }
+            });
+          });
+        }),
+      );
+
+      return iif(() => events.length === 0, removeEventData, setEventData);
     }),
   );
 });
-
-async function removePastEvents(): Promise<void> {
-  const now = new Date();
-
-  const noValueForType = (type: iobJS.CommonType) => {
-    switch (type) {
-      case 'string':
-        return '';
-      case 'number':
-        return 0;
-      default:
-        return null;
-    }
-  };
-
-  const channelsCleared = Object.entries(objects).map(
-    async ([channel, def]) => {
-      const stateId = `${channelId(channel)}.end`;
-      const end = await getStateAsync(stateId);
-      if (end.notExist || !end.val) {
-        return;
-      }
-
-      const eventEnd = new Date(end.val);
-      if (eventEnd >= now) {
-        return;
-      }
-
-      log(`${channel}: Event is over, clearing states`);
-      const statesCleared = Object.entries(def.nested).map(
-        async ([state, def]) => {
-          const stateId = `${channelId(channel)}.${state}`;
-
-          await setStateAsync(
-            stateId,
-            noValueForType((def.common as iobJS.StateCommon).type),
-          );
-        },
-      );
-
-      await Promise.all(statesCleared);
-    },
-  );
-
-  await Promise.all(channelsCleared);
-}
 
 ObjectCreator.create(objects, channelRoot).then(() => {
   log('Subscribing to events');
 
   const subscriptions = streams.map(stream => stream.subscribe());
 
-  const removalOfPastEvents = schedule('*/5 * * * *', async () => {
-    await removePastEvents();
-  });
-
   onStop(() => {
-    clearSchedule(removalOfPastEvents);
     subscriptions.forEach(subscription => subscription.unsubscribe());
   });
 });
