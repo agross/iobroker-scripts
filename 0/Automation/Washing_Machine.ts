@@ -9,9 +9,10 @@ import {
   tap,
 } from 'rxjs/operators';
 
-const workingThreshold = 5;
+const workingThreshold = 10;
 const finishedThreshold = 20;
 const device = 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power';
+const powerState = 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.state';
 
 const powerUsage = new Observable<number>(observer => {
   on({ id: device, ack: true }, event => {
@@ -25,18 +26,18 @@ const running = powerUsage.pipe(
 );
 
 const notRunning = powerUsage.pipe(
-  // Last 6 values, 10 s intervals, e.g. [3, 69, 4, 77, 3, 3, 2, 2, 2, 2]
+  // Last 6 values, 10 s intervals, e.g. [3, 3, 3, 2, 2, 2]
   bufferCount(6),
-  tap(watts => log(`Buffer ${watts}`, 'debug')),
+  tap(watts => log(`Buffer ${watts}`)),
   map(watts => watts.reduce((acc, x) => acc + x, 0)),
   filter(watts => watts < finishedThreshold),
 );
 
 const done = running
   .pipe(
-    // Maybe exhaustMap is better?
     switchMap(_ => notRunning.pipe(first())),
     tap(_ => Notifier.notify(`Washing machine has finished`)),
+    tap(_ => setState(powerState, false)),
   )
   .subscribe();
 
