@@ -9,29 +9,61 @@ import {
 } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 
-const globalBrightnessOverride = 'global-brightness-override';
+const override = ['0_userdata.0', 'global-brightness-override'];
+const state = override.join('.');
+const remote = 'hm-rpc.1.000B5A49A07F8D';
+const change = 5;
 
-createState(globalBrightnessOverride, undefined, {
-  name: 'Global brightness override',
-  type: 'number',
-  role: 'level.dimmer',
-  common: {
-    custom: {
-      'lovelace.0': {
-        enabled: true,
-        entity: 'input_number',
+await ObjectCreator.create(
+  {
+    [override[1]]: {
+      type: 'state',
+      common: {
         name: 'Global brightness override',
-        mode: 'number',
-        min: 0,
-        max: 100,
-        step: 1,
-      },
+        type: 'number',
+        def: 50,
+        read: true,
+        write: true,
+        role: 'level.dimmer',
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'input_number',
+            name: 'Global brightness override',
+            min: 0,
+            max: 100,
+            step: 1,
+          },
+        },
+      } as iobJS.StateCommon & iobJS.CustomCommon,
+      native: {},
     },
   },
+  override[0],
+);
+
+on({ id: `${remote}.3.PRESS_LONG`, ack: true }, _ => {
+  let brightness = getState(state).val - change;
+
+  if (brightness < 1) {
+    brightness = 1;
+  }
+
+  setState(state, brightness);
+});
+
+on({ id: `${remote}.4.PRESS_LONG`, ack: true }, _ => {
+  let brightness = getState(state).val + change;
+
+  if (brightness > 100) {
+    brightness = 100;
+  }
+
+  setState(state, brightness);
 });
 
 const brightnessChanges = new Observable<number>(observer => {
-  on({ id: globalBrightnessOverride, change: 'ne' }, event => {
+  on({ id: state, change: 'ne' }, event => {
     observer.next(event.state.val as number);
   });
 }).pipe(

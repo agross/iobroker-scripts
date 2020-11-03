@@ -54,9 +54,6 @@
     },
     {
       "path": "0/Lights/Utility_Room_Lights.tsconfig.json"
-    },
-    {
-      "path": "0/Remote_Control/Living_Room_Global_Brightness.tsconfig.json"
     }
   ]
 }
