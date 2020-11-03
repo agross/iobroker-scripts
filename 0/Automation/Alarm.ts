@@ -9,16 +9,28 @@ import {
   distinctUntilChanged,
 } from 'rxjs/operators';
 
-const nobodyAtHome = 'nobody-at-home';
+const alarmEnabled = ['0_userdata.0', 'alarm-enabled'];
 const hmPresence = 'hm-rega.0.950';
 const presenceIndicators = ['ping.0.iobroker.172_16_0_15'];
 const triggerAlarmOn = ['zigbee.1.00158d00045bedc5.opened'];
 
-createState(nobodyAtHome, undefined, {
-  name: 'Flag indicating that nobody is home',
-  type: 'boolean',
-  role: 'indicator.state',
-});
+await ObjectCreator.create(
+  {
+    [alarmEnabled[1]]: {
+      type: 'state',
+      common: {
+        name: 'Flag indicating that the alarm is enabled',
+        type: 'boolean',
+        def: false,
+        read: true,
+        write: true,
+        role: 'indicator.state',
+      },
+      native: {},
+    },
+  },
+  alarmEnabled[0],
+);
 
 const presenceIndicatorChanges = presenceIndicators.map(indicator => {
   return new Observable<boolean>(observer => {
@@ -39,16 +51,25 @@ const presence = combineLatest(presenceIndicatorChanges)
       const delayByMinutes = present ? 0 : 5;
 
       setStateDelayed(hmPresence, present, delayByMinutes * 60 * 1000, true);
-      setStateDelayed(nobodyAtHome, !present, delayByMinutes * 60 * 1000, true);
+      setStateDelayed(
+        alarmEnabled.join('.'),
+        !present,
+        delayByMinutes * 60 * 1000,
+        true,
+      );
     }),
   )
   .subscribe();
 
 const alarmEnabledChanges = new Observable<boolean>(observer => {
-  on({ id: nobodyAtHome, change: 'ne' }, event => {
+  on({ id: alarmEnabled.join('.'), change: 'ne' }, event => {
     observer.next(event.state.val);
   });
-}).pipe(startWith(getState(nobodyAtHome).val), share(), distinctUntilChanged());
+}).pipe(
+  startWith(getState(alarmEnabled.join('.')).val),
+  share(),
+  distinctUntilChanged(),
+);
 
 const alarmTriggers = new Observable<string>(observer => {
   on({ id: triggerAlarmOn, val: true, change: 'ne' }, event => {
