@@ -58,7 +58,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'input_number',
-              name: `${deviceName(stateId)} Level`,
+              name: Lovelace.id(`${deviceName(stateId)} Level`),
             },
           },
         },
@@ -81,7 +81,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'switch',
-              name: `${deviceName(stateId)}_Close`,
+              name: Lovelace.id(`${deviceName(stateId)} Close`),
             },
           },
         },
@@ -104,7 +104,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'switch',
-              name: `${deviceName(stateId)}_Open`,
+              name: Lovelace.id(`${deviceName(stateId)} Open`),
             },
           },
         },
@@ -124,7 +124,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'switch',
-              name: `${deviceName(stateId)}_Stop`,
+              name: Lovelace.id(`${deviceName(stateId)} Stop`),
             },
           },
         },
@@ -146,7 +146,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'input_number',
-              name: `${deviceName(stateId)}_Tilt_Level`,
+              name: Lovelace.id(`${deviceName(stateId)} Tilt Level`),
             },
           },
         },
@@ -169,7 +169,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'switch',
-              name: `${deviceName(stateId)}_Tilt_Close`,
+              name: Lovelace.id(`${deviceName(stateId)} Tilt Close`),
             },
           },
         },
@@ -192,7 +192,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'switch',
-              name: `${deviceName(stateId)}_Tilt_Open`,
+              name: Lovelace.id(`${deviceName(stateId)} Tilt Open`),
             },
           },
         },

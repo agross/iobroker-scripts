@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "files": ["../../iobroker.d.ts", "../global/Notifier.ts", "../global/Object_Creator.ts", "Next_Event_Weather.ts"],
+  "files": ["../../iobroker.d.ts", "../global/Lovelace.ts", "../global/Notifier.ts", "../global/Object_Creator.ts", "../global/Stream.ts", "Next_Event_Weather.ts"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "../"

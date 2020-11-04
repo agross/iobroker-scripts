@@ -90,7 +90,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             'lovelace.0': {
               enabled: true,
               entity: 'sensor',
-              name: `${channel} ${def.name}`,
+              name: Lovelace.id(`${channel} ${def.name}`),
             },
           },
         },

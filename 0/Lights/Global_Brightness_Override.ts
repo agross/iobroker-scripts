@@ -29,7 +29,7 @@ await ObjectCreator.create(
           'lovelace.0': {
             enabled: true,
             entity: 'input_number',
-            name: 'Global brightness override',
+            name: Lovelace.id('Global brightness override'),
             min: 0,
             max: 100,
             step: 1,

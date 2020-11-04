@@ -65,7 +65,7 @@ $('state[id=*.cmnd.gosund-sp111-*.POWER]').each(stateId => {
         'lovelace.0': {
           enabled: true,
           entity: lovelaceEntityType,
-          name: `${stateIdToPurpose(stateId).replace(/\s/g, '_')}_Power`,
+          name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
         },
       },
     },
