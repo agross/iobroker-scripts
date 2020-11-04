@@ -131,7 +131,7 @@ class ToggleAndFollowRemoteState implements IFeature {
 // There are two variations:
 //   1. The "any is on" state is determined by `states` states
 //
-//      If any is on, set `states` to false , otherwise set `states` to true.
+//      If any is on, set `states` to false, otherwise set `states` to true.
 //
 //   2. The "any is on" state is determined by the optional `off` states
 //
@@ -813,7 +813,7 @@ const remotes = [
       ),
     },
     cycle: {
-      off: 'scene.0.Bedroom.Lights',
+      off: 'scene.0.Lights.In_Bed',
       on: [
         'scene.0.Bedroom.Lights_Bright',
         'scene.0.Bedroom.Lights_Low',
@@ -878,7 +878,7 @@ const remotes = [
   }),
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-8',
-    toggle: { states: ['scene.0.Everything_Off'] },
+    toggle: { states: ['scene.0.Leaving_Home'] },
   }),
   new Shelly({
     device: 'mqtt.0.home.hall.power.stat.shelly1-7',
