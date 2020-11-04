@@ -28,190 +28,186 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     return device.common?.name;
   };
 
-  const shutters: ObjectDefinitionRoot = {};
-
   // HomeMatic shutters.
-  $('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}').each(
-    stateId => {
-      const device = deviceId(stateId);
+  return [
+    ...$('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}'),
+  ].reduce<ObjectDefinitionRoot>((acc, stateId) => {
+    const device = deviceId(stateId);
 
-      const deviceStates: {
-        [id: string]: iobJS.StateCommon &
-          iobJS.AliasCommon &
-          iobJS.CustomCommon;
-      } = {
-        level: {
-          alias: {
-            id: { read: `${device}.3.LEVEL`, write: `${device}.4.LEVEL` },
-            read: 'Math.round(val)',
-            write: 'val',
-          },
-          role: 'level.blind',
-          type: 'number',
-          unit: '%',
-          min: 0,
-          max: 100,
-          name: 'Level of shutters',
-          read: true,
-          write: true,
-          custom: {
-            'lovelace.0': {
-              enabled: true,
-              entity: 'input_number',
-              name: Lovelace.id(`${deviceName(stateId)} Level`),
-            },
+    const deviceStates: {
+      [id: string]: iobJS.StateCommon & iobJS.AliasCommon & iobJS.CustomCommon;
+    } = {
+      level: {
+        alias: {
+          id: { read: `${device}.3.LEVEL`, write: `${device}.4.LEVEL` },
+          read: 'Math.round(val)',
+          write: 'val',
+        },
+        role: 'level.blind',
+        type: 'number',
+        unit: '%',
+        min: 0,
+        max: 100,
+        name: 'Level of shutters',
+        read: true,
+        write: true,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'input_number',
+            name: Lovelace.id(`${deviceName(stateId)} Level`),
           },
         },
-        close: {
-          alias: {
-            id: {
-              read: `${device}.4.ACTIVITY_STATE`,
-              write: `${device}.4.LEVEL`,
-            },
-            read: `val === 2`,
-            write: 'val = 0',
+      },
+      close: {
+        alias: {
+          id: {
+            read: `${device}.4.ACTIVITY_STATE`,
+            write: `${device}.4.LEVEL`,
           },
-          role: 'button.close',
-          type: 'boolean',
-          name: 'Close shutters completely',
-          read: true,
-          write: true,
-          def: false,
-          custom: {
-            'lovelace.0': {
-              enabled: true,
-              entity: 'switch',
-              name: Lovelace.id(`${deviceName(stateId)} Close`),
-            },
+          read: `val === 2`,
+          write: 'val = 0',
+        },
+        role: 'button.close',
+        type: 'boolean',
+        name: 'Close shutters completely',
+        read: true,
+        write: true,
+        def: false,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id(`${deviceName(stateId)} Close`),
           },
         },
-        open: {
-          alias: {
-            id: {
-              read: `${device}.4.ACTIVITY_STATE`,
-              write: `${device}.4.LEVEL`,
-            },
-            read: `val === 1`,
-            write: 'val = 100',
+      },
+      open: {
+        alias: {
+          id: {
+            read: `${device}.4.ACTIVITY_STATE`,
+            write: `${device}.4.LEVEL`,
           },
-          role: 'button.open',
-          type: 'boolean',
-          name: 'Open shutters completely',
-          read: true,
-          write: true,
-          def: false,
-          custom: {
-            'lovelace.0': {
-              enabled: true,
-              entity: 'switch',
-              name: Lovelace.id(`${deviceName(stateId)} Open`),
-            },
+          read: `val === 1`,
+          write: 'val = 100',
+        },
+        role: 'button.open',
+        type: 'boolean',
+        name: 'Open shutters completely',
+        read: true,
+        write: true,
+        def: false,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id(`${deviceName(stateId)} Open`),
           },
         },
-        stop: {
-          alias: {
-            id: { read: `${device}.3.PROCESS`, write: `${device}.4.STOP` },
-            read: 'false',
-            write: 'true',
-          },
-          role: 'button.stop',
-          type: 'boolean',
-          name: 'Stop movement',
-          read: true,
-          write: true,
-          def: false,
-          custom: {
-            'lovelace.0': {
-              enabled: true,
-              entity: 'switch',
-              name: Lovelace.id(`${deviceName(stateId)} Stop`),
-            },
+      },
+      stop: {
+        alias: {
+          id: { read: `${device}.3.PROCESS`, write: `${device}.4.STOP` },
+          read: 'false',
+          write: 'true',
+        },
+        role: 'button.stop',
+        type: 'boolean',
+        name: 'Stop movement',
+        read: true,
+        write: true,
+        def: false,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id(`${deviceName(stateId)} Stop`),
           },
         },
-        tilt_level: {
-          alias: {
-            id: { read: `${device}.3.LEVEL_2`, write: `${device}.4.LEVEL_2` },
-            read: 'Math.round(val)',
-            write: 'val',
-          },
-          role: 'value.blind',
-          type: 'number',
-          unit: '%',
-          min: 0,
-          max: 100,
-          name: 'Tilt level of slats',
-          read: true,
-          write: true,
-          custom: {
-            'lovelace.0': {
-              enabled: true,
-              entity: 'input_number',
-              name: Lovelace.id(`${deviceName(stateId)} Tilt Level`),
-            },
+      },
+      tilt_level: {
+        alias: {
+          id: { read: `${device}.3.LEVEL_2`, write: `${device}.4.LEVEL_2` },
+          read: 'Math.round(val)',
+          write: 'val',
+        },
+        role: 'value.blind',
+        type: 'number',
+        unit: '%',
+        min: 0,
+        max: 100,
+        name: 'Tilt level of slats',
+        read: true,
+        write: true,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'input_number',
+            name: Lovelace.id(`${deviceName(stateId)} Tilt Level`),
           },
         },
-        tilt_close: {
-          alias: {
-            id: {
-              read: `${device}.4.ACTIVITY_STATE`,
-              write: `${device}.4.LEVEL_2`,
-            },
-            read: `val === 2`,
-            write: 'val = 0',
+      },
+      tilt_close: {
+        alias: {
+          id: {
+            read: `${device}.4.ACTIVITY_STATE`,
+            write: `${device}.4.LEVEL_2`,
           },
-          role: 'button.close',
-          type: 'boolean',
-          name: 'Tilt slats into closed position',
-          read: true,
-          write: true,
-          def: false,
-          custom: {
-            'lovelace.0': {
-              enabled: true,
-              entity: 'switch',
-              name: Lovelace.id(`${deviceName(stateId)} Tilt Close`),
-            },
+          read: `val === 2`,
+          write: 'val = 0',
+        },
+        role: 'button.close',
+        type: 'boolean',
+        name: 'Tilt slats into closed position',
+        read: true,
+        write: true,
+        def: false,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id(`${deviceName(stateId)} Tilt Close`),
           },
         },
-        tilt_open: {
-          alias: {
-            id: {
-              read: `${device}.4.ACTIVITY_STATE`,
-              write: `${device}.4.LEVEL_2`,
-            },
-            read: `val === 1`,
-            write: 'val = 100',
+      },
+      tilt_open: {
+        alias: {
+          id: {
+            read: `${device}.4.ACTIVITY_STATE`,
+            write: `${device}.4.LEVEL_2`,
           },
-          role: 'button.open',
-          type: 'boolean',
-          name: 'Tilt slats into open position',
-          read: true,
-          write: true,
-          def: false,
-          custom: {
-            'lovelace.0': {
-              enabled: true,
-              entity: 'switch',
-              name: Lovelace.id(`${deviceName(stateId)} Tilt Open`),
-            },
+          read: `val === 1`,
+          write: 'val = 100',
+        },
+        role: 'button.open',
+        type: 'boolean',
+        name: 'Tilt slats into open position',
+        read: true,
+        write: true,
+        def: false,
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id(`${deviceName(stateId)} Tilt Open`),
           },
         },
-      };
+      },
+    };
 
-      shutters[device] = {
-        type: 'device',
-        native: {},
-        common: { name: deviceName(stateId), role: 'blind' },
-        enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
-        nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
-          acc[id] = { type: 'state', native: {}, common: common };
-          return acc;
-        }, {} as ObjectDefinitionRoot),
-      };
-    },
-  );
+    acc[device] = {
+      type: 'device',
+      native: {},
+      common: { name: deviceName(stateId), role: 'blind' },
+      enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
+      nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
+        acc[id] = { type: 'state', native: {}, common: common };
+        return acc;
+      }, {} as ObjectDefinitionRoot),
+    };
 
-  return shutters;
+    return acc;
+  }, {} as ObjectDefinitionRoot);
 }
 
 ObjectCreator.create(getObjectDefinition(), 'alias.0');

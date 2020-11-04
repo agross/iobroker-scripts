@@ -22,70 +22,73 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     }
   }
 
-  const tasmotas: ObjectDefinitionRoot = {};
+  return [...$('state[id=*.cmnd.gosund-sp111-*.POWER]')].reduce(
+    (acc, stateId) => {
+      const device = deviceId(stateId);
 
-  $('state[id=*.cmnd.gosund-sp111-*.POWER]').each(stateId => {
-    const device = deviceId(stateId);
+      const lovelaceEntityType = ObjectCreator.getEnumIds(
+        stateId,
+        'functions',
+      ).includes('enum.functions.funcLight')
+        ? 'light'
+        : 'switch';
 
-    const lovelaceEntityType = ObjectCreator.getEnumIds(
-      stateId,
-      'functions',
-    ).includes('enum.functions.funcLight')
-      ? 'light'
-      : 'switch';
-
-    const deviceStates: {
-      [id: string]: iobJS.StateCommon & iobJS.AliasCommon & iobJS.CustomCommon;
-    } = {
-      power: {
-        alias: {
-          id: stateId
-            .replace('.cmnd.', '.tele.')
-            .replace(/\.POWER$/, '.SENSOR'),
-          read: 'JSON.parse(val).ENERGY.Power',
-          // No write function makes this read-only.
+      const deviceStates: {
+        [id: string]: iobJS.StateCommon &
+          iobJS.AliasCommon &
+          iobJS.CustomCommon;
+      } = {
+        power: {
+          alias: {
+            id: stateId
+              .replace('.cmnd.', '.tele.')
+              .replace(/\.POWER$/, '.SENSOR'),
+            read: 'JSON.parse(val).ENERGY.Power',
+            // No write function makes this read-only.
+          },
+          role: 'value',
+          type: 'number',
+          unit: 'W',
+          read: true,
+          write: false,
+          name: `${stateIdToPurpose(stateId)} power usage`,
         },
-        role: 'value',
-        type: 'number',
-        unit: 'W',
-        read: true,
-        write: false,
-        name: `${stateIdToPurpose(stateId)} power usage`,
-      },
-      state: {
-        alias: {
-          id: { read: stateId.replace('.cmnd.', '.stat.'), write: stateId },
-          read: 'val === "ON"',
-          write: 'val === true ? "ON" : "OFF"',
-        },
-        role: 'switch',
-        type: 'boolean',
-        read: true,
-        write: true,
-        name: `${stateIdToPurpose(stateId)} power state`,
-        custom: {
-          'lovelace.0': {
-            enabled: true,
-            entity: lovelaceEntityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
+        state: {
+          alias: {
+            id: { read: stateId.replace('.cmnd.', '.stat.'), write: stateId },
+            read: 'val === "ON"',
+            write: 'val === true ? "ON" : "OFF"',
+          },
+          role: 'switch',
+          type: 'boolean',
+          read: true,
+          write: true,
+          name: `${stateIdToPurpose(stateId)} power state`,
+          custom: {
+            'lovelace.0': {
+              enabled: true,
+              entity: lovelaceEntityType,
+              name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
+            },
           },
         },
-      },
-    };
+      };
 
-    tasmotas[device] = {
-      type: 'device',
-      native: {},
-      common: { name: stateIdToPurpose(stateId), role: 'device' },
-      enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
-      nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
-        acc[id] = { type: 'state', native: {}, common: common };
-        return acc;
-      }, {} as ObjectDefinitionRoot),
-    };
-  });
+      acc[device] = {
+        type: 'device',
+        native: {},
+        common: { name: stateIdToPurpose(stateId), role: 'device' },
+        enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
+        nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
+          acc[id] = { type: 'state', native: {}, common: common };
+          return acc;
+        }, {} as ObjectDefinitionRoot),
+      };
 
-  return tasmotas;
+      return acc;
+    },
+    {} as ObjectDefinitionRoot,
+  );
 }
 
 await ObjectCreator.create(getObjectDefinition(), 'alias.0');
