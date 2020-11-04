@@ -91,6 +91,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   );
 }
 
+export {};
 await ObjectCreator.create(getObjectDefinition(), 'alias.0');
 
 stopScript(undefined);

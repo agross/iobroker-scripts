@@ -1,46 +1,5 @@
 import { combineLatest, concat, EMPTY, Observable, of } from 'rxjs';
-import {
-  distinctUntilChanged,
-  distinctUntilKeyChanged,
-  filter,
-  map,
-  share,
-  tap,
-} from 'rxjs/operators';
-
-class Stream<T> {
-  private state: string;
-  private _stream: Observable<T>;
-
-  constructor(state: string) {
-    this.state = state;
-
-    this._stream = concat(this.initialValue, this.changes).pipe(
-      distinctUntilChanged(),
-    );
-  }
-
-  public get stream(): Observable<T> {
-    return this._stream;
-  }
-
-  private get initialValue(): Observable<T> {
-    const current = getState(this.state);
-    if (current.notExist) {
-      return EMPTY;
-    }
-
-    return of(current.val);
-  }
-
-  private get changes(): Observable<T> {
-    return new Observable<T>(observer => {
-      on({ id: this.state, ack: true }, event => {
-        observer.next(event.state.val);
-      });
-    }).pipe(share());
-  }
-}
+import { distinctUntilKeyChanged, filter, map, tap } from 'rxjs/operators';
 
 function determineScene(): string {
   let scene = 'scene.0.Bathroom.Lights_Default';

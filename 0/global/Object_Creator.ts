@@ -1,30 +1,44 @@
-type ObjectDefinitionRoot = { [id: string]: ObjectDefinition };
-type ObjectDefinition = iobJS.Object & {
-  // Those properties are removed before passing the object to ioBroker.
-  nested?: ObjectDefinitionRoot;
-  script?: any;
-  enumIds?: string[];
-};
-
-namespace iobJS {
-  export type AliasCommon = {
-    alias?:
-      | string
-      | {
-          read?: string;
-          write?: string;
-          id: string | { read?: string; write?: string };
-        };
+declare global {
+  export type ObjectDefinitionRoot = { [id: string]: ObjectDefinition };
+  export type ObjectDefinition = iobJS.Object & {
+    // Those properties are removed before passing the object to ioBroker.
+    nested?: ObjectDefinitionRoot;
+    script?: any;
+    enumIds?: string[];
   };
 
-  export type CustomCommon = {
-    custom?: {};
-  };
+  export class ObjectCreator {
+    static create(
+      definition: ObjectDefinitionRoot,
+      baseId: string,
+    ): Promise<void>;
+
+    static getEnumIds(objectId: string, ...kinds: string[]): string[];
+  }
+
+  namespace iobJS {
+    export type AliasCommon = {
+      alias?:
+        | string
+        | {
+            read?: string;
+            write?: string;
+            id: string | { read?: string; write?: string };
+          };
+    };
+
+    export type CustomCommon = {
+      custom?: {};
+    };
+  }
 }
+
+// https://github.com/ioBroker/ioBroker.javascript/issues/694#issuecomment-721675742
+export {};
 
 type EnumIdsToObjects = { [id: string]: string[] };
 
-class ObjectCreator {
+export class ObjectCreator {
   public static async create(
     definition: ObjectDefinitionRoot,
     baseId: string,
