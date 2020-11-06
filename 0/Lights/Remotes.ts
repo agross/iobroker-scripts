@@ -9,8 +9,6 @@ import {
   timeInterval,
   share,
   tap,
-  switchMap,
-  take,
 } from 'rxjs/operators';
 
 const BRIGHTNESS_CHANGE = 5;
@@ -636,15 +634,13 @@ class Shelly extends Remote {
   }
 
   private cycleStreams(config: DeviceConfig & CycleDeviceConfig): CycleStreams {
-    const shellySwitched = new Observable<iobJS.ChangedStateObject>(
-      observer => {
-        on({ id: `${config.device}.POWER`, ack: true }, event => {
-          observer.next(event);
-        });
-      },
-    ).pipe(share());
+    const shellySwitched = new Observable<string>(observer => {
+      on({ id: `${config.device}.POWER`, ack: true }, event => {
+        observer.next(event.id);
+      });
+    }).pipe(share());
 
-    const anyLightOn = new Observable<iobJS.State>(observer => {
+    const lightState = new Observable<iobJS.State>(observer => {
       on({ id: config.cycle.off, ack: true }, event =>
         observer.next(event.state),
       );
@@ -659,35 +655,26 @@ class Shelly extends Remote {
 
     const doSomething = shellySwitched.pipe(
       timeInterval(),
-      withLatestFrom(anyLightOn),
+      withLatestFrom(lightState),
     );
 
     const turnOn = doSomething.pipe(
       filter(([_, anyLightOn]) => anyLightOn === false),
-      tap(_ => {
-        log(`switch on: ${JSON.stringify(_)}`);
-      }),
+      tap(_ => log(`switch on: ${JSON.stringify(_)}`)),
     );
 
     const cycleNext = doSomething.pipe(
       filter(([_, anyLightOn]) => anyLightOn === true),
-      filter(([interval, _]) => interval.interval < 5000),
-      tap(_ => {
-        log(`switch next: ${JSON.stringify(_)}`);
-      }),
+      filter(([switched, _]) => switched.interval < 5000),
+      tap(_ => log(`switch next: ${JSON.stringify(_)}`)),
     );
 
     const next = merge(turnOn, cycleNext);
 
-    const turnOff = next.pipe(
-      debounceTime(5000),
-      tap(_ => {
-        log(`5 secs after on or cycle: ${JSON.stringify(_)}`);
-      }),
-      switchMap(_ => shellySwitched.pipe(take(1))),
-      tap(_ => {
-        log(`switch off: ${JSON.stringify(_)}`);
-      }),
+    const turnOff = doSomething.pipe(
+      filter(([_, anyLightOn]) => anyLightOn === true),
+      filter(([switched, _]) => switched.interval >= 5000),
+      tap(_ => log(`switch off: ${JSON.stringify(_)}`)),
     );
 
     return {
