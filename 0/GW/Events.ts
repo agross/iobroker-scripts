@@ -230,12 +230,9 @@ const streams = Object.entries(objects).map(([channel, def]) => {
   );
 });
 
-ObjectCreator.create(objects, channelRoot).then(() => {
-  log('Subscribing to events');
+await ObjectCreator.create(objects, channelRoot);
 
-  const subscriptions = streams.map(stream => stream.subscribe());
+log('Subscribing to events');
+const subscriptions = streams.map(stream => stream.subscribe());
 
-  onStop(() => {
-    subscriptions.forEach(subscription => subscription.unsubscribe());
-  });
-});
+onStop(() => subscriptions.forEach(subscription => subscription.unsubscribe()));

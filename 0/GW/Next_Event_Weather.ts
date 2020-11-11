@@ -232,9 +232,9 @@ const locationChanges = concat(initialLocation(), locationUpdates).pipe(
   }),
 );
 
-ObjectCreator.create(objects, 'alias.0.GW').then(() => {
-  log('Subscribing to events');
-  const subscription = locationChanges.subscribe();
+await ObjectCreator.create(objects, 'alias.0.GW');
 
-  onStop(() => subscription.unsubscribe());
-});
+log('Subscribing to events');
+const subscription = locationChanges.subscribe();
+
+onStop(() => subscription.unsubscribe());

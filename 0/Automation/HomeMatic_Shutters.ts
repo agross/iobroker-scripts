@@ -210,7 +210,8 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   }, {} as ObjectDefinitionRoot);
 }
 
-ObjectCreator.create(getObjectDefinition(), 'alias.0');
+export {};
+await ObjectCreator.create(getObjectDefinition(), 'alias.0');
 
 // When only tilt is set we also need to set the current level, otherwise the
 // new tilt is not applied.
