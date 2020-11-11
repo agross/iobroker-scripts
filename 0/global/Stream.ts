@@ -3,29 +3,31 @@ import { distinctUntilChanged, share } from 'rxjs/operators';
 
 declare global {
   export class Stream<T> {
-    constructor(state: string);
+    constructor(stateOrSubscribeOptions: string | iobJS.SubscribeOptions);
     get stream(): Observable<T>;
   }
 }
 
 export class Stream<T> {
-  private state: string;
   private _stream: Observable<T>;
 
-  constructor(state: string) {
-    this.state = state;
-
-    this._stream = concat(this.initialValue, this.changes).pipe(
-      distinctUntilChanged(),
-    );
+  constructor(stateOrSubscribeOptions: string | iobJS.SubscribeOptions) {
+    if (typeof stateOrSubscribeOptions === 'string') {
+      this._stream = concat(
+        this.initialValue(stateOrSubscribeOptions),
+        this.stateChanges(stateOrSubscribeOptions),
+      );
+    } else {
+      this._stream = this.changes(stateOrSubscribeOptions);
+    }
   }
 
   public get stream(): Observable<T> {
-    return this._stream;
+    return this._stream.pipe(distinctUntilChanged());
   }
 
-  private get initialValue(): Observable<T> {
-    const current = getState(this.state);
+  private initialValue(state: string): Observable<T> {
+    const current = getState(state);
     if (current.notExist) {
       return EMPTY;
     }
@@ -33,9 +35,17 @@ export class Stream<T> {
     return of(current.val);
   }
 
-  private get changes(): Observable<T> {
+  private stateChanges(state: string): Observable<T> {
     return new Observable<T>(observer => {
-      on({ id: this.state, ack: true }, event => {
+      on({ id: state, ack: true }, event => {
+        observer.next(event.state.val);
+      });
+    }).pipe(share());
+  }
+
+  private changes(subscribeOptions: iobJS.SubscribeOptions): Observable<T> {
+    return new Observable<T>(observer => {
+      on(subscribeOptions, event => {
         observer.next(event.state.val);
       });
     }).pipe(share());

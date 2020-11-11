@@ -1,3 +1,17 @@
+import { merge } from 'rxjs';
+import {
+  bufferToggle,
+  distinctUntilChanged,
+  filter,
+  map,
+  share,
+  switchAll,
+  take,
+  tap,
+  windowToggle,
+  withLatestFrom,
+} from 'rxjs/operators';
+
 function getObjectDefinition(): ObjectDefinitionRoot {
   const deviceId: (id: string, initialId?: string) => string = (
     id,
@@ -210,31 +224,65 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   }, {} as ObjectDefinitionRoot);
 }
 
-export {};
 await ObjectCreator.create(getObjectDefinition(), 'alias.0');
 
-// When only tilt is set we also need to set the current level, otherwise the
-// new tilt is not applied.
-$('state[id=*.4.LEVEL_2]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL_2}').each(
-  stateId => {
-    on({ id: stateId, change: 'ne', ack: false }, event => {
-      const setLevel = event.id.replace(/_2$/, '');
-      const getLevel = setLevel.replace('.4.', '.3.');
+// When only slats tilt is set we also need to re-set the current level,
+// otherwise the new slats tilt is not applied. Wait until the shutter stopped
+// moving before reapplying the level.
+const subscriptions = [
+  ...$('state[id=*.4.LEVEL_2]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL_2}'),
+].map(slatsState => {
+  const device = slatsState.replace(/\.4\.LEVEL_2$/, '');
+  const stableState = `${device}.4.PROCESS`;
+  const setShutterLevel = `${device}.4.LEVEL`;
+  const getShutterLevel = `${device}.3.LEVEL`;
 
-      var currentLevel = getState(getLevel).val;
+  const shutter = new Stream<number>(getShutterLevel).stream;
 
-      log(`Tilt level: ${event.state.val}, reapplying level ${currentLevel}`);
-      setState(setLevel, currentLevel);
-    });
-  },
-);
+  const desiredSlats = new Stream<number>({
+    id: slatsState,
+    change: 'ne',
+    ack: false,
+  }).stream.pipe(
+    tap(slats => log(`${device} desired slats ${slats}`)),
+    share(),
+  );
 
-// Maybe need to set booleans to false when state becomes stable (i.e. shutter
-// stopped moving).
-on({ id: /^hm-rpc\..*\.4\.PROCESS$/, change: 'ne', ack: true }, event => {
-  if (event.state.val !== 0) {
-    return;
-  }
+  const stable = new Stream<number>(stableState).stream.pipe(
+    map(val => val === 0),
+    distinctUntilChanged(),
+    tap(stable => log(`${device} stable: ${stable}`)),
+    share(),
+  );
 
-  log(`${event.id} stopped moving`);
+  const open = stable.pipe(filter(b => b));
+  const closed = stable.pipe(filter(b => !b));
+
+  const allowedSlatChanges = desiredSlats.pipe(
+    windowToggle(open, _ => closed.pipe(take(1))),
+    switchAll(),
+  );
+
+  const bufferedSlatChangesWhileUnstable = desiredSlats.pipe(
+    bufferToggle(closed, _ => open.pipe(take(1))),
+    map(buffered => buffered.pop()),
+    filter(slats => Number.isInteger(slats)),
+  );
+
+  return merge(...[allowedSlatChanges, bufferedSlatChangesWhileUnstable])
+    .pipe(
+      withLatestFrom(shutter, (slats, shutter) => {
+        return { slats: slats, shutter: shutter };
+      }),
+      tap(level => {
+        log(
+          `${device} is stable, setting slats to ${level.slats} by resetting shutter to ${level.shutter}`,
+        );
+
+        setState(setShutterLevel, level.shutter);
+      }),
+    )
+    .subscribe();
 });
+
+onStop(() => subscriptions.forEach(subscription => subscription.unsubscribe()));
