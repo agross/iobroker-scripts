@@ -26,6 +26,9 @@
       "path": "0/Automation/Oneshot/WOL_AXL.tsconfig.json"
     },
     {
+      "path": "0/Automation/Shutters.tsconfig.json"
+    },
+    {
       "path": "0/Automation/TV_Idle.tsconfig.json"
     },
     {
