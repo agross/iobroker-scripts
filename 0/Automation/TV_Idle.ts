@@ -16,6 +16,9 @@ import {
   debounceTime,
   withLatestFrom,
   filter,
+  mapTo,
+  throttle,
+  scan,
 } from 'rxjs/operators';
 
 const activityIndicators = [
@@ -325,12 +328,37 @@ const timerDisabledNotifications = timerDisabled
 
 const activity = new ActivityIndicator(...activityIndicators).stream;
 
+function throttleDistinct<T>(
+  duration: number,
+  equals: (a: T, b: T) => boolean = (a, b) => a === b,
+) {
+  return (source: Observable<T>) => {
+    return source.pipe(
+      map(x => {
+        const obj = { val: x, time: Date.now(), keep: true };
+        return obj;
+      }),
+      scan((acc, cur) => {
+        const diff = cur.time - acc.time;
+
+        const isSame = equals(acc.val, cur.val);
+        return diff > duration || (diff < duration && !isSame)
+          ? { ...cur, keep: true }
+          : { ...acc, keep: false };
+      }),
+      filter(x => x.keep),
+      map(x => x.val),
+    );
+  };
+}
+
 const activityLog = activity
   .pipe(
     withLatestFrom(tv.stream),
     filter(([_state, tvOn]) => tvOn),
-    map(([state, _tvOn]) => state),
-    tap(x => log(`Activity: ${x.id}`)),
+    map(([state, _tvOn]) => state.id),
+    throttleDistinct(60 * 1000),
+    tap(x => log(`Activity: ${x}`)),
   )
   .subscribe();
 
