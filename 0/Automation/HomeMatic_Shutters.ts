@@ -13,10 +13,7 @@ import {
 } from 'rxjs/operators';
 
 function getObjectDefinition(): ObjectDefinitionRoot {
-  const deviceId: (id: string, initialId?: string) => string = (
-    id,
-    initialId?,
-  ) => {
+  function deviceId(id: string, initialId?: string): string {
     const _deviceId = id.replace(/\.[^.]*$/, '');
     if (_deviceId == id) {
       return initialId;
@@ -30,9 +27,9 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     }
 
     return _deviceId;
-  };
+  }
 
-  const deviceName: (id: string) => string = (id: string) => {
+  function deviceName(id: string): string {
     const device = getObject(deviceId(id));
 
     if (!device) {
@@ -40,7 +37,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     }
 
     return device.common?.name;
-  };
+  }
 
   // HomeMatic shutters.
   return [
