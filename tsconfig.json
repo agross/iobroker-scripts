@@ -20,6 +20,9 @@
       "path": "0/Automation/Oneshot/InfluxDB_Config.tsconfig.json"
     },
     {
+      "path": "0/Automation/Oneshot/Media_Player_Alias.tsconfig.json"
+    },
+    {
       "path": "0/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"
     },
     {
