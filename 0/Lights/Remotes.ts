@@ -825,6 +825,7 @@ const remotes = [
       on: [
         'scene.0.Living Room.Lights_Bright',
         'scene.0.Living Room.Lights_TV',
+        'scene.0.Living Room.Lights_Reading',
       ],
     },
   }),
