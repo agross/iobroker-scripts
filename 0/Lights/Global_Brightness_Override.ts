@@ -6,6 +6,7 @@ import {
   map,
   withLatestFrom,
   filter,
+  distinctUntilKeyChanged,
 } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 
@@ -63,7 +64,7 @@ on({ id: `${remote}.4.PRESS_LONG`, ack: true }, _ => {
 });
 
 const brightnessChanges = new Observable<number>(observer => {
-  on({ id: state, change: 'ne' }, event => {
+  on({ id: state, ack: false }, event => {
     observer.next(event.state.val as number);
   });
 }).pipe(
@@ -77,22 +78,19 @@ interface LightState {
   on: boolean;
 }
 
-const lightStates: Observable<LightState>[] = [];
+const lightStates: Observable<LightState>[] = [
+  ...$('state[role=switch][id=*.state](functions=funcLight)'),
+].map(light => {
+  log(`Monitoring ${light} (${getState(light).val ? 'on' : 'off'})`);
 
-$('state[role=switch][id=*.state](functions=funcLight)').each(light => {
-  log(`Monitoring ${light}`);
-
-  const stateChanges = new Observable<LightState>(observer => {
-    on({ id: light, change: 'ne' }, event => {
+  return new Observable<LightState>(observer => {
+    on({ id: light, ack: true }, event => {
       observer.next({ id: light, on: event.state.val as boolean });
     });
   }).pipe(
     startWith({ id: light, on: getState(light).val as boolean }),
-    share(),
-    distinctUntilChanged(),
+    distinctUntilChanged((x, y) => JSON.stringify(x) === JSON.stringify(y)),
   );
-
-  lightStates.push(stateChanges);
 });
 
 const onLights = combineLatest(lightStates).pipe(
@@ -101,17 +99,26 @@ const onLights = combineLatest(lightStates).pipe(
       .filter(state => state.on)
       .reduce((acc, curr) => acc.concat(curr.id), [] as string[]);
   }),
-  distinctUntilChanged(),
-  tap(lights => log(`${lights.length} lights turned on`)),
+  distinctUntilChanged((x, y) => x.sort().join() === y.sort().join()),
 );
 
-const subscription = brightnessChanges
+const logOnLights = onLights
+  .pipe(
+    tap(lights =>
+      log(`${lights.length} lights turned on: ${lights.sort().join(', ')}`),
+    ),
+  )
+  .subscribe();
+
+const setBrightness = brightnessChanges
   .pipe(
     withLatestFrom(onLights),
     filter(([_level, lightsToSet]) => lightsToSet.length > 0),
     tap(([level, lightsToSet]) => {
       log(
-        `Setting brightness ${level} on ${lightsToSet.length} devices: ${lightsToSet}`,
+        `Setting brightness ${level} on ${
+          lightsToSet.length
+        } devices: ${lightsToSet.join(', ')}`,
       );
 
       lightsToSet.forEach(light => {
@@ -125,4 +132,58 @@ const subscription = brightnessChanges
   )
   .subscribe();
 
-onStop(() => subscription.unsubscribe());
+interface LightBrightness {
+  id: string;
+  brightness: number;
+}
+
+const lightBrightnesses: Observable<LightBrightness>[] = [
+  ...$('state[role=level.dimmer][id=*.brightness](functions=funcLight)'),
+].map(brightness => {
+  log(`Monitoring ${brightness} (${getState(brightness).val})`);
+
+  return new Observable<LightBrightness>(observer => {
+    on({ id: brightness, ack: true }, event => {
+      observer.next({ id: brightness, brightness: event.state.val as number });
+    });
+  }).pipe(
+    startWith({
+      id: brightness,
+      brightness: getState(brightness).val as number,
+    }),
+    distinctUntilKeyChanged('brightness'),
+  );
+});
+
+const minimumBrightnessOfOnLights = combineLatest([
+  combineLatest(lightBrightnesses),
+  onLights,
+])
+  .pipe(
+    map(([brightnesses, onLights]) => {
+      return { on: onLights, brightnesses: brightnesses };
+    }),
+    map(lights =>
+      lights.on
+        .map(on =>
+          lights.brightnesses.find(
+            b => b.id.replace(/\.brightness$/, '.state') === on,
+          ),
+        )
+        .filter(b => !!b),
+    ),
+    filter(brightnesses => brightnesses.length > 0),
+    map(brightnesses => Math.min(...brightnesses.map(b => b.brightness))),
+    distinctUntilChanged(),
+    tap(min => {
+      log(`Minimum brightness among on lights: ${min}`);
+      setState(state, min, true);
+    }),
+  )
+  .subscribe();
+
+onStop(() =>
+  [setBrightness, minimumBrightnessOfOnLights, logOnLights].forEach(x =>
+    x.unsubscribe(),
+  ),
+);
