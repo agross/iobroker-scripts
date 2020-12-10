@@ -823,9 +823,10 @@ const remotes = [
     cycle: {
       off: 'scene.0.Living Room.Lights',
       on: [
-        'scene.0.Living Room.Lights_Bright',
+        'scene.0.Living Room.Lights_Cozy',
         'scene.0.Living Room.Lights_TV',
         'scene.0.Living Room.Lights_Reading',
+        'scene.0.Living Room.Lights_Bright',
       ],
     },
   }),
