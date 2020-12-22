@@ -131,7 +131,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
   });
 
   // Lights.
-  $('state[id=zigbee.*.state](functions=funcLight)').each(id => {
+  $('state[id=zigbee.*.state](functions=Light)').each(id => {
     const expect = {
       enabled: true,
       changesOnly: false,

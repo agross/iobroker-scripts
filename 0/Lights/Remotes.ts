@@ -772,7 +772,7 @@ const remotes = [
       lights: DimmableLights.for(
         ...new ObjectsWithStateQuery({
           rooms: 'Kitchen',
-          functions: 'funcLight',
+          functions: 'Light',
         }).values(),
       ),
     },
@@ -795,7 +795,7 @@ const remotes = [
       lights: DimmableLights.for(
         ...new ObjectsWithStateQuery({
           rooms: 'Bedroom',
-          functions: 'funcLight',
+          functions: 'Light',
         }).values(),
       ),
     },
@@ -816,7 +816,7 @@ const remotes = [
       lights: DimmableLights.for(
         ...new ObjectsWithStateQuery({
           rooms: 'Living Room',
-          functions: 'funcLight',
+          functions: 'Light',
         }).values(),
       ),
     },
