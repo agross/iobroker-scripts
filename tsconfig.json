@@ -35,6 +35,9 @@
       "path": "0/Automation/TV_Idle.tsconfig.json"
     },
     {
+      "path": "0/Automation/TV_Idle_Monitor.tsconfig.json"
+    },
+    {
       "path": "0/Automation/Washing_Machine.tsconfig.json"
     },
     {
