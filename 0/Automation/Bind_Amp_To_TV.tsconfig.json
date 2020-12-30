@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "files": ["../../iobroker.d.ts", "../global/Lovelace.ts", "../global/Notifier.ts", "../global/Object_Creator.ts", "../global/Stream.ts", "Bind_Amp_To_TV.ts"],
+  "files": ["../../iobroker.d.ts", "../global/Lovelace.ts", "../global/Notify.ts", "../global/Object_Creator.ts", "../global/Stream.ts", "Bind_Amp_To_TV.ts"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "../"

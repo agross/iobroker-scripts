@@ -85,7 +85,7 @@ const alarmEnabledNotifications = alarmEnabledChanges
     tap(enabled => {
       const message = `Alarm ${enabled ? 'enabled' : 'disabled'}`;
 
-      Notifier.notify(message);
+      Notify.mobile(message);
     }),
   )
   .subscribe();
@@ -97,7 +97,7 @@ const alarmNotifications = alarmTriggers
     map(([device, _enabled]) => device),
     map(device => `Alarm triggered by ${device}`),
     tap(message => {
-      Notifier.notify(message, 'warn');
+      Notify.mobile(message, 'warn');
     }),
   )
   .subscribe();

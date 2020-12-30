@@ -11,7 +11,7 @@ const sunrise = schedule({ astro: 'sunrise' }, async () => {
 
   if (maxTempToday.val >= 25) {
     await setStateAsync('scene.0.Shutters.Sunny_day', true);
-    Notifier.notify('It is going to be sunny today!');
+    Notify.mobile('It is going to be sunny today!');
   } else {
     await setStateAsync('scene.0.Shutters.Day', true);
   }

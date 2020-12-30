@@ -206,7 +206,7 @@ class TV {
   }
 
   public message(message: string): void {
-    setState(`${this.device}.states.popup`, message);
+    Notify.tv(message);
   }
 
   public turnOff(): void {

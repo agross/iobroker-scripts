@@ -1,6 +1,6 @@
 {
   "extends": "../../../tsconfig.json",
-  "files": ["../../../iobroker.d.ts", "../../global/Lovelace.ts", "../../global/Notifier.ts", "../../global/Object_Creator.ts", "../../global/Stream.ts", "InfluxDB_Config.ts"],
+  "files": ["../../../iobroker.d.ts", "../../global/Lovelace.ts", "../../global/Notify.ts", "../../global/Object_Creator.ts", "../../global/Stream.ts", "InfluxDB_Config.ts"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "../../"

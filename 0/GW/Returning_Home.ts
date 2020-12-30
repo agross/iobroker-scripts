@@ -10,7 +10,7 @@ const subscription = arrivingAtHome
   .pipe(
     switchMap(date => {
       if (!date) {
-        Notifier.notify('No scheduled presence');
+        Notify.mobile('No scheduled presence');
 
         return EMPTY;
       }
@@ -20,14 +20,14 @@ const subscription = arrivingAtHome
       dueDate.setHours(arrival.getHours() - 2);
 
       if (dueDate < new Date()) {
-        Notifier.notify(
+        Notify.mobile(
           `Scheduled presence ${dueDate.toLocaleString()} is in the past, skipping`,
         );
 
         return EMPTY;
       }
 
-      Notifier.notify(
+      Notify.mobile(
         `Scheduling presence for ${dueDate.toLocaleString()} (arrival at ${arrival.toLocaleString()})`,
       );
 
@@ -37,7 +37,7 @@ const subscription = arrivingAtHome
       );
     }),
     tap(([arrival, _dueDate]) => {
-      Notifier.notify(
+      Notify.mobile(
         `Pretending to be at home for arrival at ${arrival.toLocaleString()}`,
       );
 

@@ -36,7 +36,7 @@ const notRunning = powerUsage.pipe(
 const done = running
   .pipe(
     switchMap(_ => notRunning.pipe(first())),
-    tap(_ => Notifier.notify(`Washing machine has finished`)),
+    tap(_ => Notify.mobile(`Washing machine has finished`)),
     tap(_ => setState(powerState, false)),
   )
   .subscribe();
