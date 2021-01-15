@@ -13,6 +13,8 @@ const workingThreshold = 10;
 const finishedThreshold = 20;
 const device = 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power';
 const powerState = 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.state';
+const reenableAfter =
+  8 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000; /* ms */
 
 const powerUsage = new Observable<number>(observer => {
   on({ id: device, ack: true }, event => {
@@ -38,6 +40,11 @@ const done = running
     switchMap(_ => notRunning.pipe(first())),
     tap(_ => Notify.mobile(`Washing machine has finished`)),
     tap(_ => setState(powerState, false)),
+    tap(_ =>
+      setStateDelayed(powerState, true, reenableAfter, true, _ =>
+        Notify.mobile(`Washing machine re-powered`),
+      ),
+    ),
   )
   .subscribe();
 
