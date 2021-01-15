@@ -276,7 +276,9 @@ const subscriptions = [
           `${device} is stable, setting slats to ${level.slats} by resetting shutter to ${level.shutter}`,
         );
 
-        setState(setShutterLevel, level.shutter);
+        setStateDelayed(setShutterLevel, level.shutter, 200, true, err => {
+          log(`${device} level reset to ${level.shutter}: ${err}`);
+        });
       }),
     )
     .subscribe();
