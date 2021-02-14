@@ -392,6 +392,98 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
 
     check(enabledDataPoints, id, expect);
   });
+
+  // Car.
+  $('state[id=alias.0.vw-connect.0.*.mileage]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 0,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Mileage`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=alias.0.vw-connect.0.*.oil-level]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 0,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Oil Level`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=alias.0.vw-connect.0.*.adblue-range]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 0,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} AdBlue Range`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=alias.0.vw-connect.0.*.fuel-range]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 0,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Fuel Range`,
+    };
+
+
+  $('state[id=alias.0.vw-connect.0.*.locked]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 0,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Locked`,
+    };
+
+  $('state[id=alias.0.vw-connect.0.*.parking-brake-engaged]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 0,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Parking Break Engaged`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 });
 
 stopScript(undefined);

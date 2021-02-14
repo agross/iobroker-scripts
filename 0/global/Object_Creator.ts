@@ -1,5 +1,10 @@
 declare global {
   export type ObjectDefinitionRoot = { [id: string]: ObjectDefinition };
+
+  export type StateCommonExt = iobJS.StateCommon &
+    iobJS.AliasCommon &
+    iobJS.CustomCommon;
+
   export type ObjectDefinition = iobJS.Object & {
     // Those properties are removed before passing the object to ioBroker.
     nested?: ObjectDefinitionRoot;
@@ -121,7 +126,8 @@ export class ObjectCreator {
   }
 
   private static definition(definition: ObjectDefinition): iobJS.Object {
-    const dup = Object.assign({} as ObjectDefinition, definition);
+    const dup = Object.assign({} as iobJS.Object, definition);
+
     delete dup.nested;
     delete dup.script;
     delete dup.enumIds;

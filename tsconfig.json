@@ -11,6 +11,9 @@
       "path": "0/Automation/Bind_Amp_To_TV.tsconfig.json"
     },
     {
+      "path": "0/Automation/Car.tsconfig.json"
+    },
+    {
       "path": "0/Automation/Heating_Period.tsconfig.json"
     },
     {
