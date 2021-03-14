@@ -32,6 +32,9 @@
       "path": "0/Automation/Oneshot/WOL_AXL.tsconfig.json"
     },
     {
+      "path": "0/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
+    },
+    {
       "path": "0/Automation/Shutters.tsconfig.json"
     },
     {
