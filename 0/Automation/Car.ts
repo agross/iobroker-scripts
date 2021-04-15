@@ -1,4 +1,5 @@
-import { tap } from 'rxjs/operators';
+import { distinctUntilChanged, tap } from 'rxjs/operators';
+import util from 'util';
 
 const adapter = 'vw-connect.0.';
 
@@ -402,22 +403,40 @@ const alarms = cars.map(car => {
 
   log(`Subscribing to ${reasons}`);
 
-  return new Stream<{ id: string; reason: string }>(
+  return new Stream<{
+    id: string;
+    reason: string;
+    acknowledged: boolean;
+    timestamp: Date;
+  }>(
     {
       id: new RegExp(reasons),
     },
     event => {
-      return { id: event.id, reason: event.state.val };
+      const entry = event.id.replace(/\.dwaAlarmReasonClustered$/, '');
+      const ack = getState(entry + '.fnsAcknowledged').val === true;
+      const ts = new Date(getState(entry + '.vehicleUtcTimestamp').val);
+
+      return {
+        id: event.id,
+        reason: event.state.val,
+        acknowledged: ack,
+        timestamp: ts,
+      };
     },
   ).stream
     .pipe(
-      tap(x => Notify.mobile(`${car.name} alarm: ${x.reason}`)),
+      distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
+      tap(x =>
+        Notify.mobile(
+          `${x.acknowledged ? 'Acknowledged ' : ''}${
+            car.name
+          } alarm from ${x.timestamp.toLocaleString()}: ${x.reason}`,
+        ),
+      ),
       tap(x => {
-        const entry = x.id.replace(/\.dwaAlarmReasonClustered$/, '');
-        const acked = getState(entry + '.fnsAcknowledged').val === true;
-
-        const reason = acked ? '' : x.reason;
-        const ts = acked ? null : getState(entry + '.vehicleUtcTimestamp').val;
+        const reason = x.acknowledged ? '' : x.reason;
+        const ts = x.acknowledged ? null : x.timestamp.toLocaleString();
 
         setState('0_userdata.0.' + car.root + '.Alarm.reason', reason);
         setState('0_userdata.0.' + car.root + '.Alarm.timestamp', ts);
