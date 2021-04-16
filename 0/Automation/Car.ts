@@ -1,4 +1,10 @@
-import { distinctUntilChanged, tap } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
 import util from 'util';
 
 const adapter = 'vw-connect.0.';
@@ -368,6 +374,42 @@ function getUserDataDefinition(
             }),
           },
         },
+        Maintenance: {
+          type: 'channel',
+          common: { name: 'Maintenance' },
+          native: {},
+          nested: {
+            'tyre-change': state({
+              role: 'state',
+              type: 'boolean',
+              read: true,
+              write: true,
+              name: 'Tyre change',
+              custom: {
+                'lovelace.0': {
+                  enabled: true,
+                  entity: 'script',
+                  name: Lovelace.id('Car tyre change'),
+                },
+              },
+            }),
+            'tighten-tyres-at-mileage': state({
+              role: 'indicator',
+              type: 'number',
+              unit: 'km',
+              read: true,
+              write: true,
+              name: 'Tighten tyres at mileage',
+              custom: {
+                'lovelace.0': {
+                  enabled: true,
+                  entity: 'sensor',
+                  name: Lovelace.id('Car tighten tyres at mileage'),
+                },
+              },
+            }),
+          },
+        },
       },
     };
 
@@ -445,4 +487,44 @@ const alarms = cars.map(car => {
     .subscribe();
 });
 
-onStop(() => alarms.forEach(a => a.unsubscribe()));
+const tightenTyres = cars.map(car => {
+  const tyreChangeState = `0_userdata.0.${car.root}.Maintenance.tyre-change`;
+  const tyreChange = new Stream<boolean>({ id: tyreChangeState }).stream;
+
+  const tightenTyresState = `0_userdata.0.${car.root}.Maintenance.tighten-tyres-at-mileage`;
+  const tightenTyres = new Stream<number>(tightenTyresState).stream;
+
+  const mileage = new Stream<number>(`alias.0.${car.root}.States.mileage`)
+    .stream;
+
+  const setTightenMileage = tyreChange
+    .pipe(
+      filter(x => x),
+      withLatestFrom(mileage),
+      map(([_, mileage]) => mileage + 50),
+      tap(tighten => setState(tightenTyresState, tighten, true)),
+      tap(_ => setStateDelayed(tyreChangeState, false, true, 1000)),
+      tap(tighten =>
+        Notify.mobile(`You'll receive a notification at ${tighten} km!`),
+      ),
+    )
+    .subscribe();
+
+  const tightenNotification = mileage
+    .pipe(
+      withLatestFrom(tightenTyres),
+      filter(([_, tighten]) => tighten > 0),
+      filter(([mileage, tighten]) => mileage >= tighten),
+      tap(([_, tighten]) =>
+        Notify.mobile(
+          `Tighten changed tyres now that ${tighten} km are reached!`,
+        ),
+      ),
+      tap(_ => setState(tightenTyresState, 0, true)),
+    )
+    .subscribe();
+
+  return [setTightenMileage, tightenNotification];
+});
+
+onStop(() => [].concat(alarms, ...tightenTyres).forEach(s => s.unsubscribe()));
