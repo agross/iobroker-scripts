@@ -1,5 +1,7 @@
+import { combineLatest } from 'rxjs';
 import {
   distinctUntilChanged,
+  distinctUntilKeyChanged,
   filter,
   map,
   tap,
@@ -410,6 +412,27 @@ function getUserDataDefinition(
             }),
           },
         },
+        States: {
+          type: 'channel',
+          common: { name: 'States' },
+          native: {},
+          nested: {
+            'window-open': state({
+              role: 'indicator.state',
+              type: 'boolean',
+              read: true,
+              write: false,
+              name: 'Window open',
+              custom: {
+                'lovelace.0': {
+                  enabled: true,
+                  entity: 'binary_sensor',
+                  name: Lovelace.id('Car window open'),
+                },
+              },
+            }),
+          },
+        },
       },
     };
 
@@ -443,7 +466,7 @@ const alarms = cars.map(car => {
     car.root,
   )}\\.history\\.dwaPushHistory\\..*\\.dwaAlarmReasonClustered$`;
 
-  log(`Subscribing to ${reasons}`);
+  log(`Subscribing to alarms ${reasons}`);
 
   return new Stream<{
     id: string;
@@ -487,6 +510,64 @@ const alarms = cars.map(car => {
     .subscribe();
 });
 
+const parkedWithWindowOpen = cars.map(car => {
+  const windowMap = {
+    'front-left': 'field_0x0301050001',
+    'rear-left': 'field_0x0301050003',
+    'front-right': 'field_0x0301050005',
+    'rear-right': 'field_0x0301050007',
+  };
+
+  const windowStates = Object.entries(windowMap).map(([k, v]) => {
+    const state = `${car.root}.status.data_0x0301FFFFFF.${v}.value`;
+
+    log(`Subscribing to ${k} window: ${state}`);
+
+    return new Stream<number>(state).stream.pipe(
+      filter(e => e == 2 || e == 3),
+      map(e => {
+        return {
+          window: k,
+          open: e == 2,
+        };
+      }),
+      distinctUntilKeyChanged('open'),
+    );
+  });
+
+  const openWindows = combineLatest(windowStates).pipe(
+    map(windows => windows.filter(window => window.open)),
+    distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
+  );
+
+  const windowOpenState = `0_userdata.0.${car.root}.States.window-open`;
+
+  const openWindowState = openWindows.pipe(
+    tap(windows => log(`Open windows: ${windows.map(w => w.window).join()}`)),
+    tap(windows => setState(windowOpenState, windows.length > 0, true)),
+  );
+
+  const locked = new Stream<boolean>(`alias.0.${car.root}.States.locked`)
+    .stream;
+  const parkingBreakEngaged = new Stream<boolean>(
+    `alias.0.${car.root}.States.parking-brake-engaged`,
+  ).stream;
+
+  const parkedWithWindowOpen = combineLatest([
+    openWindows,
+    locked,
+    parkingBreakEngaged,
+  ]).pipe(
+    filter(
+      ([openWindows, locked, brake]) =>
+        openWindows.length > 0 && locked && brake,
+    ),
+    tap(_ => Notify.mobile('Car is parked and locked with window open!')),
+  );
+
+  return [openWindowState.subscribe(), parkedWithWindowOpen.subscribe()];
+});
+
 const tightenTyres = cars.map(car => {
   const tyreChangeState = `0_userdata.0.${car.root}.Maintenance.tyre-change`;
   const tyreChange = new Stream<boolean>({ id: tyreChangeState }).stream;
@@ -527,4 +608,8 @@ const tightenTyres = cars.map(car => {
   return [setTightenMileage, tightenNotification];
 });
 
-onStop(() => [].concat(alarms, ...tightenTyres).forEach(s => s.unsubscribe()));
+onStop(() =>
+  []
+    .concat(alarms, ...parkedWithWindowOpen, ...tightenTyres)
+    .forEach(s => s.unsubscribe()),
+);

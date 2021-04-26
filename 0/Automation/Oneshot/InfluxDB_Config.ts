@@ -484,6 +484,22 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
 
     check(enabledDataPoints, id, expect);
   });
+
+  $('state[id=0_userdata.0.vw-connect.0.*.window-open]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 0,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Window Open`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 });
 
 stopScript(undefined);
