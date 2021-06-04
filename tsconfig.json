@@ -71,7 +71,19 @@
       "path": "0/Lights/Utility_Room_Lights.tsconfig.json"
     },
     {
+      "path": "0/Remote_Control/Living_Room_1_Short.tsconfig.json"
+    },
+    {
       "path": "0/Remote_Control/Living_Room_2_Short.tsconfig.json"
+    },
+    {
+      "path": "0/Remote_Control/Living_Room_5_Short.tsconfig.json"
+    },
+    {
+      "path": "0/Remote_Control/Living_Room_6_Long.tsconfig.json"
+    },
+    {
+      "path": "0/Remote_Control/Living_Room_6_Short.tsconfig.json"
     }
   ]
 }
