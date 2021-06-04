@@ -455,6 +455,8 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       aliasId: `${deviceName(id)} Fuel Range`,
     };
 
+    check(enabledDataPoints, id, expect);
+  });
 
   $('state[id=alias.0.vw-connect.0.*.locked]').each(id => {
     const expect = {
@@ -468,6 +470,9 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       storageType: false,
       aliasId: `${deviceName(id)} Locked`,
     };
+
+    check(enabledDataPoints, id, expect);
+  });
 
   $('state[id=alias.0.vw-connect.0.*.parking-brake-engaged]').each(id => {
     const expect = {
