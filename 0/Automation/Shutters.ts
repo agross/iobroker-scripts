@@ -10,23 +10,28 @@ const sunrise = schedule({ astro: 'sunrise' }, async () => {
   );
 
   if (maxTempToday.val >= 25) {
-    const noon = getAstroDate('solarNoon');
+    const noonPlusOneHour = getAstroDate('solarNoon', new Date().valueOf(), 60);
 
-    Notify.mobile(`Sunny day shutters until ${noon.toLocaleString()}`);
+    Notify.mobile(
+      `Sunny day shutters until ${noonPlusOneHour.toLocaleString()}`,
+    );
 
     await setStateAsync('scene.0.Shutters.Sunny_day', true);
 
-    const setDayShutters = schedule(formatDate(noon, 'm h * * *'), async () => {
-      Notify.mobile('Returning shutters to normal day levels');
+    const setDayShutters = schedule(
+      formatDate(noonPlusOneHour, 'm h * * *'),
+      async () => {
+        Notify.mobile('Setting shutters to sunny day afternoon levels');
 
-      await setStateAsync('scene.0.Shutters.Day', true);
-      if (!clearSchedule(setDayShutters)) {
-        log(
-          'Error clearing schedule to return shutters to normal day levels',
-          'error',
-        );
-      }
-    });
+        await setStateAsync('scene.0.Shutters.Sunny_day_afternoon', true);
+        if (!clearSchedule(setDayShutters)) {
+          log(
+            'Error clearing schedule to return shutters to normal day levels',
+            'error',
+          );
+        }
+      },
+    );
   } else {
     await setStateAsync('scene.0.Shutters.Day', true);
   }
