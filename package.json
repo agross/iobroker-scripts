@@ -6,14 +6,14 @@
     "build": "tsc --build --verbose"
   },
   "dependencies": {
-    "got": "^11.6.2",
+    "got": "^11.8.2",
     "rxjs": "^6.6.2"
   },
   "devDependencies": {
     "@types/got": "^9.6.11",
-    "prettier": "^2.0.5",
+    "prettier": "^2.3.2",
     "request": "^2.88.2",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.10"
   },
   "author": "Alexander Groß <agross@therightstuff.de>",
   "license": "ISC"
