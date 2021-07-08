@@ -266,7 +266,7 @@ const subscriptions = [
     filter(slats => Number.isInteger(slats)),
   );
 
-  return merge(...[allowedSlatChanges, bufferedSlatChangesWhileUnstable])
+  return merge(allowedSlatChanges, bufferedSlatChangesWhileUnstable)
     .pipe(
       withLatestFrom(shutter, (slats, shutter) => {
         return { slats: slats, shutter: shutter };
