@@ -19,13 +19,20 @@ await ObjectCreator.create(
     [alarmEnabled[1]]: {
       type: 'state',
       common: {
-        name: 'Flag indicating that the alarm is enabled',
+        name: 'Alarm enabled',
         type: 'boolean',
         def: false,
         read: true,
         write: true,
-        role: 'indicator.state',
-      },
+        role: 'state',
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id('Alarm enabled'),
+          },
+        },
+      } as StateCommonExt,
       native: {},
     },
   },
