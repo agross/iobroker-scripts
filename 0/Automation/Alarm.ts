@@ -61,6 +61,7 @@ const presence = combineLatest(presenceIndicatorChanges)
       setStateDelayed(
         alarmEnabled.join('.'),
         !present,
+        true,
         delayByMinutes * 60 * 1000,
         true,
       );
