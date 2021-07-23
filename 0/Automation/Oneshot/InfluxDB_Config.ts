@@ -505,6 +505,87 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
 
     check(enabledDataPoints, id, expect);
   });
+
+  // Raspberry Pi.
+  $('state[id=info.0.sysinfo.cpu.temperature.main]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Raspberry Pi Temperature',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=system.host.iobroker.load]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Raspberry Pi Load',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=info.0.sysinfo.memory.info.available]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Raspberry Pi Memory Available',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=info.0.sysinfo.cpu.currentSpeed.avgSpeed]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Raspberry Pi CPU Speed',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=system.host.iobroker.uptime]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 0,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Raspberry Pi Uptime',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 });
 
 stopScript(undefined);
