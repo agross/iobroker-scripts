@@ -56,14 +56,35 @@ const presence = combineLatest(presenceIndicatorChanges)
     tap(present => log(`Presence indication: ${present}`)),
     tap(present => {
       const delayByMinutes = present ? 0 : 5;
+      const delay = delayByMinutes * 60 * 1000;
 
-      setStateDelayed(hmPresence, present, delayByMinutes * 60 * 1000, true);
+      log(
+        `Setting alarm=${!present} and HomeMatic presence=${present} in ${delayByMinutes} min`,
+      );
+
+      setStateDelayed(hmPresence, present, delay, true, err => {
+        if (err) {
+          log(
+            `Could not set HomeMatic presence to ${present}: ${err}`,
+            'error',
+          );
+        } else {
+          log(`Set HomeMatic presence to ${present}`);
+        }
+      });
       setStateDelayed(
         alarmEnabled.join('.'),
         !present,
         true,
-        delayByMinutes * 60 * 1000,
+        delay,
         true,
+        err => {
+          if (err) {
+            log(`Could not set alarm to ${!present}: ${err}`, 'error');
+          } else {
+            log(`Set alarm to ${!present}`);
+          }
+        },
       );
     }),
   )
