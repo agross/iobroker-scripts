@@ -586,6 +586,34 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
 
     check(enabledDataPoints, id, expect);
   });
+
+  // Fuel prices.
+  $('state[id=tankerkoenig.*.stations.*.diesel.short]').each(id => {
+    if (id.match(/\.cheapest\./)) {
+      return;
+    }
+
+    const stationNameId = id.split('.').slice(0, -2).concat(['name']).join('.');
+
+    if (!existsState(stationNameId)) {
+      return;
+    }
+    const stationName = getState(stationNameId).val;
+
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `Diesel Price ${stationName}`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 });
 
 stopScript(undefined);
