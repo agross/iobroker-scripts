@@ -253,7 +253,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       duration: {
         alias: {
           id: 'kodi.0.info.playing_time_total',
-          read: 'val.split(":").reduce((acc, time) => (60 * acc) + +time, 0)',
+          read: 'val.split(":").reduce((acc, time) => (60 * acc) + time, 0)',
         },
         role: 'media.duration',
         type: 'number',
@@ -265,7 +265,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       elapsed: {
         alias: {
           id: 'kodi.0.info.playing_time',
-          read: 'val.split(":").reduce((acc, time) => (60 * acc) + +time, 0)',
+          read: 'val.split(":").reduce((acc, time) => (60 * acc) + time, 0)',
         },
         role: 'media.elapsed',
         type: 'number',
