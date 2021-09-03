@@ -71,7 +71,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -118,7 +118,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -135,7 +135,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -152,7 +152,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -168,7 +168,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -189,7 +189,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -209,7 +209,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
@@ -228,7 +228,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
@@ -248,7 +248,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -269,7 +269,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
@@ -288,7 +288,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
@@ -307,7 +307,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
@@ -326,7 +326,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
@@ -346,7 +346,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       retention: 63072000,
       changesRelogInterval: 60,
       changesMinDelta: 0,
@@ -365,7 +365,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: false,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -381,7 +381,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -398,7 +398,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -414,7 +414,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -430,7 +430,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -446,7 +446,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -462,7 +462,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -478,7 +478,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -494,7 +494,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -511,7 +511,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -527,7 +527,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -543,7 +543,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -559,7 +559,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
@@ -575,7 +575,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     const expect = {
       enabled: true,
       changesOnly: true,
-      debounce: 0,
+      debounce: 500,
       maxLength: 10,
       retention: 63072000,
       changesRelogInterval: 60,
