@@ -802,9 +802,9 @@ const remotes = [
     cycle: {
       off: 'scene.0.Lights.In_Bed',
       on: [
-        'scene.0.Bedroom.Lights_Bright',
-        'scene.0.Bedroom.Lights_Low',
         'scene.0.Bedroom.Lights_Cozy',
+        'scene.0.Bedroom.Lights_Low',
+        'scene.0.Bedroom.Lights_Bright',
       ],
     },
   }),
