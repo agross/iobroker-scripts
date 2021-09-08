@@ -16,9 +16,8 @@ import {
   debounceTime,
   withLatestFrom,
   filter,
-  mapTo,
-  throttle,
   scan,
+  distinctUntilKeyChanged,
 } from 'rxjs/operators';
 
 const activityIndicators = [
@@ -89,38 +88,43 @@ interface StateWithId {
   state: iobJS.State;
 }
 
+interface DisabledReason {
+  disabled: boolean;
+  reason: string;
+}
+
 class WhitelistedApp {
   private device: string;
   private apps: string[];
-  private _stream: Observable<boolean>;
+  private _stream: Observable<DisabledReason>;
 
   constructor(device: string, ...apps: string[]) {
     this.device = device;
     this.apps = apps;
 
     this._stream = concat(this.initialValue, this.changes).pipe(
-      distinctUntilChanged(),
+      distinctUntilKeyChanged('disabled'),
     );
   }
 
-  private isWhitelisted(app: string): boolean {
+  private isWhitelisted(app: string): DisabledReason {
     if (this.apps.indexOf(app) !== -1) {
       log(`Whitelisted LG app ${app} active`);
-      return true;
+      return { disabled: true, reason: `App ${app}` };
     }
 
     if (app.length > 0) {
       log(`LG app ${app} active`);
     }
 
-    return false;
+    return { disabled: false, reason: '' };
   }
 
   private get stateId(): string {
     return `${this.device}.states.currentApp`;
   }
 
-  private get initialValue(): Observable<boolean> {
+  private get initialValue(): Observable<DisabledReason> {
     const current = getState(this.stateId);
     if (current.notExist) {
       return EMPTY;
@@ -129,8 +133,8 @@ class WhitelistedApp {
     return of(this.isWhitelisted(current.val));
   }
 
-  private get changes(): Observable<boolean> {
-    return new Observable<boolean>(observer => {
+  private get changes(): Observable<DisabledReason> {
+    return new Observable<DisabledReason>(observer => {
       on({ id: this.stateId, change: 'ne', ack: true }, event => {
         const whitelisted = this.isWhitelisted(event.state.val);
 
@@ -139,26 +143,31 @@ class WhitelistedApp {
     }).pipe(share());
   }
 
-  public get stream(): Observable<boolean> {
+  public get stream(): Observable<DisabledReason> {
     return this._stream;
   }
 }
 
 class Tatort {
-  public get stream(): Observable<boolean> {
-    return concat(this.initialValue, this.changes).pipe(distinctUntilChanged());
+  public get stream(): Observable<DisabledReason> {
+    return concat(this.initialValue, this.changes).pipe(
+      distinctUntilKeyChanged('disabled'),
+    );
   }
 
-  private get initialValue(): Observable<boolean> {
-    return of(this.isTatortTimeWindow(new Date()));
+  private get initialValue(): Observable<DisabledReason> {
+    return of({
+      disabled: this.isTatortTimeWindow(new Date()),
+      reason: 'Tatort',
+    });
   }
 
-  private get changes(): Observable<boolean> {
+  private get changes(): Observable<DisabledReason> {
     return interval(minutesToMs(1)).pipe(
       timestamp(),
       map(val => {
         const now = new Date(val.timestamp);
-        return this.isTatortTimeWindow(now);
+        return { disabled: this.isTatortTimeWindow(now), reason: 'Tatort' };
       }),
     );
   }
@@ -311,18 +320,32 @@ const tv = new TV(tvDevice);
 
 const tvLog = tv.stream.pipe(tap(x => log(`TV on: ${x}`))).subscribe();
 
-const timerDisabled = combineLatest([
+const timerDisabled: Observable<DisabledReason> = combineLatest([
   new WhitelistedApp(tvDevice, ...whitelistedLgApps).stream,
   new Tatort().stream,
 ]).pipe(
-  map(flags => flags.some(f => f)),
-  distinctUntilChanged(),
+  map(flags => {
+    return {
+      disabled: flags.some(f => f.disabled),
+      reason: flags
+        .filter(f => f.disabled)
+        .map(f => f.reason)
+        .join(', '),
+    };
+  }),
+  distinctUntilKeyChanged('disabled'),
 );
 
 const timerDisabledNotifications = timerDisabled
   .pipe(
-    tap(x => log(`Timer disabled: ${x}`)),
-    tap(x => tv.message(`TV Idle ${x ? 'disabled' : 'enabled'}`)),
+    tap(x => log(`Timer disabled: ${JSON.stringify(x)}`)),
+    tap(x => {
+      if (x.disabled) {
+        tv.message(`TV Idle disabled b/c ${x.reason}`);
+      } else {
+        tv.message('TV Idle enabled');
+      }
+    }),
   )
   .subscribe();
 
@@ -367,7 +390,7 @@ const timeoutNotifications = timeoutPopups.map(left => {
     .pipe(
       debounceTime(minutesToMs(turnOffAfter - left)),
       withLatestFrom(timerDisabled),
-      filter(([_state, disabled]) => !disabled),
+      filter(([_state, disabled]) => !disabled.disabled),
       withLatestFrom(tv.stream),
       filter(([_state, tvOn]) => tvOn),
       map(([state, _tvOn]) => state),
@@ -385,7 +408,7 @@ const turnOff = activity
   .pipe(
     debounceTime(minutesToMs(turnOffAfter)),
     withLatestFrom(timerDisabled),
-    filter(([_state, disabled]) => !disabled),
+    filter(([_state, disabled]) => !disabled.disabled),
     withLatestFrom(tv.stream),
     filter(([_state, tvOn]) => tvOn),
     map(([state, _tvOn]) => state),
