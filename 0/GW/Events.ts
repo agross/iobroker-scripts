@@ -111,7 +111,11 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       nested: stateObjects('Next Event'),
       script: {
         filter: (event: Event) => {
-          return event.event.includes('GROSSWEBER');
+          return (
+            event.event.includes('GROSSWEBER') &&
+            event.location &&
+            event.location.length > 0
+          );
         },
       },
     },
