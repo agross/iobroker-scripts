@@ -48,19 +48,21 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       },
       start: {
         name: 'Start date',
-        type: 'object',
+        type: 'string',
+        device_class: 'timestamp',
         script: {
           source: (event: Event) => {
-            return new Date(event._date);
+            return formatDate(new Date(event._date), 'YYYY-MM-DD hh:mm');
           },
         },
       },
       end: {
         name: 'End date',
-        type: 'object',
+        type: 'string',
+        device_class: 'timestamp',
         script: {
           source: (event: Event) => {
-            return new Date(event._end);
+            return formatDate(new Date(event._end), 'YYYY-MM-DD hh:mm');
           },
         },
       },
@@ -89,6 +91,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
               enabled: true,
               entity: 'sensor',
               name: Lovelace.id(`${channel} ${def.name}`),
+              attr_device_class: def.device_class,
             },
           },
         },
@@ -207,7 +210,6 @@ const streams = Object.entries(objects).map(([channel, def]) => {
         tap((event: Event) => {
           Object.entries(def.nested).forEach(([state, def]) => {
             if (!def.script?.source) {
-              log(`No source for ${state}`);
               return;
             }
 
