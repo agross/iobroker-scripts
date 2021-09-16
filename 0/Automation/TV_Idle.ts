@@ -110,7 +110,7 @@ class WhitelistedApp {
   private isWhitelisted(app: string): DisabledReason {
     if (this.apps.indexOf(app) !== -1) {
       log(`Whitelisted LG app ${app} active`);
-      return { disabled: true, reason: `App ${app}` };
+      return { disabled: true, reason: `app ${app}` };
     }
 
     if (app.length > 0) {
