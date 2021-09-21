@@ -554,11 +554,12 @@ const parkedWithWindowOpen = cars.map(car => {
     tap(windows => setState(windowOpenState, windows.length > 0, true)),
   );
 
-  const locked = new Stream<boolean>(`alias.0.${car.root}.States.locked`)
-    .stream;
+  const locked = new Stream<boolean>(
+    `alias.0.${car.root}.States.locked`,
+  ).stream.pipe(distinctUntilChanged());
   const parkingBreakEngaged = new Stream<boolean>(
     `alias.0.${car.root}.States.parking-brake-engaged`,
-  ).stream;
+  ).stream.pipe(distinctUntilChanged());
 
   const parkedWithWindowOpen = combineLatest([
     openWindows,
@@ -566,13 +567,36 @@ const parkedWithWindowOpen = cars.map(car => {
     parkingBreakEngaged,
   ]).pipe(
     filter(
-      ([openWindows, locked, brake]) =>
-        openWindows.length > 0 && locked && brake,
+      ([openWindows, locked, parked]) =>
+        openWindows.length > 0 && locked && parked,
     ),
     tap(_ => Notify.mobile('Car is parked and locked with window open!')),
   );
 
   return [openWindowState.subscribe(), parkedWithWindowOpen.subscribe()];
+});
+
+const parkedAtHomeUnlocked = cars.map(car => {
+  const atHome = new Stream<boolean>('0_userdata.0.presence').stream;
+
+  const locked = new Stream<boolean>(
+    `alias.0.${car.root}.States.locked`,
+  ).stream.pipe(distinctUntilChanged());
+
+  const parkingBreakEngaged = new Stream<boolean>(
+    `alias.0.${car.root}.States.parking-brake-engaged`,
+  ).stream.pipe(distinctUntilChanged());
+
+  const parkedAtHome = combineLatest([
+    atHome,
+    locked,
+    parkingBreakEngaged,
+  ]).pipe(
+    filter(([atHome, locked, parked]) => atHome && !locked && parked),
+    tap(_ => Notify.mobile('Car is parked at home and unlocked!')),
+  );
+
+  return [parkedAtHome.subscribe()];
 });
 
 const tightenTyres = cars.map(car => {
@@ -617,6 +641,11 @@ const tightenTyres = cars.map(car => {
 
 onStop(() =>
   []
-    .concat(alarms, ...parkedWithWindowOpen, ...tightenTyres)
+    .concat(
+      alarms,
+      ...parkedWithWindowOpen,
+      ...parkedAtHomeUnlocked,
+      ...tightenTyres,
+    )
     .forEach(s => s.unsubscribe()),
 );
