@@ -1,4 +1,4 @@
-import { Observable, combineLatest } from 'rxjs';
+import { Observable } from 'rxjs';
 import {
   share,
   tap,
@@ -10,8 +10,8 @@ import {
 } from 'rxjs/operators';
 
 const alarmEnabled = ['0_userdata.0', 'alarm-enabled'];
+const presence = '0_userdata.0.presence';
 const hmPresence = 'hm-rega.0.950';
-const presenceIndicators = ['ping.0.iobroker.172_16_0_15'];
 const triggerAlarmOn = ['zigbee.1.00158d00045bedc5.opened'];
 
 await ObjectCreator.create(
@@ -39,21 +39,8 @@ await ObjectCreator.create(
   alarmEnabled[0],
 );
 
-const presenceIndicatorChanges = presenceIndicators.map(indicator => {
-  return new Observable<boolean>(observer => {
-    on({ id: indicator, change: 'ne' }, event => {
-      const present = event.state.val === true;
-
-      observer.next(present);
-    });
-  }).pipe(startWith(getState(indicator).val === true), share());
-});
-
-const presence = combineLatest(presenceIndicatorChanges)
+const presenceForAlarmAndHeating = new Stream<boolean>(presence).stream
   .pipe(
-    map(flags => flags.some(f => f)),
-    distinctUntilChanged(),
-    tap(present => log(`Presence indication: ${present}`)),
     tap(present => {
       const delayByMinutes = present ? 0 : 5;
       const delay = delayByMinutes * 60 * 1000;
@@ -72,6 +59,7 @@ const presence = combineLatest(presenceIndicatorChanges)
           log(`Set HomeMatic presence to ${present}`);
         }
       });
+
       setStateDelayed(
         alarmEnabled.join('.'),
         !present,
@@ -132,7 +120,9 @@ const alarmNotifications = alarmTriggers
   .subscribe();
 
 onStop(() => {
-  [presence, alarmEnabledNotifications, alarmNotifications].forEach(x =>
-    x.unsubscribe(),
-  );
+  [
+    presenceForAlarmAndHeating,
+    alarmEnabledNotifications,
+    alarmNotifications,
+  ].forEach(x => x.unsubscribe());
 });
