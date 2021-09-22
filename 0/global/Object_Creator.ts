@@ -75,12 +75,45 @@ export class ObjectCreator {
 
       this.assign(enums, objectId, def.enumIds);
 
+      if (!(await existsStateAsync(objectId))) {
+        if (data.type === 'state' && !('alias' in data.common)) {
+          const defaultValue = this.defaultValue(data.common.type);
+          await setStateAsync(objectId, defaultValue, true);
+
+          log(
+            `Set default value '${defaultValue}' for unaliased state ${objectId}`,
+          );
+        }
+      }
+
       if (def.nested) {
         await this.createObjects(def.nested, objectId, enums);
       }
     });
 
     await Promise.all(promises);
+  }
+
+  private static defaultValue(type: iobJS.CommonType): any {
+    switch (type) {
+      case 'array':
+        return JSON.stringify([]);
+
+      case 'boolean':
+        return false;
+
+      case 'number':
+        return 0;
+
+      case 'object':
+        return JSON.stringify({});
+
+      case 'string':
+        return '';
+
+      default:
+        return null;
+    }
   }
 
   private static assign(
