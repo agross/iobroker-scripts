@@ -42,8 +42,16 @@ export class Stream<T> {
     state: string,
     eventMapper?: EventMapper,
   ): Observable<T> {
-    const current = getState(state);
+    if (!existsState(state)) {
+      log(
+        `Initial state value does not exist: ${state}. Did the ObjectCreator finish creating states?`,
+        'error',
+      );
 
+      return EMPTY;
+    }
+
+    const current = getState(state);
     if (current.notExist) {
       return EMPTY;
     }
