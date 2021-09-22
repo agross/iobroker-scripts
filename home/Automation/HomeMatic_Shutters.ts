@@ -46,7 +46,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     const device = deviceId(stateId);
 
     const deviceStates: {
-      [id: string]: iobJS.StateCommon & iobJS.AliasCommon & iobJS.CustomCommon;
+      [id: string]: iobJS.StateCommon;
     } = {
       level: {
         alias: {

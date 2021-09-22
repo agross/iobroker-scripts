@@ -37,7 +37,7 @@ await ObjectCreator.create(
             attr_device_class: 'timestamp',
           },
         },
-      } as StateCommonExt,
+      } as iobJS.StateCommon,
       native: {},
     },
   },

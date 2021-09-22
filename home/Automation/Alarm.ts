@@ -32,7 +32,7 @@ await ObjectCreator.create(
             name: Lovelace.id('Alarm enabled'),
           },
         },
-      } as StateCommonExt,
+      } as iobJS.StateCommon,
       native: {},
     },
   },

@@ -22,7 +22,7 @@ await ObjectCreator.create(
             name: Lovelace.id('Presence'),
           },
         },
-      } as StateCommonExt,
+      } as iobJS.StateCommon,
       native: {},
     },
   },

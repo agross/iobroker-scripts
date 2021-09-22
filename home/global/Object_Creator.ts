@@ -1,11 +1,7 @@
 declare global {
   export type ObjectDefinitionRoot = { [id: string]: ObjectDefinition };
 
-  export type StateCommonExt = iobJS.StateCommon &
-    iobJS.AliasCommon &
-    iobJS.CustomCommon;
-
-  export type ObjectDefinition = iobJS.Object & {
+  export type ObjectDefinition = iobJS.SettableObject & {
     // Those properties are removed before passing the object to ioBroker.
     nested?: ObjectDefinitionRoot;
     script?: any;
@@ -19,22 +15,6 @@ declare global {
     ): Promise<void>;
 
     static getEnumIds(objectId: string, ...kinds: string[]): string[];
-  }
-
-  namespace iobJS {
-    export type AliasCommon = {
-      alias?:
-        | string
-        | {
-            read?: string;
-            write?: string;
-            id: string | { read?: string; write?: string };
-          };
-    };
-
-    export type CustomCommon = {
-      custom?: {};
-    };
   }
 }
 
@@ -76,7 +56,7 @@ export class ObjectCreator {
       this.assign(enums, objectId, def.enumIds);
 
       if (!(await existsStateAsync(objectId))) {
-        if (data.type === 'state' && !('alias' in data.common)) {
+        if (data.type === 'state' && !data.common.alias) {
           const defaultValue = this.defaultValue(data.common.type);
           await setStateAsync(objectId, defaultValue, true);
 
@@ -137,7 +117,7 @@ export class ObjectCreator {
   private static async assignEnums(enums: EnumIdsToObjects): Promise<void> {
     for (let [enumId, objectIds] of Object.entries(enums)) {
       const _enum = await getObjectAsync(enumId);
-      const common = (_enum.common as unknown) as { members: string[] };
+      const common = _enum.common as unknown as { members: string[] };
 
       const members = Array.from(common.members);
       objectIds.forEach(objectId => {

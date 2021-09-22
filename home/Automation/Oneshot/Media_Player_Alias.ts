@@ -7,7 +7,7 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
     const device = deviceId(stateId);
 
     const deviceStates: {
-      [id: string]: iobJS.StateCommon & iobJS.AliasCommon & iobJS.CustomCommon;
+      [id: string]: iobJS.StateCommon;
     } = {
       state: {
         alias: {
@@ -100,7 +100,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
     const device = deviceId(stateId);
 
     const deviceStates: {
-      [id: string]: iobJS.StateCommon & iobJS.AliasCommon & iobJS.CustomCommon;
+      [id: string]: iobJS.StateCommon;
     } = {
       state: {
         alias: {

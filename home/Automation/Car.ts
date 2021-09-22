@@ -15,7 +15,7 @@ function getAliasDefinition(
   cars: { root: string; name: string }[],
 ): ObjectDefinitionRoot {
   return cars.reduce((acc, car) => {
-    function state(common: StateCommonExt): ObjectDefinition {
+    function state(common: iobJS.StateCommon): ObjectDefinition {
       return {
         type: 'state',
         common: common,
@@ -333,7 +333,7 @@ function getUserDataDefinition(
   cars: { root: string; name: string }[],
 ): ObjectDefinitionRoot {
   return cars.reduce((acc, car) => {
-    function state(common: StateCommonExt): ObjectDefinition {
+    function state(common: iobJS.StateCommon): ObjectDefinition {
       return {
         type: 'state',
         common: common,

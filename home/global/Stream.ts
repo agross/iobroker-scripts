@@ -57,6 +57,7 @@ export class Stream<T> {
     }
 
     const currentAsEvent: iobJS.ChangedStateObject = {
+      _id: state,
       id: state,
       from: current.from,
       ack: current.ack,

@@ -34,9 +34,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         : 'switch';
 
       const deviceStates: {
-        [id: string]: iobJS.StateCommon &
-          iobJS.AliasCommon &
-          iobJS.CustomCommon;
+        [id: string]: iobJS.StateCommon;
       } = {
         power: {
           alias: {

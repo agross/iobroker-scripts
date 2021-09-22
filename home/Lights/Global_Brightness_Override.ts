@@ -36,7 +36,7 @@ await ObjectCreator.create(
             step: 1,
           },
         },
-      } as iobJS.StateCommon & iobJS.CustomCommon,
+      } as iobJS.StateCommon,
       native: {},
     },
   },
