@@ -8,15 +8,61 @@
 // https://github.com/ioBroker/ioBroker.type-detector/pull/8
 
 import got from 'got';
-import { concat, EMPTY, Observable, of } from 'rxjs';
-import { distinctUntilChanged, share, tap } from 'rxjs/operators';
+import { combineLatest } from 'rxjs';
+import { distinctUntilChanged, map, tap } from 'rxjs/operators';
 
-const locationSource = '0_userdata.0.GW.Next Event.location';
-const computedLocation = '0_userdata.0.GW.Next Event.computed_location';
+const location = {
+  root: '0_userdata.0.GW.Next Event',
+  source: 'location',
+  computed: 'computed-location',
+  computed_based_on: 'computed-location-source-data',
+};
 const weatherSource = 'accuweather.0';
 const lovelaceCompatibleWeatherDevice = 'alias.0.GW.Next Event Weather';
 
-const objects: ObjectDefinitionRoot = {
+function nextEventExtension(): ObjectDefinitionRoot {
+  const stateObjects: (channel: string) => ObjectDefinitionRoot = channel => {
+    const channelStates: { [id: string]: any } = {
+      [location.computed_based_on]: {
+        name: 'Data used to determine computed event location ',
+        type: 'string',
+      },
+      [location.computed]: {
+        name: 'Computed event location',
+        type: 'string',
+      },
+    };
+
+    return Object.entries(channelStates).reduce((acc, [stateId, def]) => {
+      acc[stateId] = {
+        type: 'state',
+        common: {
+          name: def.name,
+          read: true,
+          write: false,
+          role: 'value',
+          type: def.type as iobJS.CommonType,
+          custom: {
+            'lovelace.0': {
+              enabled: true,
+              entity: 'sensor',
+              name: Lovelace.id(`${channel} ${def.name}`),
+              attr_device_class: def.device_class,
+            },
+          },
+        },
+        native: {},
+        script: def.script,
+      };
+
+      return acc;
+    }, {});
+  };
+
+  return stateObjects('Next Event');
+}
+
+const weather: ObjectDefinitionRoot = {
   'Next Event Weather': {
     type: 'device',
     common: { name: 'Next Event Weather' },
@@ -56,7 +102,7 @@ const objects: ObjectDefinitionRoot = {
             location: state({
               type: 'string',
               role: 'location',
-              source: '0_userdata.0.GW.Next Event.computed_location',
+              source: `${location.root}.${location.computed}`,
             }),
             date: state({
               type: 'string',
@@ -154,8 +200,20 @@ async function searchLocation(
   }
 }
 
-async function updateComputedLocation(locationName: any): Promise<void> {
-  await setStateAsync(computedLocation, locationName, true);
+async function updateComputedLocation(
+  locationName: string,
+  basedOn: string,
+): Promise<void> {
+  await setStateAsync(
+    `${location.root}.${location.computed}`,
+    locationName,
+    true,
+  );
+  await setStateAsync(
+    `${location.root}.${location.computed_based_on}`,
+    basedOn,
+    true,
+  );
 
   log(`Updated computed location in user data: ${locationName}`);
 
@@ -166,52 +224,35 @@ async function updateComputedLocation(locationName: any): Promise<void> {
   log(`Updated computed location in weather forecast: ${locationName}`);
 }
 
-function initialLocation(): Observable<string> {
-  const location = getState(locationSource);
-
-  if (location.notExist) {
-    return EMPTY;
-  }
-
-  return of(location.val);
-}
-
-const locationUpdates = new Observable<string>(observer => {
-  on({ id: locationSource, change: 'ne', ack: true }, event => {
-    observer.next(event.state.val);
-  });
-}).pipe(share());
-
-const locationChanges = concat(initialLocation(), locationUpdates).pipe(
-  distinctUntilChanged(),
-  tap(async location => {
-    if (!location.length) {
-      log(`No location for event `);
-      await updateComputedLocation('');
+const locationChanges = combineLatest([
+  new Stream<string>(`${location.root}.${location.source}`).stream,
+  new Stream<string>(`${location.root}.${location.computed_based_on}`).stream,
+]).pipe(
+  map(([next, computed_based_on]) => {
+    return { next: next, computed_based_on: computed_based_on };
+  }),
+  distinctUntilChanged((x, y) => x.next === y.next),
+  tap(async loc => {
+    if (!loc.next.length) {
+      log('No location for next event');
+      await updateComputedLocation('', '');
       return;
     }
+
+    if (loc.next === loc.computed_based_on) {
+      log(`Location did not change: ${loc.next}`);
+      return;
+    }
+
+    log(`Location changed from "${loc.computed_based_on}" to "${loc.next}"`);
 
     const adapterConfigId = `system.adapter.${weatherSource}`;
     const adapterConfig = await getObjectAsync(adapterConfigId);
 
-    const previousLocation = adapterConfig.common['custom']?.location;
-    if (previousLocation === location) {
-      log(`Location did not change: ${location}`);
-
-      const previousLocationName =
-        adapterConfig.common['custom']?.computed_location;
-      if (previousLocationName) {
-        await updateComputedLocation(previousLocationName);
-      }
-
-      return;
-    }
-    log(`Location changed from "${previousLocation}" to "${location}"`);
-
     // Get AccuWeather location from address.
     let [locationKey, locationName] = await searchLocation(
       adapterConfig.native.apiKey,
-      location,
+      loc.next,
     );
 
     if (!locationKey || !locationName) {
@@ -220,19 +261,17 @@ const locationChanges = concat(initialLocation(), locationUpdates).pipe(
 
     await extendObjectAsync(adapterConfigId, {
       native: { loKey: locationKey },
-      common: {
-        custom: { location: location, computed_location: locationName },
-      },
     });
     log(`Updated location key: ${locationKey}`);
 
     await setStateAsync(`${weatherSource}.updateDaily`, true, false);
 
-    await updateComputedLocation(locationName);
+    await updateComputedLocation(locationName, loc.next);
   }),
 );
 
-await ObjectCreator.create(objects, 'alias.0.GW');
+await ObjectCreator.create(nextEventExtension(), location.root);
+await ObjectCreator.create(weather, 'alias.0.GW');
 
 log('Subscribing to events');
 const subscription = locationChanges.subscribe();

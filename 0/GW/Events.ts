@@ -42,10 +42,6 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           },
         },
       },
-      computed_location: {
-        name: 'Computed event location',
-        type: 'string',
-      },
       start: {
         name: 'Start date',
         type: 'string',
