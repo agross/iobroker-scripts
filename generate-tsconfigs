@@ -46,6 +46,8 @@ for ts in "${typescripts[@]}"; do
          "${ts##*/}" \
          "$global_relative" \
          > "${ts%.ts}.tsconfig.json"
+
+  npx prettier --write "${ts%.ts}.tsconfig.json"
 done
 
 mapfile -t tsconfigs < <(find 0 -type f -name '*.tsconfig.json' | sort)
@@ -63,3 +65,4 @@ jq --argjson references "[${paths%,}]" \
    tsconfig.json > "$tmp"
 
 mv -- "$tmp" tsconfig.json
+npx prettier --write tsconfig.json

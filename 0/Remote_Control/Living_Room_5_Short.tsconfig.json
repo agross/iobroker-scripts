@@ -1,6 +1,13 @@
 {
   "extends": "../../tsconfig.json",
-  "files": ["../../iobroker.d.ts", "../global/Lovelace.ts", "../global/Notify.ts", "../global/Object_Creator.ts", "../global/Stream.ts", "Living_Room_5_Short.ts"],
+  "files": [
+    "../../iobroker.d.ts",
+    "../global/Lovelace.ts",
+    "../global/Notify.ts",
+    "../global/Object_Creator.ts",
+    "../global/Stream.ts",
+    "Living_Room_5_Short.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "../"

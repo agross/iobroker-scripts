@@ -1,8 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
-  "exclude": [
-    "*"
-  ],
+  "exclude": ["*"],
   "references": [
     {
       "path": "0/Automation/Alarm.tsconfig.json"

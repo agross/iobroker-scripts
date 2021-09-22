@@ -1,6 +1,13 @@
 {
   "extends": "../../../tsconfig.json",
-  "files": ["../../../iobroker.d.ts", "../../global/Lovelace.ts", "../../global/Notify.ts", "../../global/Object_Creator.ts", "../../global/Stream.ts", "Transform_Tasmota_Data.ts"],
+  "files": [
+    "../../../iobroker.d.ts",
+    "../../global/Lovelace.ts",
+    "../../global/Notify.ts",
+    "../../global/Object_Creator.ts",
+    "../../global/Stream.ts",
+    "Transform_Tasmota_Data.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "../../"
