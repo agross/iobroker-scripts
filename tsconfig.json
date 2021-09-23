@@ -48,6 +48,9 @@
       "path": "0/Automation/Washing_Machine.tsconfig.json"
     },
     {
+      "path": "0/GW/Early_Bird.tsconfig.json"
+    },
+    {
       "path": "0/GW/Events.tsconfig.json"
     },
     {
