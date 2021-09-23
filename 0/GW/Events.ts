@@ -1,8 +1,9 @@
-import { iif, of } from 'rxjs';
+import { of } from 'rxjs';
 import {
+  distinctUntilChanged,
   distinctUntilKeyChanged,
-  filter,
   map,
+  mergeMap,
   scan,
   switchMap,
   tap,
@@ -18,8 +19,7 @@ interface Event {
   _calName: string;
 }
 
-const source = 'ical.0.data.table';
-const channelRoot = '0_userdata.0.GW';
+const config = { source: 'ical.0.data.table', channelRoot: '0_userdata.0.GW' };
 
 function getObjectDefinition(): ObjectDefinitionRoot {
   const stateObjects: (channel: string) => ObjectDefinitionRoot = channel => {
@@ -140,97 +140,97 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   };
 }
 
-function channelId(channel: string): string {
-  return `${channelRoot}.${channel}`;
-}
-
-const events = new Stream<Event[]>(source).stream;
-
 const objects = getObjectDefinition();
 
+const source = new Stream<Event[]>(config.source).stream.pipe(
+  distinctUntilChanged((x, y) => JSON.stringify(x) === JSON.stringify(y)),
+);
+
 const streams = Object.entries(objects).map(([channel, def]) => {
-  return events.pipe(
+  const channelEvents = source.pipe(
     map(events => events.filter(event => def.script.filter(event))),
+  );
+
+  function channelId(channel: string): string {
+    return `${config.channelRoot}.${channel}`;
+  }
+
+  const removeEventData = of(1).pipe(
+    tap(_ => {
+      log(`No events for ${channel}, removing`);
+
+      Object.entries(def.nested).forEach(([state, def]) => {
+        const stateId = `${channelId(channel)}.${state}`;
+        const type = (def.common as iobJS.StateCommon).type;
+        let value = undefined;
+
+        switch (type) {
+          case 'string':
+            value = '';
+            break;
+
+          case 'object':
+            value = null;
+            break;
+
+          default:
+            throw new Error(`Unsupported type ${type} for ${stateId}`);
+        }
+
+        setState(stateId, value, true, err => {
+          if (err) {
+            log(`Could not reset ${stateId} to ${value}: ${err}`, 'error');
+          }
+        });
+      });
+    }),
+  );
+
+  const setEventData = channelEvents.pipe(
+    mergeMap(x => x),
+    scan((closestEvent, candidate) => {
+      if (closestEvent._end < new Date()) {
+        // Closest event has passed.
+        return candidate;
+      }
+
+      if (closestEvent._date < candidate._date) {
+        // Candidate starts later than closest event.
+        return closestEvent;
+      }
+
+      return candidate;
+    }),
+    distinctUntilKeyChanged('_IDID'),
+    tap(event => {
+      log(`Next event for ${channel}: ${event.event} (ID ${event._IDID})`);
+    }),
+    tap(event => {
+      Object.entries(def.nested).forEach(([state, def]) => {
+        if (!def.script?.source) {
+          return;
+        }
+
+        const stateId = `${channelId(channel)}.${state}`;
+        const value = def.script.source(event);
+
+        setState(stateId, value, true, err => {
+          if (err) {
+            log(`Could not set ${stateId} to ${value}: ${err}`, 'error');
+          }
+        });
+      });
+    }),
+  );
+
+  return channelEvents.pipe(
     switchMap(events => {
-      const removeEventData = of(1).pipe(
-        tap(_ => {
-          log(`No events for ${channel}, removing`);
-
-          Object.entries(def.nested).forEach(([state, def]) => {
-            const stateId = `${channelId(channel)}.${state}`;
-            const type = (def.common as iobJS.StateCommon).type;
-            let value = undefined;
-
-            switch (type) {
-              case 'string':
-                value = '';
-                break;
-
-              case 'object':
-                value = null;
-                break;
-
-              default:
-                throw new Error(`Unsupported type ${type} for ${stateId}`);
-            }
-
-            setState(stateId, value, true, err => {
-              if (err) {
-                log(`Could not reset ${stateId} to ${value}: ${err}`, 'error');
-              }
-            });
-          });
-        }),
-      );
-
-      const setEventData = of(...events).pipe(
-        scan((closestEvent, candidate) => {
-          if (!closestEvent) {
-            // Initial candidate.
-            return candidate;
-          }
-
-          if (closestEvent._end < new Date()) {
-            // Closest event has passed.
-            return candidate;
-          }
-
-          if (closestEvent._date < candidate._date) {
-            // Candidate starts later than closest event.
-            return closestEvent;
-          }
-
-          return candidate;
-        }),
-        filter(event => event !== undefined),
-        distinctUntilKeyChanged('_IDID'),
-        tap((event: Event) => {
-          log(`New event for ${channel}: ${event.event}`);
-        }),
-        tap((event: Event) => {
-          Object.entries(def.nested).forEach(([state, def]) => {
-            if (!def.script?.source) {
-              return;
-            }
-
-            const stateId = `${channelId(channel)}.${state}`;
-            const value = def.script.source(event);
-
-            setState(stateId, value, true, err => {
-              if (err) {
-                log(`Could not set ${stateId} to ${value}: ${err}`, 'error');
-              }
-            });
-          });
-        }),
-      );
-
-      return iif(() => events.length === 0, removeEventData, setEventData);
+      return events.length === 0 ? removeEventData : setEventData;
     }),
   );
 });
 
-await ObjectCreator.create(objects, channelRoot);
+await ObjectCreator.create(objects, config.channelRoot);
 
 log('Subscribing to events');
 const subscriptions = streams.map(stream => stream.subscribe());
