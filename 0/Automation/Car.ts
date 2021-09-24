@@ -377,6 +377,7 @@ function getUserDataDefinition(
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car alarm timestamp'),
+                  attr_device_class: 'timestamp',
                 },
               },
             }),
@@ -469,9 +470,7 @@ const alarms = cars.map(car => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  const reasons = `^${escape(
-    car.root,
-  )}\\.history\\.dwaPushHistory\\..*\\.dwaAlarmReasonClustered$`;
+  const reasons = `^${escape(car.root)}\\.history\\.dwaPushHistory\\..*\\.id$`;
 
   log(`Subscribing to alarms ${reasons}`);
 
@@ -485,13 +484,14 @@ const alarms = cars.map(car => {
       id: new RegExp(reasons),
     },
     event => {
-      const entry = event.id.replace(/\.dwaAlarmReasonClustered$/, '');
+      const entry = event.id.replace(/\.\w+$/, '');
+      const reason = getState(entry + '.dwaAlarmReasonClustered').val;
       const ack = getState(entry + '.fnsAcknowledged').val === true;
       const ts = new Date(getState(entry + '.vehicleUtcTimestamp').val);
 
       return {
-        id: event.id,
-        reason: event.state.val,
+        id: event.state.val,
+        reason: reason,
         acknowledged: ack,
         timestamp: ts,
       };
@@ -503,15 +503,17 @@ const alarms = cars.map(car => {
         Notify.mobile(
           `${x.acknowledged ? 'Acknowledged ' : ''}${
             car.name
-          } alarm from ${x.timestamp.toLocaleString()}: ${x.reason}`,
+          } alarm from ${x.timestamp.toLocaleString()}: ${x.reason} (ID: ${
+            x.id
+          })`,
         ),
       ),
       tap(x => {
         const reason = x.acknowledged ? '' : x.reason;
         const ts = x.acknowledged ? null : x.timestamp.toLocaleString();
 
-        setState('0_userdata.0.' + car.root + '.Alarm.reason', reason);
-        setState('0_userdata.0.' + car.root + '.Alarm.timestamp', ts);
+        setState('0_userdata.0.' + car.root + '.Alarm.reason', reason, true);
+        setState('0_userdata.0.' + car.root + '.Alarm.timestamp', ts, true);
       }),
     )
     .subscribe();
