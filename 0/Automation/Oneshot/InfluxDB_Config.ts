@@ -442,6 +442,22 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     check(enabledDataPoints, id, expect);
   });
 
+  $('state[id=alias.0.vw-connect.0.*.fuel-level]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Fuel Level`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
   $('state[id=alias.0.vw-connect.0.*.fuel-range]').each(id => {
     const expect = {
       enabled: true,
