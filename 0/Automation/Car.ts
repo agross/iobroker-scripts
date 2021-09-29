@@ -579,7 +579,9 @@ const parkedWithWindowOpen = cars.map(car => {
 });
 
 const parkedAtHomeUnlocked = cars.map(car => {
-  const atHome = new Stream<boolean>('0_userdata.0.presence').stream;
+  const atHome = new Stream<boolean>('0_userdata.0.presence').stream.pipe(
+    distinctUntilChanged(),
+  );
 
   const locked = new Stream<boolean>(
     `alias.0.${car.root}.States.locked`,
@@ -594,7 +596,9 @@ const parkedAtHomeUnlocked = cars.map(car => {
     locked,
     parkingBreakEngaged,
   ]).pipe(
-    filter(([atHome, locked, parked]) => atHome && !locked && parked),
+    map(([atHome, locked, parked]) => atHome && !locked && parked),
+    distinctUntilChanged((last, now) => last === false && now === true),
+    filter(x => x === true),
     tap(_ => Notify.mobile('Car is parked at home and unlocked!')),
   );
 
@@ -613,7 +617,7 @@ const tightenTyres = cars.map(car => {
 
   const setTightenMileage = tyreChange
     .pipe(
-      filter(x => x),
+      filter(x => x === true),
       withLatestFrom(mileage),
       map(([_, mileage]) => mileage + 50),
       tap(tighten => setState(tightenTyresState, tighten, true)),
