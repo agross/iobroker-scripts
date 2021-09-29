@@ -44,7 +44,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       },
       start: {
         name: 'Start date',
-        type: 'string',
+        type: 'mixed',
         device_class: 'timestamp',
         script: {
           source: (event: Event) => {
@@ -54,7 +54,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       },
       end: {
         name: 'End date',
-        type: 'string',
+        type: 'mixed',
         device_class: 'timestamp',
         script: {
           source: (event: Event) => {
@@ -169,6 +169,7 @@ const streams = Object.entries(objects).map(([channel, def]) => {
             value = '';
             break;
 
+          case 'mixed':
           case 'object':
             value = null;
             break;
