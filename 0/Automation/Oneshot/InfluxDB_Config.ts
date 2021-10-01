@@ -506,7 +506,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=0_userdata.0.vw-connect.0.*.window-open]').each(id => {
+  $('state[id=0_userdata.0.vw-connect.0.*.windows-closed]').each(id => {
     const expect = {
       enabled: true,
       changesOnly: true,
@@ -516,7 +516,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Window Open`,
+      aliasId: `${deviceName(id)} Windows Closed`,
     };
 
     check(enabledDataPoints, id, expect);

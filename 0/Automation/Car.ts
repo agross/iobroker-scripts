@@ -424,17 +424,32 @@ function getUserDataDefinition(
           common: { name: 'States' },
           native: {},
           nested: {
-            'window-open': state({
+            'windows-open': state({
               role: 'indicator.state',
               type: 'boolean',
               read: true,
               write: false,
-              name: 'Window open',
+              name: 'Windows open',
               custom: {
                 'lovelace.0': {
                   enabled: true,
                   entity: 'binary_sensor',
-                  name: Lovelace.id('Car window open'),
+                  name: Lovelace.id('Car windows open'),
+                  attr_device_class: 'window',
+                },
+              },
+            }),
+            'windows-closed': state({
+              role: 'indicator.state',
+              type: 'boolean',
+              read: true,
+              write: false,
+              name: 'Windows closed',
+              custom: {
+                'lovelace.0': {
+                  enabled: true,
+                  entity: 'binary_sensor',
+                  name: Lovelace.id('Car windows closed'),
                   attr_device_class: 'window',
                 },
               },
@@ -549,11 +564,17 @@ const parkedWithWindowOpen = cars.map(car => {
     distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
   );
 
-  const windowOpenState = `0_userdata.0.${car.root}.States.window-open`;
+  const windowsOpenState = `0_userdata.0.${car.root}.States.windows-open`;
+  const windowsClosedState = `0_userdata.0.${car.root}.States.windows-closed`;
 
-  const openWindowState = openWindows.pipe(
+  const windowUserStates = openWindows.pipe(
     tap(windows => log(`Open windows: ${windows.map(w => w.window).join()}`)),
-    tap(windows => setState(windowOpenState, windows.length > 0, true)),
+    tap(windows => {
+      const closed = windows.length === 0;
+
+      setState(windowsOpenState, !closed, true);
+      setState(windowsClosedState, closed, true);
+    }),
   );
 
   const locked = new Stream<boolean>(
@@ -575,7 +596,7 @@ const parkedWithWindowOpen = cars.map(car => {
     tap(_ => Notify.mobile('Car is parked and locked with window open!')),
   );
 
-  return [openWindowState.subscribe(), parkedWithWindowOpen.subscribe()];
+  return [windowUserStates.subscribe(), parkedWithWindowOpen.subscribe()];
 });
 
 const parkedAtHomeUnlocked = cars.map(car => {
