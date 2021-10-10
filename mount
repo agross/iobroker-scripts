@@ -3,9 +3,15 @@
 set -e
 
 script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-host="${MOUNT:-pi}"
+
+if ! scutil --dns | grep --quiet --fixed-strings home.therightstuff.de; then
+  host="${MOUNT:-pi}"
+else
+  host="${MOUNT:-finn}"
+fi
+
 remote_dir=/data/iobroker/scripts
-local_dir="$script_dir/pi"
+local_dir="$script_dir/host"
 
 mkdir --parents "$local_dir"
 
