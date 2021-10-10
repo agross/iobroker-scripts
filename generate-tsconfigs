@@ -3,9 +3,6 @@
 set -euo pipefail
 # set -x
 
-mapfile -t typescripts < <(find 0 -type f -name '*.ts' -not -iwholename '*/global/*')
-mapfile -t globals < <(cd 0/global && find -- * -type f -name '*.ts')
-
 template="$(cat <<EOT
 {
   "extends": "%stsconfig.json",
@@ -27,30 +24,36 @@ concat() {
   done
 }
 
-for ts in "${typescripts[@]}"; do
-  printf '%s\n' "$ts"
+for location in home; do
+  mapfile -t typescripts < <(find "$location" -type f -name '*.ts' -not -iwholename '*/global/*')
+  mapfile -t globals < <(cd "$location/global" && find -- * -type f -name '*.ts')
 
-  depth="${ts//[^\/]}"
-  depth="${#depth}"
 
-  root_relative="$(concat '../' "$depth")"
-  global_relative="$(concat '../' "$((depth - 1))")"
+  for ts in "${typescripts[@]}"; do
+    printf '%s\n' "$ts"
 
-  printf -v global_scripts "\"${global_relative}global/%s\", " "${globals[@]}"
+    depth="${ts//[^\/]}"
+    depth="${#depth}"
 
-  # shellcheck disable=SC2059
-  printf "$template" \
-         "$root_relative" \
-         "$root_relative" \
-         "$global_scripts" \
-         "${ts##*/}" \
-         "$global_relative" \
-         > "${ts%.ts}.tsconfig.json"
+    root_relative="$(concat '../' "$depth")"
+    global_relative="$(concat '../' "$((depth - 1))")"
 
-  npx prettier --write "${ts%.ts}.tsconfig.json"
+    printf -v global_scripts "\"${global_relative}global/%s\", " "${globals[@]}"
+
+    # shellcheck disable=SC2059
+    printf "$template" \
+           "$root_relative" \
+           "$root_relative" \
+           "$global_scripts" \
+           "${ts##*/}" \
+           "$global_relative" \
+           > "${ts%.ts}.tsconfig.json"
+
+    npx prettier --write "${ts%.ts}.tsconfig.json"
+  done
 done
 
-mapfile -t tsconfigs < <(find 0 -type f -name '*.tsconfig.json' | sort)
+mapfile -t tsconfigs < <(find . -mindepth 1 -type f -name '*.tsconfig.json' | sort)
 
 paths=''
 for tsconfig in "${tsconfigs[@]}"; do

@@ -3,91 +3,91 @@
   "exclude": ["*"],
   "references": [
     {
-      "path": "0/Automation/Alarm.tsconfig.json"
+      "path": "./home/Automation/Alarm.tsconfig.json"
     },
     {
-      "path": "0/Automation/Bind_Amp_To_TV.tsconfig.json"
+      "path": "./home/Automation/Bind_Amp_To_TV.tsconfig.json"
     },
     {
-      "path": "0/Automation/Car.tsconfig.json"
+      "path": "./home/Automation/Car.tsconfig.json"
     },
     {
-      "path": "0/Automation/Heating_Period.tsconfig.json"
+      "path": "./home/Automation/Heating_Period.tsconfig.json"
     },
     {
-      "path": "0/Automation/HomeMatic_Shutters.tsconfig.json"
+      "path": "./home/Automation/HomeMatic_Shutters.tsconfig.json"
     },
     {
-      "path": "0/Automation/Oneshot/InfluxDB_Config.tsconfig.json"
+      "path": "./home/Automation/Oneshot/InfluxDB_Config.tsconfig.json"
     },
     {
-      "path": "0/Automation/Oneshot/Media_Player_Alias.tsconfig.json"
+      "path": "./home/Automation/Oneshot/Media_Player_Alias.tsconfig.json"
     },
     {
-      "path": "0/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"
+      "path": "./home/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"
     },
     {
-      "path": "0/Automation/Oneshot/WOL_AXL.tsconfig.json"
+      "path": "./home/Automation/Oneshot/WOL_AXL.tsconfig.json"
     },
     {
-      "path": "0/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
+      "path": "./home/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
     },
     {
-      "path": "0/Automation/Presence.tsconfig.json"
+      "path": "./home/Automation/Presence.tsconfig.json"
     },
     {
-      "path": "0/Automation/Shutters.tsconfig.json"
+      "path": "./home/Automation/Shutters.tsconfig.json"
     },
     {
-      "path": "0/Automation/TV_Idle.tsconfig.json"
+      "path": "./home/Automation/TV_Idle.tsconfig.json"
     },
     {
-      "path": "0/Automation/TV_Idle_Monitor.tsconfig.json"
+      "path": "./home/Automation/TV_Idle_Monitor.tsconfig.json"
     },
     {
-      "path": "0/Automation/Washing_Machine.tsconfig.json"
+      "path": "./home/Automation/Washing_Machine.tsconfig.json"
     },
     {
-      "path": "0/GW/Early_Bird.tsconfig.json"
+      "path": "./home/GW/Early_Bird.tsconfig.json"
     },
     {
-      "path": "0/GW/Events.tsconfig.json"
+      "path": "./home/GW/Events.tsconfig.json"
     },
     {
-      "path": "0/GW/Next_Event_Weather.tsconfig.json"
+      "path": "./home/GW/Next_Event_Weather.tsconfig.json"
     },
     {
-      "path": "0/GW/Returning_Home.tsconfig.json"
+      "path": "./home/GW/Returning_Home.tsconfig.json"
     },
     {
-      "path": "0/Lights/Bathroom_Lights.tsconfig.json"
+      "path": "./home/Lights/Bathroom_Lights.tsconfig.json"
     },
     {
-      "path": "0/Lights/Entrance_Door_Lights.tsconfig.json"
+      "path": "./home/Lights/Entrance_Door_Lights.tsconfig.json"
     },
     {
-      "path": "0/Lights/Global_Brightness_Override.tsconfig.json"
+      "path": "./home/Lights/Global_Brightness_Override.tsconfig.json"
     },
     {
-      "path": "0/Lights/Remotes.tsconfig.json"
+      "path": "./home/Lights/Remotes.tsconfig.json"
     },
     {
-      "path": "0/Lights/Utility_Room_Lights.tsconfig.json"
+      "path": "./home/Lights/Utility_Room_Lights.tsconfig.json"
     },
     {
-      "path": "0/Remote_Control/Living_Room_1_Short.tsconfig.json"
+      "path": "./home/Remote_Control/Living_Room_1_Short.tsconfig.json"
     },
     {
-      "path": "0/Remote_Control/Living_Room_2_Short.tsconfig.json"
+      "path": "./home/Remote_Control/Living_Room_2_Short.tsconfig.json"
     },
     {
-      "path": "0/Remote_Control/Living_Room_5_Short.tsconfig.json"
+      "path": "./home/Remote_Control/Living_Room_5_Short.tsconfig.json"
     },
     {
-      "path": "0/Remote_Control/Living_Room_6_Long.tsconfig.json"
+      "path": "./home/Remote_Control/Living_Room_6_Long.tsconfig.json"
     },
     {
-      "path": "0/Remote_Control/Living_Room_6_Short.tsconfig.json"
+      "path": "./home/Remote_Control/Living_Room_6_Short.tsconfig.json"
     }
   ]
 }
