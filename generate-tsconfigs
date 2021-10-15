@@ -25,7 +25,7 @@ concat() {
 }
 
 for location in home ogd; do
-  mapfile -t typescripts < <(find "$location" -type f -name '*.ts' -not -iwholename '*/global/*')
+  mapfile -t typescripts < <(find "$location" -type f,l -name '*.ts' -not -iwholename '*/global/*')
   mapfile -t globals < <(cd "$location/global" && find -- * -type f -name '*.ts')
 
 
