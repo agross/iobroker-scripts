@@ -118,8 +118,7 @@ const weather: ObjectDefinitionRoot = {
               type: 'string',
               role: `weather.icon.forecast.${day}`,
               source: `${weatherSource}.Summary.WeatherIconURL_d${humanizedDay}`,
-              read:
-                'val.startsWith("http://") ? val.replace("http://", "https://") : val',
+              read: 'val.startsWith("http://") ? val.replace("http://", "https://") : val',
             }),
             temp_min: state({
               type: 'number',
@@ -177,13 +176,13 @@ async function searchLocation(
   location: string,
 ): Promise<[string, string]> {
   try {
-    const result = ((await got
+    const result = (await got
       .get('http://dataservice.accuweather.com/locations/v1/search', {
         cache: httpRequestCache,
         retry: 0,
         searchParams: { apikey: apiKey, q: location, language: 'de' },
       })
-      .json<any[]>()) as unknown) as any[];
+      .json<any[]>()) as unknown as any[];
 
     if (!result.length) {
       log(`No location ID for ${location}`, 'error');
