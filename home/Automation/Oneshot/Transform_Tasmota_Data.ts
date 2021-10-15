@@ -29,7 +29,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       const lovelaceEntityType = ObjectCreator.getEnumIds(
         stateId,
         'functions',
-      ).includes('enum.functions.Light')
+      ).includes('enum.functions.light')
         ? 'light'
         : 'switch';
 

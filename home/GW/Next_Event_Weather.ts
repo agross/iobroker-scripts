@@ -67,7 +67,7 @@ const weather: ObjectDefinitionRoot = {
     type: 'device',
     common: { name: 'Next Event Weather' },
     native: {},
-    enumIds: ['enum.rooms.fake', 'enum.functions.Weather'],
+    enumIds: ['enum.rooms.fake', 'enum.functions.weather'],
     nested: [...Array(5)]
       .map((_, index) => {
         return [index, index + 1];

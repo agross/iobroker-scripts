@@ -771,8 +771,8 @@ const remotes = [
       brightnessChange: BRIGHTNESS_CHANGE,
       lights: DimmableLights.for(
         ...new ObjectsWithStateQuery({
-          rooms: 'Kitchen',
-          functions: 'Light',
+          rooms: 'kitchen',
+          functions: 'light',
         }).values(),
       ),
     },
@@ -794,8 +794,8 @@ const remotes = [
       brightnessChange: BRIGHTNESS_CHANGE,
       lights: DimmableLights.for(
         ...new ObjectsWithStateQuery({
-          rooms: 'Bedroom',
-          functions: 'Light',
+          rooms: 'bedroom',
+          functions: 'light',
         }).values(),
       ),
     },
@@ -815,8 +815,8 @@ const remotes = [
       brightnessChange: BRIGHTNESS_CHANGE,
       lights: DimmableLights.for(
         ...new ObjectsWithStateQuery({
-          rooms: 'Living Room',
-          functions: 'Light',
+          rooms: 'living_room',
+          functions: 'light',
         }).values(),
       ),
     },

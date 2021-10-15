@@ -27,7 +27,7 @@ function getAliasDefinition(
       type: 'device',
       native: {},
       common: { name: car.name, role: 'device' },
-      enumIds: ['enum.rooms.fake', 'enum.functions.Security'],
+      enumIds: ['enum.rooms.fake', 'enum.functions.security'],
       nested: {
         Maintenance: {
           type: 'channel',
@@ -345,7 +345,7 @@ function getUserDataDefinition(
       type: 'device',
       native: {},
       common: { name: car.name, role: 'device' },
-      enumIds: ['enum.rooms.fake', 'enum.functions.Security'],
+      enumIds: ['enum.rooms.fake', 'enum.functions.security'],
       nested: {
         Alarm: {
           type: 'channel',

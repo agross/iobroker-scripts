@@ -1,4 +1,4 @@
-$('state[id=zigbee.*.available](functions=Light)').each(id => {
+$('state[id=zigbee.*.available](functions=light)').each(id => {
   const match = id.match(/^(zigbee\.\d+)\.([^.]+)\.available$/);
 
   const instance = match[1];

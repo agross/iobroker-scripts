@@ -79,7 +79,7 @@ interface LightState {
 }
 
 const lightStates: Observable<LightState>[] = [
-  ...$('state[role=switch][id=*.state](functions=Light)'),
+  ...$('state[role=switch][id=*.state](functions=light)'),
 ].map(light => {
   log(`Monitoring ${light} (${getState(light).val ? 'on' : 'off'})`);
 
@@ -138,7 +138,7 @@ interface LightBrightness {
 }
 
 const lightBrightnesses: Observable<LightBrightness>[] = [
-  ...$('state[role=level.dimmer][id=*.brightness](functions=Light)'),
+  ...$('state[role=level.dimmer][id=*.brightness](functions=light)'),
 ].map(brightness => {
   log(`Monitoring ${brightness} (${getState(brightness).val})`);
 
