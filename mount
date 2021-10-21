@@ -4,7 +4,7 @@ set -e
 
 script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 
-if ! scutil --dns | grep --quiet --fixed-strings home.therightstuff.de; then
+if scutil --dns | grep --quiet --fixed-strings home.therightstuff.de; then
   host="${MOUNT:-pi}"
 else
   host="${MOUNT:-finn}"
