@@ -5,6 +5,7 @@
     "../global/Lovelace.ts",
     "../global/Notify.ts",
     "../global/Object_Creator.ts",
+    "../global/Remotes.ts",
     "../global/Stream.ts",
     "Next_Event_Weather.ts"
   ],

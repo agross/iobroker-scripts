@@ -5,6 +5,7 @@
     "../global/Lovelace.ts",
     "../global/Notify.ts",
     "../global/Object_Creator.ts",
+    "../global/Remotes.ts",
     "../global/Stream.ts",
     "Entrance_Door_Lights.ts"
   ],
