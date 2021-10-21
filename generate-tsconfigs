@@ -3,6 +3,8 @@
 set -euo pipefail
 # set -x
 
+locations=(home ogd)
+
 template="$(cat <<EOT
 {
   "extends": "%stsconfig.json",
@@ -24,7 +26,7 @@ concat() {
   done
 }
 
-for location in home ogd; do
+for location in "${locations[@]}"; do
   mapfile -t typescripts < <(find "$location" -type f,l -name '*.ts' -not -iwholename '*/global/*')
   mapfile -t globals < <(cd "$location/global" && find -- * -type f -name '*.ts')
 
@@ -53,7 +55,7 @@ for location in home ogd; do
   done
 done
 
-mapfile -t tsconfigs < <(find . -mindepth 1 -type f -name '*.tsconfig.json' | sort)
+mapfile -t tsconfigs < <(find "${locations[@]}" -mindepth 1 -type f -name '*.tsconfig.json' | sort)
 
 paths=''
 for tsconfig in "${tsconfigs[@]}"; do
