@@ -784,6 +784,7 @@ const remotes = [
         'scene.0.Kitchen.Lights_Downlight_+_Dining',
         'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
         'scene.0.Kitchen.Lights_Bright',
+        'scene.0.Kitchen.Lights_Cozy',
       ],
     },
   }),
