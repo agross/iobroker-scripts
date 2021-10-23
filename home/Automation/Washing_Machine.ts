@@ -1,30 +1,57 @@
-import { Observable } from 'rxjs';
+import { EMPTY, of, timer } from 'rxjs';
 import {
   bufferCount,
   filter,
   first,
   map,
-  share,
   switchMap,
   tap,
 } from 'rxjs/operators';
 
-const workingThreshold = 10;
-const finishedThreshold = 20;
-const device = 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power';
-const powerState = 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.state';
-const reenableAfter =
-  8 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000; /* ms */
+const config = {
+  workingThreshold: 10,
+  finishedThreshold: 20,
+  powerMonitor: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power',
+  powerState: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.state',
+  repowerTimeout: 5 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
+  // 8 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
+  repowerState: ['0_userdata.0', 'repower-washing-machine'],
+};
 
-const powerUsage = new Observable<number>(observer => {
-  on({ id: device, ack: true }, event => {
-    observer.next(event.state.val as number);
-  });
-}).pipe(share());
+await ObjectCreator.create(
+  {
+    [config.repowerState[1]]: {
+      type: 'state',
+      common: {
+        name: 'Repower Washing Machine',
+        type: 'mixed',
+        def: null,
+        read: true,
+        write: true,
+        role: 'indicator',
+        custom: {
+          'lovelace.0': {
+            enabled: true,
+            entity: 'sensor',
+            name: Lovelace.id('Repower Washing Machine'),
+            attr_device_class: 'timestamp',
+          },
+        },
+      } as StateCommonExt,
+      native: {},
+    },
+  },
+  config.repowerState[0],
+);
+
+const powerUsage = new Stream<number>(
+  config.powerMonitor,
+  event => event.state.val as number,
+).stream;
 
 const running = powerUsage.pipe(
   tap(watts => log(`Usage ${JSON.stringify(watts)}`, 'debug')),
-  filter(watts => watts >= workingThreshold),
+  filter(watts => watts >= config.workingThreshold),
 );
 
 const notRunning = powerUsage.pipe(
@@ -32,22 +59,68 @@ const notRunning = powerUsage.pipe(
   bufferCount(6),
   tap(watts => log(`Buffer ${watts}`)),
   map(watts => watts.reduce((acc, x) => acc + x, 0)),
-  filter(watts => watts < finishedThreshold),
+  filter(watts => watts < config.finishedThreshold),
 );
+
+const repower = new Stream<string>(config.repowerState.join('.')).stream
+  .pipe(
+    switchMap(date => {
+      if (!date) {
+        return EMPTY;
+      }
+
+      const dueDate = new Date(date);
+      if (dueDate < new Date()) {
+        return of(1);
+      }
+
+      return timer(dueDate).pipe(first());
+    }),
+    tap(_ => {
+      setState(config.powerState, true, false, err => {
+        if (err) {
+          log(`Could not repower washing machine: ${err}`, 'error');
+        } else {
+          Notify.mobile('Washing machine repowered');
+        }
+      });
+
+      setState(config.repowerState.join('.'), null, true, err => {
+        if (err) {
+          log(
+            `Could not reset ${config.repowerState.join('.')}: ${err}`,
+            'error',
+          );
+        }
+      });
+    }),
+  )
+  .subscribe();
 
 const done = running
   .pipe(
     switchMap(_ => notRunning.pipe(first())),
     tap(_ => Notify.mobile(`Washing machine has finished`)),
-    tap(_ => setState(powerState, false)),
-    tap(_ =>
-      setStateDelayed(powerState, true, reenableAfter, true, _ =>
-        Notify.mobile(`Washing machine re-powered`),
-      ),
-    ),
+    tap(_ => setState(config.powerState, false)),
+    tap(_ => {
+      const dueDate = new Date(Date.now() + config.repowerTimeout);
+
+      setState(config.repowerState.join('.'), dueDate, true, err => {
+        if (err) {
+          log(
+            `Could not set timestamp to repower washing machine to ${dueDate.toLocaleString()}: ${err}`,
+            'error',
+          );
+        } else {
+          log(
+            `Set timestamp to repower washing machine to ${dueDate.toLocaleString()}`,
+          );
+        }
+      });
+    }),
   )
   .subscribe();
 
 onStop(() => {
-  done.unsubscribe();
+  [done, repower].forEach(x => x.unsubscribe());
 });
