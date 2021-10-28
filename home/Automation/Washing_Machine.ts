@@ -13,8 +13,8 @@ const config = {
   finishedThreshold: 20,
   powerMonitor: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power',
   powerState: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.state',
-  repowerTimeout: 5 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
-  // 8 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
+  repowerTimeout:
+    8 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
   repowerState: ['0_userdata.0', 'repower-washing-machine'],
 };
 
