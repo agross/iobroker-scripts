@@ -130,6 +130,55 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     check(enabledDataPoints, id, expect);
   });
 
+  // Temperature, humidity and pressure sensor.
+  $('state[id=zigbee.*.temperature]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Temperature`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=zigbee.*.humidity]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Humidity`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=zigbee.*.pressure]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Pressure`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
   // Lights.
   $('state[id=zigbee.*.state](functions=light)').each(id => {
     const expect = {
