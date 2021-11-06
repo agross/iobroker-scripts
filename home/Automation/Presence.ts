@@ -20,6 +20,7 @@ await ObjectCreator.create(
             enabled: true,
             entity: 'switch',
             name: Lovelace.id('Presence'),
+            attr_icon: 'mdi:location-enter',
           },
         },
       } as iobJS.StateCommon,

@@ -49,7 +49,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           unit: 'W',
           read: true,
           write: false,
-          name: `${stateIdToPurpose(stateId)} power usage`,
+          name: `${stateIdToPurpose(stateId)} Power Usage`,
         },
         state: {
           alias: {
@@ -61,12 +61,14 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           type: 'boolean',
           read: true,
           write: true,
-          name: `${stateIdToPurpose(stateId)} power state`,
+          name: `${stateIdToPurpose(stateId)} Power`,
           custom: {
             'lovelace.0': {
               enabled: true,
               entity: lovelaceEntityType,
               name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
+              attr_device_class: 'outlet',
+              attr_icon: 'mdi:power-socket-eu',
             },
           },
         },

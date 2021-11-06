@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.json",
+  "files": [
+    "../../../iobroker.d.ts",
+    "../../global/Lovelace.ts",
+    "../../global/Notify.ts",
+    "../../global/Object_Creator.ts",
+    "../../global/Remotes.ts",
+    "../../global/Stream.ts",
+    "Lovelace_Config.ts"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "../../"
+  }
+}

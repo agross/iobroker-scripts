@@ -20,7 +20,7 @@ await ObjectCreator.create(
     [override[1]]: {
       type: 'state',
       common: {
-        name: 'Global brightness override',
+        name: 'Global Brightness Override',
         type: 'number',
         def: 50,
         read: true,
@@ -30,10 +30,11 @@ await ObjectCreator.create(
           'lovelace.0': {
             enabled: true,
             entity: 'input_number',
-            name: Lovelace.id('Global brightness override'),
+            name: Lovelace.id('Global Brightness Override'),
             min: 0,
             max: 100,
             step: 1,
+            attr_icon: 'mdi:lightbulb-on-outline',
           },
         },
       } as iobJS.StateCommon,

@@ -19,7 +19,7 @@ await ObjectCreator.create(
     [alarmEnabled[1]]: {
       type: 'state',
       common: {
-        name: 'Alarm enabled',
+        name: 'Alarm Enabled',
         type: 'boolean',
         def: false,
         read: true,
@@ -29,7 +29,8 @@ await ObjectCreator.create(
           'lovelace.0': {
             enabled: true,
             entity: 'switch',
-            name: Lovelace.id('Alarm enabled'),
+            name: Lovelace.id('Alarm Enabled'),
+            attr_icon: 'mdi:lock',
           },
         },
       } as iobJS.StateCommon,

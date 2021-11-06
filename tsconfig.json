@@ -21,6 +21,9 @@
       "path": "home/Automation/Oneshot/InfluxDB_Config.tsconfig.json"
     },
     {
+      "path": "home/Automation/Oneshot/Lovelace_Config.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Oneshot/Media_Player_Alias.tsconfig.json"
     },
     {

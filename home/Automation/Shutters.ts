@@ -16,14 +16,14 @@ const sunrise = schedule({ astro: 'sunrise' }, async () => {
       `Sunny day shutters until ${noonPlusOneHour.toLocaleString()}`,
     );
 
-    await setStateAsync('scene.0.Shutters.Sunny_day', true);
+    await setStateAsync('scene.0.Shutters.Sunny_Day', true);
 
     const setDayShutters = schedule(
       formatDate(noonPlusOneHour, 'm h * * *'),
       async () => {
         Notify.mobile('Setting shutters to sunny day afternoon levels');
 
-        await setStateAsync('scene.0.Shutters.Sunny_day_afternoon', true);
+        await setStateAsync('scene.0.Shutters.Sunny_Day_Afternoon', true);
         if (!clearSchedule(setDayShutters)) {
           log(
             'Error clearing schedule to return shutters to normal day levels',

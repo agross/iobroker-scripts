@@ -1,0 +1,325 @@
+import util from 'util';
+
+const config = {
+  dryRun: false,
+  lovelaceAdapterId: 'lovelace.0',
+};
+
+function deviceName(id: string, initialId?: string): string {
+  const deviceId = id.replace(/\.[^.]*$/, '');
+  if (deviceId == id) {
+    return initialId;
+  }
+
+  if (!existsObject(deviceId)) {
+    // Search parent.
+    return deviceName(deviceId, initialId ? initialId : id);
+  }
+
+  const device = getObject(deviceId);
+  if (device.type !== 'device' && device.common.role !== 'device') {
+    // Search parent.
+    return deviceName(deviceId, initialId ? initialId : id);
+  }
+
+  return device.common.name;
+}
+
+function shrinkObject(object: {}, ...keepKeys: string[]): {} {
+  if (!object) {
+    return object;
+  }
+
+  Object.getOwnPropertyNames(object).forEach(prop => {
+    if (!keepKeys.includes(prop)) {
+      delete object[prop];
+    }
+  });
+
+  return object;
+}
+
+async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
+  const state = await getObjectAsync(stateId);
+  const commonShrunkDownToExpected = shrinkObject(
+    state.common.custom && state.common.custom[config.lovelaceAdapterId],
+    ...Object.getOwnPropertyNames(expected),
+  );
+
+  if (
+    commonShrunkDownToExpected &&
+    util.isDeepStrictEqual(
+      JSON.parse(JSON.stringify(expected)),
+      JSON.parse(JSON.stringify(commonShrunkDownToExpected)),
+    )
+  ) {
+    return;
+  }
+
+  log(
+    `${stateId}: expected ${JSON.stringify(
+      expected,
+      null,
+      2,
+    )} but got ${JSON.stringify(commonShrunkDownToExpected, null, 2)}`,
+    'warn',
+  );
+
+  if (config.dryRun) {
+    return;
+  }
+
+  await extendObjectAsync(stateId, {
+    common: {
+      custom: { [config.lovelaceAdapterId]: expected },
+    },
+  });
+}
+
+// Lights.
+$('state[id=zigbee.*.state](functions=light)').each(async id => {
+  log(id);
+  const deviceId = id.replace(/\.state$/, '');
+  const name = (await getObjectAsync(deviceId)).common.name;
+
+  await extendObjectAsync(deviceId, { common: { smartName: name } });
+});
+
+// Scenes.
+$('state[id=scene.*][role=scene.state]').each(async id => {
+  const name = id.replace(/^scene\.\d+\./, '').replace(/[._]/g, ' ');
+
+  const expect = {
+    enabled: true,
+    entity: 'scene',
+    name: Lovelace.id(name),
+    attr_friendly_name: name,
+  };
+
+  await check(id, expect);
+});
+
+// HomeMatic presence detectors.
+$('state[id=hm-rpc.*.1.ILLUMINATION]').each(async id => {
+  const name = `${deviceName(id)} Illumination`;
+
+  const expect = {
+    enabled: true,
+    entity: 'sensor',
+    name: Lovelace.id(name),
+    attr_device_class: 'illuminance',
+    attr_unit_of_measurement: 'lm',
+    attr_friendly_name: name,
+  };
+
+  await check(id, expect);
+});
+
+$('state[id=hm-rpc.*.1.PRESENCE_DETECTION_STATE]').each(async id => {
+  const name = `${deviceName(id)} Presence`;
+
+  const expect = {
+    enabled: true,
+    entity: 'binary_sensor',
+    name: Lovelace.id(name),
+    attr_device_class: 'motion',
+    attr_friendly_name: name,
+  };
+
+  await check(id, expect);
+});
+
+// HomeMatic ReGa variables.
+$('state[id=hm-rega.*]').each(async id => {
+  if (!id.match(/hm-rega\.\d\.\d+$/)) {
+    return;
+  }
+
+  let name = await (await getObjectAsync(id)).common.name;
+  let icon;
+  switch (name) {
+    case '${sysVarPresence}':
+      name = 'HomeMatic Presence';
+      icon = 'mdi:location-enter';
+      break;
+
+    case 'Heating Period':
+      name = 'HomeMatic Heating Period';
+      icon = 'mdi:radiator';
+      break;
+  }
+
+  const expect = {
+    enabled: true,
+    entity: 'switch',
+    name: Lovelace.id(name),
+    attr_device_class: 'switch',
+    attr_icon: icon,
+    attr_friendly_name: name,
+  };
+
+  await check(id, expect);
+});
+
+// Scripts.
+$('state[id=javascript.*.scriptEnabled.Automation.*][role=switch.active]').each(
+  async id => {
+    const name = id.replace(/^javascript\.\d+\.scriptEnabled\./, '');
+    const lovelaceId = name.replace(/[._]/g, ' ');
+    const friendlyName = name.replace(/.*\.(\w+)$/, '$1').replace(/[._]/g, ' ');
+
+    const expect = {
+      enabled: true,
+      entity: 'automation',
+      name: Lovelace.id(lovelaceId),
+      attr_friendly_name: friendlyName,
+    };
+
+    await check(id, expect);
+  },
+);
+
+// Pinged machines.
+$('state[id=ping.*.iobroker.*]').each(async id => {
+  const aliveMachine = (await getObjectAsync(id)).common.name;
+  const machine = aliveMachine.replace(/^Alive\s+/, '').toUpperCase();
+  const name = `${machine} On`;
+
+  const expect = {
+    enabled: true,
+    entity: 'binary_sensor',
+    name: Lovelace.id(name),
+    attr_friendly_name: name,
+    attr_device_class: 'power',
+  };
+
+  await check(id, expect);
+});
+
+// Kodi.
+$('state[id=kodi.*.info.connection]').each(async id => {
+  const name = 'Kodi Connected';
+
+  const expect = {
+    enabled: true,
+    entity: 'binary_sensor',
+    name: Lovelace.id(name),
+    attr_friendly_name: name,
+    attr_device_class: 'connectivity',
+  };
+
+  await check(id, expect);
+});
+
+// ADB.
+$('state[id=adb.*.*.connection]').each(async id => {
+  if ((await getObjectAsync(id.replace(/\.[^.]*$/, ''))).type !== 'device') {
+    return;
+  }
+
+  const name = 'ADB Connected';
+
+  const expect = {
+    enabled: true,
+    entity: 'binary_sensor',
+    name: Lovelace.id(name),
+    attr_friendly_name: name,
+    attr_device_class: 'connectivity',
+  };
+
+  await check(id, expect);
+});
+
+// Temperature.
+$(
+  'state[id=daswetter.*.NextDays.Location_1.Day_1.Maximale_Temperatur_value]',
+).each(async id => {
+  const expect = {
+    enabled: true,
+    entity: 'sensor',
+    name: Lovelace.id('Weather Max Temp Today'),
+    attr_friendly_name: 'Highest Day Temperature',
+    attr_icon: 'mdi:thermometer-chevron-up',
+  };
+
+  await check(id, expect);
+});
+
+// Ecovacs Deebot.
+$('state[id=ecovacs-deebot.*.control.clean]').each(async id => {
+  const expect = {
+    enabled: true,
+    entity: 'switch',
+    name: Lovelace.id('Clean All Rooms'),
+    attr_device_class: 'switch',
+    attr_icon: 'mdi:broom',
+    attr_friendly_name: 'Clean All Rooms',
+  };
+
+  await check(id, expect);
+});
+
+$('state[id=ecovacs-deebot.*.control.spotArea_*]').each(async id => {
+  if (!id.match(/\d$/)) {
+    return;
+  }
+
+  const area = (await getObjectAsync(id)).common.name;
+
+  if (area.length === 1) {
+    log(
+      `Spot area ${id} named ${area} has not been configured by the user`,
+      'warn',
+    );
+    return;
+  }
+
+  const expect = {
+    enabled: true,
+    entity: 'switch',
+    name: Lovelace.id(`Clean ${area}`),
+    attr_device_class: 'switch',
+    attr_icon: 'mdi:broom',
+    attr_friendly_name: `Clean ${area}`,
+  };
+
+  await check(id, expect);
+});
+
+$('state[id=ecovacs-deebot.*.control.pause]').each(async id => {
+  const expect = {
+    enabled: true,
+    entity: 'switch',
+    name: Lovelace.id(`Pause Cleaning`),
+    attr_device_class: 'switch',
+    attr_icon: 'mdi:pause',
+  };
+
+  await check(id, expect);
+});
+
+$('state[id=ecovacs-deebot.*.control.resume]').each(async id => {
+  const expect = {
+    enabled: true,
+    entity: 'switch',
+    name: Lovelace.id(`Resume Cleaning`),
+    attr_device_class: 'switch',
+    attr_icon: 'mdi:play-pause',
+  };
+
+  await check(id, expect);
+});
+
+$('state[id=ecovacs-deebot.*.control.stop]').each(async id => {
+  const expect = {
+    enabled: true,
+    entity: 'switch',
+    name: Lovelace.id(`Stop Cleaning`),
+    attr_device_class: 'switch',
+    attr_icon: 'mdi:stop',
+  };
+
+  await check(id, expect);
+});
+
+stopScript(undefined);
