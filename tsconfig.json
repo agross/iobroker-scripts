@@ -18,6 +18,9 @@
       "path": "home/Automation/HomeMatic_Shutters.tsconfig.json"
     },
     {
+      "path": "home/Automation/Oneshot/Ecovacs_Deebot.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Oneshot/InfluxDB_Config.tsconfig.json"
     },
     {
