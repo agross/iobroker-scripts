@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "files": [
     "../../iobroker.d.ts",
+    "../global/Device.ts",
     "../global/Lovelace.ts",
     "../global/Notify.ts",
     "../global/Object_Creator.ts",

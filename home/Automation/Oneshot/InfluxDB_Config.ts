@@ -1,24 +1,5 @@
 const dryRun: boolean = false;
 
-function deviceName(id: string, initialId?: string): string {
-  const deviceId = id.replace(/\.[^.]*$/, '');
-  if (deviceId == id) {
-    return initialId;
-  }
-
-  const device = getObject(deviceId);
-
-  if (
-    !device ||
-    (device.type !== 'device' && device.common.role !== 'device')
-  ) {
-    // Search parent.
-    return deviceName(deviceId, initialId ? initialId : id);
-  }
-
-  return device.common.name;
-}
-
 function room(id: string): string {
   return (getObject(id, 'rooms') as any).enumNames[0].en;
 }
@@ -30,7 +11,13 @@ function check(enabledDataPoints: {}, id: string, expected: {}) {
     return;
   }
 
-  const name = deviceName(id) || id;
+  let name: string;
+  try {
+    name = Device.deviceName(id);
+  } catch {
+    // In the case of "system.*" there is no device.
+    name = id;
+  }
 
   log(
     `${name} (${id}): expected ${JSON.stringify(
@@ -77,7 +64,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Availability`,
+      aliasId: `${Device.deviceName(id)} Availability`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -92,7 +79,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Battery Percentage`,
+      aliasId: `${Device.deviceName(id)} Battery Percentage`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -107,7 +94,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Link Quality`,
+      aliasId: `${Device.deviceName(id)} Link Quality`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -124,7 +111,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Illumination`,
+      aliasId: `${Device.deviceName(id)} Illumination`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -140,7 +127,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Presence`,
+      aliasId: `${Device.deviceName(id)} Presence`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -157,7 +144,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Open`,
+      aliasId: `${Device.deviceName(id)} Open`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -174,7 +161,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Temperature`,
+      aliasId: `${Device.deviceName(id)} Temperature`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -190,7 +177,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Humidity`,
+      aliasId: `${Device.deviceName(id)} Humidity`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -206,7 +193,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Pressure`,
+      aliasId: `${Device.deviceName(id)} Pressure`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -223,7 +210,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Light On`,
+      aliasId: `${Device.deviceName(id)} Light On`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -240,7 +227,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Power`,
+      aliasId: `${Device.deviceName(id)} Power`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -256,7 +243,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Power Watts`,
+      aliasId: `${Device.deviceName(id)} Power Watts`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -277,7 +264,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Unreachable`,
+      aliasId: `${Device.deviceName(id)} Unreachable`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -296,7 +283,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} RSSI Peer`,
+      aliasId: `${Device.deviceName(id)} RSSI Peer`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -315,7 +302,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} RSSI Device`,
+      aliasId: `${Device.deviceName(id)} RSSI Device`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -336,7 +323,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Low Battery`,
+      aliasId: `${Device.deviceName(id)} Low Battery`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -356,7 +343,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Current Temperature`,
+      aliasId: `${Device.deviceName(id)} Current Temperature`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -375,7 +362,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Humidity`,
+      aliasId: `${Device.deviceName(id)} Humidity`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -394,7 +381,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Target Temperature`,
+      aliasId: `${Device.deviceName(id)} Target Temperature`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -413,7 +400,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Valve`,
+      aliasId: `${Device.deviceName(id)} Valve`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -433,7 +420,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Illumination`,
+      aliasId: `${Device.deviceName(id)} Illumination`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -453,7 +440,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Presence`,
+      aliasId: `${Device.deviceName(id)} Presence`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -486,7 +473,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Mileage`,
+      aliasId: `${Device.deviceName(id)} Mileage`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -502,7 +489,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Oil Level`,
+      aliasId: `${Device.deviceName(id)} Oil Level`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -518,7 +505,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} AdBlue Range`,
+      aliasId: `${Device.deviceName(id)} AdBlue Range`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -534,7 +521,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Fuel Level`,
+      aliasId: `${Device.deviceName(id)} Fuel Level`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -550,7 +537,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Fuel Range`,
+      aliasId: `${Device.deviceName(id)} Fuel Range`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -566,7 +553,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Locked`,
+      aliasId: `${Device.deviceName(id)} Locked`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -582,7 +569,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Parking Break Engaged`,
+      aliasId: `${Device.deviceName(id)} Parking Break Engaged`,
     };
 
     check(enabledDataPoints, id, expect);
@@ -598,7 +585,7 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${deviceName(id)} Windows Closed`,
+      aliasId: `${Device.deviceName(id)} Windows Closed`,
     };
 
     check(enabledDataPoints, id, expect);

@@ -5,26 +5,6 @@ const config = {
   lovelaceAdapterId: 'lovelace.0',
 };
 
-function deviceName(id: string, initialId?: string): string {
-  const deviceId = id.replace(/\.[^.]*$/, '');
-  if (deviceId == id) {
-    return initialId;
-  }
-
-  if (!existsObject(deviceId)) {
-    // Search parent.
-    return deviceName(deviceId, initialId ? initialId : id);
-  }
-
-  const device = getObject(deviceId);
-  if (device.type !== 'device' && device.common.role !== 'device') {
-    // Search parent.
-    return deviceName(deviceId, initialId ? initialId : id);
-  }
-
-  return device.common.name;
-}
-
 function shrinkObject(object: {}, ...keepKeys: string[]): {} {
   if (!object) {
     return object;
@@ -78,7 +58,6 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
 
 // Lights.
 $('state[id=zigbee.*.state](functions=light)').each(async id => {
-  log(id);
   const deviceId = id.replace(/\.state$/, '');
   const name = (await getObjectAsync(deviceId)).common.name;
 
@@ -101,7 +80,7 @@ $('state[id=scene.*][role=scene.state]').each(async id => {
 
 // HomeMatic presence detectors.
 $('state[id=hm-rpc.*.1.ILLUMINATION]').each(async id => {
-  const name = `${deviceName(id)} Illumination`;
+  const name = `${Device.deviceName(id)} Illumination`;
 
   const expect = {
     enabled: true,
@@ -116,7 +95,7 @@ $('state[id=hm-rpc.*.1.ILLUMINATION]').each(async id => {
 });
 
 $('state[id=hm-rpc.*.1.PRESENCE_DETECTION_STATE]').each(async id => {
-  const name = `${deviceName(id)} Presence`;
+  const name = `${Device.deviceName(id)} Presence`;
 
   const expect = {
     enabled: true,

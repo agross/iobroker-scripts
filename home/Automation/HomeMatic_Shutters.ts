@@ -13,37 +13,11 @@ import {
 } from 'rxjs/operators';
 
 function getObjectDefinition(): ObjectDefinitionRoot {
-  function deviceId(id: string, initialId?: string): string {
-    const _deviceId = id.replace(/\.[^.]*$/, '');
-    if (_deviceId == id) {
-      return initialId;
-    }
-
-    const device = getObject(_deviceId);
-
-    if (!device || device.type !== 'device') {
-      // Search parent.
-      return deviceId(_deviceId, initialId ? initialId : id);
-    }
-
-    return _deviceId;
-  }
-
-  function deviceName(id: string): string {
-    const device = getObject(deviceId(id));
-
-    if (!device) {
-      return id;
-    }
-
-    return device.common?.name;
-  }
-
   // HomeMatic shutters.
   return [
     ...$('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}'),
   ].reduce<ObjectDefinitionRoot>((acc, stateId) => {
-    const device = deviceId(stateId);
+    const device = Device.id(stateId);
 
     const deviceStates: {
       [id: string]: iobJS.StateCommon;
@@ -66,7 +40,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           'lovelace.0': {
             enabled: true,
             entity: 'input_number',
-            name: Lovelace.id(`${deviceName(stateId)} Level`),
+            name: Lovelace.id(`${Device.deviceName(stateId)} Level`),
           },
         },
       },
@@ -89,7 +63,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           'lovelace.0': {
             enabled: true,
             entity: 'switch',
-            name: Lovelace.id(`${deviceName(stateId)} Close`),
+            name: Lovelace.id(`${Device.deviceName(stateId)} Close`),
           },
         },
       },
@@ -112,7 +86,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           'lovelace.0': {
             enabled: true,
             entity: 'switch',
-            name: Lovelace.id(`${deviceName(stateId)} Open`),
+            name: Lovelace.id(`${Device.deviceName(stateId)} Open`),
           },
         },
       },
@@ -132,7 +106,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           'lovelace.0': {
             enabled: true,
             entity: 'switch',
-            name: Lovelace.id(`${deviceName(stateId)} Stop`),
+            name: Lovelace.id(`${Device.deviceName(stateId)} Stop`),
           },
         },
       },
@@ -154,7 +128,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           'lovelace.0': {
             enabled: true,
             entity: 'input_number',
-            name: Lovelace.id(`${deviceName(stateId)} Tilt Level`),
+            name: Lovelace.id(`${Device.deviceName(stateId)} Tilt Level`),
           },
         },
       },
@@ -177,7 +151,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           'lovelace.0': {
             enabled: true,
             entity: 'switch',
-            name: Lovelace.id(`${deviceName(stateId)} Tilt Close`),
+            name: Lovelace.id(`${Device.deviceName(stateId)} Tilt Close`),
           },
         },
       },
@@ -200,7 +174,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           'lovelace.0': {
             enabled: true,
             entity: 'switch',
-            name: Lovelace.id(`${deviceName(stateId)} Tilt Open`),
+            name: Lovelace.id(`${Device.deviceName(stateId)} Tilt Open`),
           },
         },
       },
@@ -209,7 +183,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     acc[device] = {
       type: 'device',
       native: {},
-      common: { name: deviceName(stateId), role: 'blind' },
+      common: { name: Device.deviceName(stateId), role: 'blind' },
       enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
       nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
         acc[id] = { type: 'state', native: {}, common: common };
