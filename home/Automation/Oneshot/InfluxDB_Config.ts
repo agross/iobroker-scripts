@@ -113,6 +113,39 @@ sendTo('influxdb.0', 'getEnabledDPs', {}, (enabledDataPoints: {}) => {
     check(enabledDataPoints, id, expect);
   });
 
+  // Motion sensor.
+  $('state[id=zigbee.*.illuminance]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Illumination`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=zigbee.*.occupancy]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${deviceName(id)} Presence`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
   // Door contacts.
   $('state[id=zigbee.*.opened]').each(id => {
     const expect = {
