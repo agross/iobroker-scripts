@@ -42,93 +42,118 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   });
 }
 
-// Lights.
-$('state[id=zigbee.*.state](functions=light)').each(async id => {
-  const deviceId = id.replace(/\.state$/, '');
-  const name = (await getObjectAsync(deviceId)).common.name;
+zigbeeLights();
 
-  await extendObjectAsync(deviceId, { common: { smartName: name } });
-});
+scenes();
 
-// Scenes.
-$('state[id=scene.*][role=scene.state]').each(async id => {
-  const name = id.replace(/^scene\.\d+\./, '').replace(/[._]/g, ' ');
+homeMaticPresenceDetectors();
 
-  const expect = {
-    enabled: true,
-    entity: 'scene',
-    name: Lovelace.id(name),
-    attr_friendly_name: name,
-  };
+homeMaticVariables();
 
-  await check(id, expect);
-});
+scripts();
 
-// HomeMatic presence detectors.
-$('state[id=hm-rpc.*.1.ILLUMINATION]').each(async id => {
-  const name = `${Device.deviceName(id)} Illumination`;
+pingedMachines();
 
-  const expect = {
-    enabled: true,
-    entity: 'sensor',
-    name: Lovelace.id(name),
-    attr_device_class: 'illuminance',
-    attr_unit_of_measurement: 'lm',
-    attr_friendly_name: name,
-  };
+kodi();
 
-  await check(id, expect);
-});
+androidDebugBridge();
 
-$('state[id=hm-rpc.*.1.PRESENCE_DETECTION_STATE]').each(async id => {
-  const name = `${Device.deviceName(id)} Presence`;
+maxDayTemperature();
 
-  const expect = {
-    enabled: true,
-    entity: 'binary_sensor',
-    name: Lovelace.id(name),
-    attr_device_class: 'motion',
-    attr_friendly_name: name,
-  };
+ecovacsDeebot();
 
-  await check(id, expect);
-});
+function zigbeeLights() {
+  $('state[id=zigbee.*.state](functions=light)').each(async id => {
+    const deviceId = id.replace(/\.state$/, '');
+    const name = (await getObjectAsync(deviceId)).common.name;
 
-// HomeMatic ReGa variables.
-$('state[id=hm-rega.*]').each(async id => {
-  if (!id.match(/hm-rega\.\d\.\d+$/)) {
-    return;
-  }
+    await extendObjectAsync(deviceId, { common: { smartName: name } });
+  });
+}
 
-  let name = await (await getObjectAsync(id)).common.name;
-  let icon;
-  switch (name) {
-    case '${sysVarPresence}':
-      name = 'HomeMatic Presence';
-      icon = 'mdi:location-enter';
-      break;
+function scenes() {
+  $('state[id=scene.*][role=scene.state]').each(async id => {
+    const name = id.replace(/^scene\.\d+\./, '').replace(/[._]/g, ' ');
 
-    case 'Heating Period':
-      name = 'HomeMatic Heating Period';
-      icon = 'mdi:radiator';
-      break;
-  }
+    const expect = {
+      enabled: true,
+      entity: 'scene',
+      name: Lovelace.id(name),
+      attr_friendly_name: name,
+    };
 
-  const expect = {
-    enabled: true,
-    entity: 'switch',
-    name: Lovelace.id(name),
-    attr_device_class: 'switch',
-    attr_icon: icon,
-    attr_friendly_name: name,
-  };
+    await check(id, expect);
+  });
+}
 
-  await check(id, expect);
-});
+function homeMaticPresenceDetectors() {
+  $('state[id=hm-rpc.*.1.ILLUMINATION]').each(async id => {
+    const name = `${Device.deviceName(id)} Illumination`;
 
-// Scripts.
-$('state[id=javascript.*.scriptEnabled.Automation.*][role=switch.active]').each(
-  async id => {
+    const expect = {
+      enabled: true,
+      entity: 'sensor',
+      name: Lovelace.id(name),
+      attr_device_class: 'illuminance',
+      attr_unit_of_measurement: 'lm',
+      attr_friendly_name: name,
+    };
+
+    await check(id, expect);
+  });
+
+  $('state[id=hm-rpc.*.1.PRESENCE_DETECTION_STATE]').each(async id => {
+    const name = `${Device.deviceName(id)} Presence`;
+
+    const expect = {
+      enabled: true,
+      entity: 'binary_sensor',
+      name: Lovelace.id(name),
+      attr_device_class: 'motion',
+      attr_friendly_name: name,
+    };
+
+    await check(id, expect);
+  });
+}
+
+function homeMaticVariables() {
+  $('state[id=hm-rega.*]').each(async id => {
+    if (!id.match(/hm-rega\.\d\.\d+$/)) {
+      return;
+    }
+
+    let name = await (await getObjectAsync(id)).common.name;
+    let icon;
+    switch (name) {
+      case '${sysVarPresence}':
+        name = 'HomeMatic Presence';
+        icon = 'mdi:location-enter';
+        break;
+
+      case 'Heating Period':
+        name = 'HomeMatic Heating Period';
+        icon = 'mdi:radiator';
+        break;
+    }
+
+    const expect = {
+      enabled: true,
+      entity: 'switch',
+      name: Lovelace.id(name),
+      attr_device_class: 'switch',
+      attr_icon: icon,
+      attr_friendly_name: name,
+    };
+
+    await check(id, expect);
+  });
+}
+
+function scripts() {
+  $(
+    'state[id=javascript.*.scriptEnabled.Automation.*][role=switch.active]',
+  ).each(async id => {
     const name = id.replace(/^javascript\.\d+\.scriptEnabled\./, '');
     const lovelaceId = name.replace(/[._]/g, ' ');
     const friendlyName = name.replace(/.*\.(\w+)$/, '$1').replace(/[._]/g, ' ');
@@ -141,150 +166,155 @@ $('state[id=javascript.*.scriptEnabled.Automation.*][role=switch.active]').each(
     };
 
     await check(id, expect);
-  },
-);
+  });
+}
 
-// Pinged machines.
-$('state[id=ping.*.iobroker.*]').each(async id => {
-  const aliveMachine = (await getObjectAsync(id)).common.name;
-  const machine = aliveMachine.replace(/^Alive\s+/, '').toUpperCase();
-  const name = `${machine} On`;
+function pingedMachines() {
+  $('state[id=ping.*.iobroker.*]').each(async id => {
+    const aliveMachine = (await getObjectAsync(id)).common.name;
+    const machine = aliveMachine.replace(/^Alive\s+/, '').toUpperCase();
+    const name = `${machine} On`;
 
-  const expect = {
-    enabled: true,
-    entity: 'binary_sensor',
-    name: Lovelace.id(name),
-    attr_friendly_name: name,
-    attr_device_class: 'power',
-  };
+    const expect = {
+      enabled: true,
+      entity: 'binary_sensor',
+      name: Lovelace.id(name),
+      attr_friendly_name: name,
+      attr_device_class: 'power',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
+}
 
-// Kodi.
-$('state[id=kodi.*.info.connection]').each(async id => {
-  const name = 'Kodi Connected';
+function kodi() {
+  $('state[id=kodi.*.info.connection]').each(async id => {
+    const name = 'Kodi Connected';
 
-  const expect = {
-    enabled: true,
-    entity: 'binary_sensor',
-    name: Lovelace.id(name),
-    attr_friendly_name: name,
-    attr_device_class: 'connectivity',
-  };
+    const expect = {
+      enabled: true,
+      entity: 'binary_sensor',
+      name: Lovelace.id(name),
+      attr_friendly_name: name,
+      attr_device_class: 'connectivity',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
+}
 
-// ADB.
-$('state[id=adb.*.*.connection]').each(async id => {
-  if ((await getObjectAsync(id.replace(/\.[^.]*$/, ''))).type !== 'device') {
-    return;
-  }
+function androidDebugBridge() {
+  $('state[id=adb.*.*.connection]').each(async id => {
+    if ((await getObjectAsync(id.replace(/\.[^.]*$/, ''))).type !== 'device') {
+      return;
+    }
 
-  const name = 'ADB Connected';
+    const name = 'ADB Connected';
 
-  const expect = {
-    enabled: true,
-    entity: 'binary_sensor',
-    name: Lovelace.id(name),
-    attr_friendly_name: name,
-    attr_device_class: 'connectivity',
-  };
+    const expect = {
+      enabled: true,
+      entity: 'binary_sensor',
+      name: Lovelace.id(name),
+      attr_friendly_name: name,
+      attr_device_class: 'connectivity',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
+}
 
-// Temperature.
-$(
-  'state[id=daswetter.*.NextDays.Location_1.Day_1.Maximale_Temperatur_value]',
-).each(async id => {
-  const expect = {
-    enabled: true,
-    entity: 'sensor',
-    name: Lovelace.id('Weather Max Temp Today'),
-    attr_friendly_name: 'Highest Day Temperature',
-    attr_icon: 'mdi:thermometer-chevron-up',
-  };
+function maxDayTemperature() {
+  $(
+    'state[id=daswetter.*.NextDays.Location_1.Day_1.Maximale_Temperatur_value]',
+  ).each(async id => {
+    const expect = {
+      enabled: true,
+      entity: 'sensor',
+      name: Lovelace.id('Weather Max Temp Today'),
+      attr_friendly_name: 'Highest Day Temperature',
+      attr_icon: 'mdi:thermometer-chevron-up',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
+}
 
-// Ecovacs Deebot.
-$('state[id=ecovacs-deebot.*.control.clean]').each(async id => {
-  const expect = {
-    enabled: true,
-    entity: 'switch',
-    name: Lovelace.id('Clean All Rooms'),
-    attr_device_class: 'switch',
-    attr_icon: 'mdi:broom',
-    attr_friendly_name: 'Clean All Rooms',
-  };
+function ecovacsDeebot() {
+  $('state[id=ecovacs-deebot.*.control.clean]').each(async id => {
+    const expect = {
+      enabled: true,
+      entity: 'switch',
+      name: Lovelace.id('Clean All Rooms'),
+      attr_device_class: 'switch',
+      attr_icon: 'mdi:broom',
+      attr_friendly_name: 'Clean All Rooms',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
 
-$('state[id=ecovacs-deebot.*.control.spotArea_*]').each(async id => {
-  if (!id.match(/\d$/)) {
-    return;
-  }
+  $('state[id=ecovacs-deebot.*.control.spotArea_*]').each(async id => {
+    if (!id.match(/\d$/)) {
+      return;
+    }
 
-  const area = (await getObjectAsync(id)).common.name;
+    const area = (await getObjectAsync(id)).common.name;
 
-  if (area.length === 1) {
-    log(
-      `Spot area ${id} named ${area} has not been configured by the user`,
-      'warn',
-    );
-    return;
-  }
+    if (area.length === 1) {
+      log(
+        `Spot area ${id} named ${area} has not been configured by the user`,
+        'warn',
+      );
+      return;
+    }
 
-  const expect = {
-    enabled: true,
-    entity: 'switch',
-    name: Lovelace.id(`Clean ${area}`),
-    attr_device_class: 'switch',
-    attr_icon: 'mdi:broom',
-    attr_friendly_name: `Clean ${area}`,
-  };
+    const expect = {
+      enabled: true,
+      entity: 'switch',
+      name: Lovelace.id(`Clean ${area}`),
+      attr_device_class: 'switch',
+      attr_icon: 'mdi:broom',
+      attr_friendly_name: `Clean ${area}`,
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
 
-$('state[id=ecovacs-deebot.*.control.pause]').each(async id => {
-  const expect = {
-    enabled: true,
-    entity: 'switch',
-    name: Lovelace.id(`Pause Cleaning`),
-    attr_device_class: 'switch',
-    attr_icon: 'mdi:pause',
-  };
+  $('state[id=ecovacs-deebot.*.control.pause]').each(async id => {
+    const expect = {
+      enabled: true,
+      entity: 'switch',
+      name: Lovelace.id(`Pause Cleaning`),
+      attr_device_class: 'switch',
+      attr_icon: 'mdi:pause',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
 
-$('state[id=ecovacs-deebot.*.control.resume]').each(async id => {
-  const expect = {
-    enabled: true,
-    entity: 'switch',
-    name: Lovelace.id(`Resume Cleaning`),
-    attr_device_class: 'switch',
-    attr_icon: 'mdi:play-pause',
-  };
+  $('state[id=ecovacs-deebot.*.control.resume]').each(async id => {
+    const expect = {
+      enabled: true,
+      entity: 'switch',
+      name: Lovelace.id(`Resume Cleaning`),
+      attr_device_class: 'switch',
+      attr_icon: 'mdi:play-pause',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
 
-$('state[id=ecovacs-deebot.*.control.stop]').each(async id => {
-  const expect = {
-    enabled: true,
-    entity: 'switch',
-    name: Lovelace.id(`Stop Cleaning`),
-    attr_device_class: 'switch',
-    attr_icon: 'mdi:stop',
-  };
+  $('state[id=ecovacs-deebot.*.control.stop]').each(async id => {
+    const expect = {
+      enabled: true,
+      entity: 'switch',
+      name: Lovelace.id(`Stop Cleaning`),
+      attr_device_class: 'switch',
+      attr_icon: 'mdi:stop',
+    };
 
-  await check(id, expect);
-});
+    await check(id, expect);
+  });
+}
 
 stopScript(undefined);
