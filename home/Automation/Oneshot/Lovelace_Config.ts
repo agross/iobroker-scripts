@@ -253,6 +253,19 @@ function ecovacsDeebot() {
     await check(id, expect);
   });
 
+  $('state[id=ecovacs-deebot.*.control.charge]').each(async id => {
+    const expect = {
+      enabled: true,
+      entity: 'switch',
+      name: Lovelace.id('Return To Charge'),
+      attr_device_class: 'switch',
+      attr_icon: 'mdi:ev-station',
+      attr_friendly_name: 'Return To Charge',
+    };
+
+    await check(id, expect);
+  });
+
   $('state[id=ecovacs-deebot.*.control.spotArea_*]').each(async id => {
     if (!id.match(/\d$/)) {
       return;
