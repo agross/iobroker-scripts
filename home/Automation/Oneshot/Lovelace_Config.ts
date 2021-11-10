@@ -5,23 +5,9 @@ const config = {
   lovelaceAdapterId: 'lovelace.0',
 };
 
-function shrinkObject(object: {}, ...keepKeys: string[]): {} {
-  if (!object) {
-    return object;
-  }
-
-  Object.getOwnPropertyNames(object).forEach(prop => {
-    if (!keepKeys.includes(prop)) {
-      delete object[prop];
-    }
-  });
-
-  return object;
-}
-
 async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   const state = await getObjectAsync(stateId);
-  const commonShrunkDownToExpected = shrinkObject(
+  const commonShrunkDownToExpected = Utils.shrink(
     state.common.custom && state.common.custom[config.lovelaceAdapterId],
     ...Object.getOwnPropertyNames(expected),
   );

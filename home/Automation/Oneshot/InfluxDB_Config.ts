@@ -1,16 +1,24 @@
+import util from 'util';
+
 const config = {
   dryRun: false,
   influxDbAdapterId: 'influxdb.0',
 };
 
-function room(id: string): string {
-  return (getObject(id, 'rooms') as any).enumNames[0].en;
-}
-
 function check(enabledDataPoints: {}, id: string, expected: {}) {
   const actual = enabledDataPoints[id];
 
-  if (JSON.stringify(expected) === JSON.stringify(actual)) {
+  const actualShrunkDownToExpected = Utils.shrink(
+    actual,
+    ...Object.getOwnPropertyNames(expected),
+  );
+
+  if (
+    util.isDeepStrictEqual(
+      JSON.parse(JSON.stringify(expected)),
+      JSON.parse(JSON.stringify(actualShrunkDownToExpected)),
+    )
+  ) {
     return;
   }
 

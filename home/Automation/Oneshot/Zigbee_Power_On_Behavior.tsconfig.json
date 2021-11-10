@@ -8,6 +8,7 @@
     "../../global/Object_Creator.ts",
     "../../global/Remotes.ts",
     "../../global/Stream.ts",
+    "../../global/Utils.ts",
     "Zigbee_Power_On_Behavior.ts"
   ],
   "compilerOptions": {
