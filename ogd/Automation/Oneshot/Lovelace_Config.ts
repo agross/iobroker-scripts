@@ -1,0 +1,1 @@
+../../../home/Automation/Oneshot/Lovelace_Config.ts
