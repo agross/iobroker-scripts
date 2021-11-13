@@ -43,6 +43,7 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
 }
 
 zigbeeLights();
+zigbeeDoorContacts();
 
 scenes();
 
@@ -68,6 +69,23 @@ function zigbeeLights() {
     const name = (await getObjectAsync(deviceId)).common.name;
 
     await extendObjectAsync(deviceId, { common: { smartName: name } });
+  });
+}
+
+function zigbeeDoorContacts() {
+  $('state[id=zigbee.*.opened]').each(async id => {
+    const deviceId = id.replace(/\.opened$/, '');
+    const name = (await getObjectAsync(deviceId)).common.name;
+
+    const expect = {
+      enabled: true,
+      entity: 'binary_sensor',
+      name: Lovelace.id(name),
+      attr_device_class: 'opening',
+      attr_friendly_name: name.replace(/\bContact$/, ''),
+    };
+
+    await check(id, expect);
   });
 }
 
