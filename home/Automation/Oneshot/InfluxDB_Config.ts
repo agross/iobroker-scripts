@@ -14,6 +14,7 @@ function check(enabledDataPoints: {}, id: string, expected: {}) {
   );
 
   if (
+    actualShrunkDownToExpected &&
     util.isDeepStrictEqual(
       JSON.parse(JSON.stringify(expected)),
       JSON.parse(JSON.stringify(actualShrunkDownToExpected)),
