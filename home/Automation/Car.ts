@@ -254,7 +254,7 @@ function getAliasDefinition(
           nested: {
             ['adblue-range']: state({
               alias: {
-                id: `${car.root}.status.data_0x0204FFFFFF.field_0x02040C0001.value`,
+                id: `${car.root}.status.data_0x02040C0001.field_0x02040C0001.value`,
               },
               role: 'indicator',
               type: 'number',
@@ -312,7 +312,7 @@ function getAliasDefinition(
             }),
             ['oil-level']: state({
               alias: {
-                id: `${car.root}.status.data_0x0204FFFFFF.field_0x0204040003.value`,
+                id: `${car.root}.status.data_0x0204040003.field_0x0204040003.value`,
               },
               role: 'indicator',
               type: 'number',
