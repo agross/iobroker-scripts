@@ -7,11 +7,7 @@ const config = {
 
 function check(enabledDataPoints: {}, id: string, expected: {}) {
   const actual = enabledDataPoints[id];
-
-  const actualShrunkDownToExpected = Utils.shrink(
-    actual,
-    ...Object.getOwnPropertyNames(expected),
-  );
+  const actualShrunkDownToExpected = Utils.shrink(actual, expected);
 
   if (
     actualShrunkDownToExpected &&

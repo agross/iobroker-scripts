@@ -7,10 +7,7 @@ const config = {
 
 async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   const state = await getObjectAsync(stateId);
-  const commonShrunkDownToExpected = Utils.shrink(
-    state.common.custom && state.common.custom[config.lovelaceAdapterId],
-    ...Object.getOwnPropertyNames(expected),
-  );
+  const commonShrunkDownToExpected = Utils.shrink(state.common, expected);
 
   if (
     commonShrunkDownToExpected &&
@@ -36,9 +33,7 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   }
 
   await extendObjectAsync(stateId, {
-    common: {
-      custom: { [config.lovelaceAdapterId]: expected },
-    },
+    common: expected,
   });
 }
 
@@ -68,7 +63,9 @@ function zigbeeLights() {
     const deviceId = id.replace(/\.state$/, '');
     const name = (await getObjectAsync(deviceId)).common.name;
 
-    await extendObjectAsync(deviceId, { common: { smartName: name } });
+    const expect: Partial<iobJS.StateCommon> = { smartName: name };
+
+    await check(deviceId, expect);
   });
 }
 
@@ -77,12 +74,16 @@ function zigbeeDoorContacts() {
     const deviceId = id.replace(/\.opened$/, '');
     const name = (await getObjectAsync(deviceId)).common.name;
 
-    const expect = {
-      enabled: true,
-      entity: 'binary_sensor',
-      name: Lovelace.id(name),
-      attr_device_class: 'opening',
-      attr_friendly_name: name.replace(/\bContact$/, ''),
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'opening',
+          attr_friendly_name: name.replace(/\s+Contact$/, ''),
+        },
+      },
     };
 
     await check(id, expect);
@@ -93,11 +94,15 @@ function scenes() {
   $('state[id=scene.*][role=scene.state]').each(async id => {
     const name = id.replace(/^scene\.\d+\./, '').replace(/[._]/g, ' ');
 
-    const expect = {
-      enabled: true,
-      entity: 'scene',
-      name: Lovelace.id(name),
-      attr_friendly_name: name,
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'scene',
+          name: Lovelace.id(name),
+          attr_friendly_name: name,
+        },
+      },
     };
 
     await check(id, expect);
@@ -108,13 +113,17 @@ function homeMaticPresenceDetectors() {
   $('state[id=hm-rpc.*.1.ILLUMINATION]').each(async id => {
     const name = `${Device.deviceName(id)} Illumination`;
 
-    const expect = {
-      enabled: true,
-      entity: 'sensor',
-      name: Lovelace.id(name),
-      attr_device_class: 'illuminance',
-      attr_unit_of_measurement: 'lm',
-      attr_friendly_name: name,
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'illuminance',
+          attr_unit_of_measurement: 'lm',
+          attr_friendly_name: name,
+        },
+      },
     };
 
     await check(id, expect);
@@ -123,12 +132,16 @@ function homeMaticPresenceDetectors() {
   $('state[id=hm-rpc.*.1.PRESENCE_DETECTION_STATE]').each(async id => {
     const name = `${Device.deviceName(id)} Presence`;
 
-    const expect = {
-      enabled: true,
-      entity: 'binary_sensor',
-      name: Lovelace.id(name),
-      attr_device_class: 'motion',
-      attr_friendly_name: name,
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'motion',
+          attr_friendly_name: name,
+        },
+      },
     };
 
     await check(id, expect);
@@ -155,13 +168,17 @@ function homeMaticVariables() {
         break;
     }
 
-    const expect = {
-      enabled: true,
-      entity: 'switch',
-      name: Lovelace.id(name),
-      attr_device_class: 'switch',
-      attr_icon: icon,
-      attr_friendly_name: name,
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id(name),
+          attr_device_class: 'switch',
+          attr_icon: icon,
+          attr_friendly_name: name,
+        },
+      },
     };
 
     await check(id, expect);
@@ -176,11 +193,15 @@ function scripts() {
     const lovelaceId = name.replace(/[._]/g, ' ');
     const friendlyName = name.replace(/.*\.(\w+)$/, '$1').replace(/[._]/g, ' ');
 
-    const expect = {
-      enabled: true,
-      entity: 'automation',
-      name: Lovelace.id(lovelaceId),
-      attr_friendly_name: friendlyName,
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'automation',
+          name: Lovelace.id(lovelaceId),
+          attr_friendly_name: friendlyName,
+        },
+      },
     };
 
     await check(id, expect);
@@ -193,12 +214,16 @@ function pingedMachines() {
     const machine = aliveMachine.replace(/^Alive\s+/, '').toUpperCase();
     const name = `${machine} On`;
 
-    const expect = {
-      enabled: true,
-      entity: 'binary_sensor',
-      name: Lovelace.id(name),
-      attr_friendly_name: name,
-      attr_device_class: 'power',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_friendly_name: name,
+          attr_device_class: 'power',
+        },
+      },
     };
 
     await check(id, expect);
@@ -209,12 +234,16 @@ function kodi() {
   $('state[id=kodi.*.info.connection]').each(async id => {
     const name = 'Kodi Connected';
 
-    const expect = {
-      enabled: true,
-      entity: 'binary_sensor',
-      name: Lovelace.id(name),
-      attr_friendly_name: name,
-      attr_device_class: 'connectivity',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_friendly_name: name,
+          attr_device_class: 'connectivity',
+        },
+      },
     };
 
     await check(id, expect);
@@ -229,12 +258,16 @@ function androidDebugBridge() {
 
     const name = 'ADB Connected';
 
-    const expect = {
-      enabled: true,
-      entity: 'binary_sensor',
-      name: Lovelace.id(name),
-      attr_friendly_name: name,
-      attr_device_class: 'connectivity',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_friendly_name: name,
+          attr_device_class: 'connectivity',
+        },
+      },
     };
 
     await check(id, expect);
@@ -245,12 +278,16 @@ function maxDayTemperature() {
   $(
     'state[id=daswetter.*.NextDays.Location_1.Day_1.Maximale_Temperatur_value]',
   ).each(async id => {
-    const expect = {
-      enabled: true,
-      entity: 'sensor',
-      name: Lovelace.id('Weather Max Temp Today'),
-      attr_friendly_name: 'Highest Day Temperature',
-      attr_icon: 'mdi:thermometer-chevron-up',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id('Weather Max Temp Today'),
+          attr_friendly_name: 'Highest Day Temperature',
+          attr_icon: 'mdi:thermometer-chevron-up',
+        },
+      },
     };
 
     await check(id, expect);
@@ -259,26 +296,34 @@ function maxDayTemperature() {
 
 function ecovacsDeebot() {
   $('state[id=ecovacs-deebot.*.control.clean]').each(async id => {
-    const expect = {
-      enabled: true,
-      entity: 'switch',
-      name: Lovelace.id('Clean All Rooms'),
-      attr_device_class: 'switch',
-      attr_icon: 'mdi:broom',
-      attr_friendly_name: 'Clean All Rooms',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id('Clean All Rooms'),
+          attr_device_class: 'switch',
+          attr_icon: 'mdi:broom',
+          attr_friendly_name: 'Clean All Rooms',
+        },
+      },
     };
 
     await check(id, expect);
   });
 
   $('state[id=ecovacs-deebot.*.control.charge]').each(async id => {
-    const expect = {
-      enabled: true,
-      entity: 'switch',
-      name: Lovelace.id('Return To Charge'),
-      attr_device_class: 'switch',
-      attr_icon: 'mdi:ev-station',
-      attr_friendly_name: 'Return To Charge',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id('Return To Charge'),
+          attr_device_class: 'switch',
+          attr_icon: 'mdi:ev-station',
+          attr_friendly_name: 'Return To Charge',
+        },
+      },
     };
 
     await check(id, expect);
@@ -299,49 +344,65 @@ function ecovacsDeebot() {
       return;
     }
 
-    const expect = {
-      enabled: true,
-      entity: 'switch',
-      name: Lovelace.id(`Clean ${area}`),
-      attr_device_class: 'switch',
-      attr_icon: 'mdi:broom',
-      attr_friendly_name: `Clean ${area}`,
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id(`Clean ${area}`),
+          attr_device_class: 'switch',
+          attr_icon: 'mdi:broom',
+          attr_friendly_name: `Clean ${area}`,
+        },
+      },
     };
 
     await check(id, expect);
   });
 
   $('state[id=ecovacs-deebot.*.control.pause]').each(async id => {
-    const expect = {
-      enabled: true,
-      entity: 'switch',
-      name: Lovelace.id(`Pause Cleaning`),
-      attr_device_class: 'switch',
-      attr_icon: 'mdi:pause',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id(`Pause Cleaning`),
+          attr_device_class: 'switch',
+          attr_icon: 'mdi:pause',
+        },
+      },
     };
 
     await check(id, expect);
   });
 
   $('state[id=ecovacs-deebot.*.control.resume]').each(async id => {
-    const expect = {
-      enabled: true,
-      entity: 'switch',
-      name: Lovelace.id(`Resume Cleaning`),
-      attr_device_class: 'switch',
-      attr_icon: 'mdi:play-pause',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id(`Resume Cleaning`),
+          attr_device_class: 'switch',
+          attr_icon: 'mdi:play-pause',
+        },
+      },
     };
 
     await check(id, expect);
   });
 
   $('state[id=ecovacs-deebot.*.control.stop]').each(async id => {
-    const expect = {
-      enabled: true,
-      entity: 'switch',
-      name: Lovelace.id(`Stop Cleaning`),
-      attr_device_class: 'switch',
-      attr_icon: 'mdi:stop',
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [config.lovelaceAdapterId]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id(`Stop Cleaning`),
+          attr_device_class: 'switch',
+          attr_icon: 'mdi:stop',
+        },
+      },
     };
 
     await check(id, expect);
