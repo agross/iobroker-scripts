@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.json",
+  "files": [
+    "../../../iobroker.d.ts",
+    "../../global/Device.ts",
+    "../../global/Lovelace.ts",
+    "../../global/Notify.ts",
+    "../../global/Object_Creator.ts",
+    "../../global/Remotes.ts",
+    "../../global/Stream.ts",
+    "../../global/Utils.ts",
+    "Get_Zigbee_Light_Color_Temperature_Range.ts"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "../../"
+  }
+}

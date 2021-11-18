@@ -1,0 +1,1 @@
+../../../home/Automation/Oneshot/Get_Zigbee_Light_Color_Temperature_Range.ts
