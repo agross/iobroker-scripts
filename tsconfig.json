@@ -111,6 +111,9 @@
       "path": "ogd/Automation/Oneshot/Lovelace_Config.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Oneshot/Shelly_Shutters.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
     }
   ]
