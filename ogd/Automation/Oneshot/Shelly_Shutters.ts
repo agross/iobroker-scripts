@@ -142,6 +142,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
   }, {} as ObjectDefinitionRoot);
 }
 
+export {};
 await ObjectCreator.create(getAliasDefinition(), 'alias.0');
 
 await Promise.all(
