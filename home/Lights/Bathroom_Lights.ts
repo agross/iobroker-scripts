@@ -1,35 +1,35 @@
-import { combineLatest, concat, EMPTY, Observable, of } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { distinctUntilKeyChanged, filter, map, tap } from 'rxjs/operators';
 
-function determineScene(): string {
-  let scene = 'scene.0.Bathroom.Lights_Default';
+const config = {
+  presence: 'hm-rpc.1.000C1A49A87471.1.PRESENCE_DETECTION_STATE',
+  overriddenBy: 'scene.0.Bathroom.Lights_Bright',
+  illumination: 'hm-rpc.1.000C1A49A87471.1.ILLUMINATION',
+  illuminationThreshold: 20,
+  turnOff: 'scene.0.Bathroom.Lights',
+  determineScene: () => {
+    let scene = 'scene.0.Bathroom.Lights_Default';
 
-  if (compareTime('1:00', '6:00', 'between')) {
-    scene = 'scene.0.Bathroom.Lights_Ultra_Low';
+    if (compareTime('1:00', '6:00', 'between')) {
+      scene = 'scene.0.Bathroom.Lights_Ultra_Low';
 
-    // If any light is on, use a brighter scene.
-    if (getState('scene.0.Lights.All_Lights_Off').val !== true) {
-      scene = 'scene.0.Bathroom.Lights_Low';
+      // If any light is on, use a brighter scene.
+      if (getState('scene.0.Lights.All_Lights_Off').val !== true) {
+        scene = 'scene.0.Bathroom.Lights_Low';
+      }
     }
-  }
 
-  return scene;
-}
+    return scene;
+  },
+};
 
-const illuminationThreshold = 20;
-
-const presence = new Stream<boolean>(
-  'hm-rpc.1.000C1A49A87471.1.PRESENCE_DETECTION_STATE',
-).stream;
-const overriddenBySwitch = new Stream<boolean>('scene.0.Bathroom.Lights_Bright')
-  .stream;
-const illumination = new Stream<number>(
-  'hm-rpc.1.000C1A49A87471.1.ILLUMINATION',
-).stream;
+const presence = new Stream<boolean>(config.presence).stream;
+const overriddenBy = new Stream<boolean>(config.overriddenBy).stream;
+const illumination = new Stream<number>(config.illumination).stream;
 
 const reactToPresence = combineLatest([
   presence,
-  overriddenBySwitch,
+  overriddenBy,
   illumination,
 ]).pipe(
   map(([p, o, i]) => {
@@ -52,7 +52,7 @@ const turnOff = reactToPresence
     filter(x => x.presence === false),
     tap(_ => {
       log('Bathroom empty, turning off lights');
-      setState('scene.0.Bathroom.Lights', false);
+      setState(config.turnOff, false);
     }),
   )
   .subscribe();
@@ -60,9 +60,9 @@ const turnOff = reactToPresence
 const turnOn = reactToPresence
   .pipe(
     filter(x => x.presence === true),
-    filter(x => x.illumination <= illuminationThreshold),
+    filter(x => x.illumination <= config.illuminationThreshold),
     map(x => {
-      return { ...x, scene: determineScene() };
+      return { ...x, scene: config.determineScene() };
     }),
     tap(x => {
       log(`Bathroom occupied with ${x.illumination} lm, turning on ${x.scene}`);

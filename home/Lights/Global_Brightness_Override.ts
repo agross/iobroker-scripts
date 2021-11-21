@@ -10,14 +10,16 @@ import {
 } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 
-const override = ['0_userdata.0', 'global-brightness-override'];
-const state = override.join('.');
-const remote = 'hm-rpc.1.000B5A49A07F8D';
-const change = 5;
+const config = {
+  override: ['0_userdata.0', 'global-brightness-override'],
+  state: () => config.override.join('.'),
+  remote: 'hm-rpc.1.000B5A49A07F8D',
+  change: 5,
+};
 
 await ObjectCreator.create(
   {
-    [override[1]]: {
+    [config.override[1]]: {
       type: 'state',
       common: {
         name: 'Global Brightness Override',
@@ -41,31 +43,31 @@ await ObjectCreator.create(
       native: {},
     },
   },
-  override[0],
+  config.override[0],
 );
 
-on({ id: `${remote}.3.PRESS_LONG`, ack: true }, _ => {
-  let brightness = getState(state).val - change;
+on({ id: `${config.remote}.3.PRESS_LONG`, ack: true }, _ => {
+  let brightness = getState(config.state()).val - config.change;
 
   if (brightness < 1) {
     brightness = 1;
   }
 
-  setState(state, brightness);
+  setState(config.state(), brightness);
 });
 
-on({ id: `${remote}.4.PRESS_LONG`, ack: true }, _ => {
-  let brightness = getState(state).val + change;
+on({ id: `${config.remote}.4.PRESS_LONG`, ack: true }, _ => {
+  let brightness = getState(config.state()).val + config.change;
 
   if (brightness > 100) {
     brightness = 100;
   }
 
-  setState(state, brightness);
+  setState(config.state(), brightness);
 });
 
 const brightnessChanges = new Observable<number>(observer => {
-  on({ id: state, ack: false }, event => {
+  on({ id: config.state(), ack: false }, event => {
     observer.next(event.state.val as number);
   });
 }).pipe(
@@ -178,7 +180,7 @@ const minimumBrightnessOfOnLights = combineLatest([
     distinctUntilChanged(),
     tap(min => {
       log(`Minimum brightness among on lights: ${min}`);
-      setState(state, min, true);
+      setState(config.state(), min, true);
     }),
   )
   .subscribe();

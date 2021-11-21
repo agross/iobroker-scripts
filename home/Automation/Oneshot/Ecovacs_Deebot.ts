@@ -1,8 +1,8 @@
-const adapter = 'ecovacs-deebot.*';
+const config = { adapter: 'ecovacs-deebot.*' };
 
 const deebots = [
   ...new Set(
-    [...$(`channel[id=${adapter}][state.id=*.status.device]`)].map(x =>
+    [...$(`channel[id=${config.adapter}][state.id=*.status.device]`)].map(x =>
       x.replace(/^([\w-]+\.\d+)\..*/, '$1'),
     ),
   ),
@@ -77,7 +77,7 @@ export {};
 await ObjectCreator.create(deebots, '0_userdata.0');
 
 const scheduledSpotAreas = [
-  ...$(`state[id=0_userdata.0.${adapter}.Spot Areas.*]`),
+  ...$(`state[id=0_userdata.0.${config.adapter}.Spot Areas.*]`),
 ]
   .map(x => {
     return {

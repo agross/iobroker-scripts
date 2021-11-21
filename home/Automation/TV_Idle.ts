@@ -20,67 +20,66 @@ import {
   distinctUntilKeyChanged,
 } from 'rxjs/operators';
 
-const activityIndicators = [
-  function (): Observable<StateWithId> {
-    // Kodi's playing time with TV input is HDMI 1.
+const config = {
+  activityIndicators: [
+    function (): Observable<StateWithId> {
+      // Kodi's playing time with TV input is HDMI 1.
 
-    function input(): Observable<string> {
-      const stateId = 'lgtv.0.states.input';
+      function input(): Observable<string> {
+        const stateId = 'lgtv.0.states.input';
 
-      const state = getState(stateId);
-      const initialInput = state.notExist ? EMPTY : of(state.val as string);
+        const state = getState(stateId);
+        const initialInput = state.notExist ? EMPTY : of(state.val as string);
 
-      const inputChanges = new Observable<string>(observer => {
-        on({ id: stateId, ack: true }, event => {
-          observer.next(event.state.val);
+        const inputChanges = new Observable<string>(observer => {
+          on({ id: stateId, ack: true }, event => {
+            observer.next(event.state.val);
+          });
+        }).pipe(share());
+
+        return concat(initialInput, inputChanges);
+      }
+
+      const playingTime = new Observable<StateWithId>(observer => {
+        on({ id: 'kodi.0.info.playing_time', ack: true }, event => {
+          const state = {
+            id: event.id,
+            state: event.state,
+          };
+
+          observer.next(state);
         });
       }).pipe(share());
 
-      return concat(initialInput, inputChanges);
-    }
+      const stream = combineLatest([input(), playingTime]).pipe(
+        filter(([input, _time]) => input === 'HDMI_1' || input === '1'),
+        map(([_input, time]) => time),
+        share(),
+      );
 
-    const playingTime = new Observable<StateWithId>(observer => {
-      on({ id: 'kodi.0.info.playing_time', ack: true }, event => {
-        const state = {
-          id: event.id,
-          state: event.state,
-        };
-
-        observer.next(state);
-      });
-    }).pipe(share());
-
-    const stream = combineLatest([input(), playingTime]).pipe(
-      filter(([input, _time]) => input === 'HDMI_1' || input === '1'),
-      map(([_input, time]) => time),
-      share(),
-    );
-
-    return stream;
-  },
-  'lgtv.0.states.channelId',
-  'lgtv.0.states.currentApp',
-  'lgtv.0.states.volume',
-];
-
-const tvDevice = 'lgtv.0';
-const whitelistedLgApps = [
-  'airplay',
-  'amazon',
-  'ard.mediathek',
-  'de.zdf.app.zdfm3',
-  'netflix',
-  'tagesschau',
-  'youtube.leanback.v4',
-];
-
-const turnOffAfter = 20;
-const timeoutPopups = [10, 5, 1];
-
-const debugSpeedUp = 1; // 30;
+      return stream;
+    },
+    'lgtv.0.states.channelId',
+    'lgtv.0.states.currentApp',
+    'lgtv.0.states.volume',
+  ],
+  tvDevice: 'lgtv.0',
+  whitelistedLgApps: [
+    'airplay',
+    'amazon',
+    'ard.mediathek',
+    'de.zdf.app.zdfm3',
+    'netflix',
+    'tagesschau',
+    'youtube.leanback.v4',
+  ],
+  turnOffAfter: 20,
+  timeoutPopups: [10, 5, 1],
+  debugSpeedUp: 1, // 30,
+};
 
 function minutesToMs(val: number): number {
-  return (val * 60 * 1000) / debugSpeedUp;
+  return (val * 60 * 1000) / config.debugSpeedUp;
 }
 
 interface StateWithId {
@@ -316,12 +315,12 @@ class ActivityIndicator {
   }
 }
 
-const tv = new TV(tvDevice);
+const tv = new TV(config.tvDevice);
 
 const tvLog = tv.stream.pipe(tap(x => log(`TV on: ${x}`))).subscribe();
 
 const timerDisabled: Observable<DisabledReason> = combineLatest([
-  new WhitelistedApp(tvDevice, ...whitelistedLgApps).stream,
+  new WhitelistedApp(config.tvDevice, ...config.whitelistedLgApps).stream,
   new Tatort().stream,
 ]).pipe(
   map(flags => {
@@ -349,7 +348,7 @@ const timerDisabledNotifications = timerDisabled
   )
   .subscribe();
 
-const activity = new ActivityIndicator(...activityIndicators).stream;
+const activity = new ActivityIndicator(...config.activityIndicators).stream;
 
 function throttleDistinct<T>(
   duration: number,
@@ -385,10 +384,10 @@ const activityLog = activity
   )
   .subscribe();
 
-const timeoutNotifications = timeoutPopups.map(left => {
+const timeoutNotifications = config.timeoutPopups.map(left => {
   return activity
     .pipe(
-      debounceTime(minutesToMs(turnOffAfter - left)),
+      debounceTime(minutesToMs(config.turnOffAfter - left)),
       withLatestFrom(timerDisabled),
       filter(([_state, disabled]) => !disabled.disabled),
       withLatestFrom(tv.stream),
@@ -406,7 +405,7 @@ const timeoutNotifications = timeoutPopups.map(left => {
 
 const turnOff = activity
   .pipe(
-    debounceTime(minutesToMs(turnOffAfter)),
+    debounceTime(minutesToMs(config.turnOffAfter)),
     withLatestFrom(timerDisabled),
     filter(([_state, disabled]) => !disabled.disabled),
     withLatestFrom(tv.stream),

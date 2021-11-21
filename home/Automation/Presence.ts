@@ -1,12 +1,14 @@
 import { combineLatest } from 'rxjs';
 import { tap, map, distinctUntilChanged } from 'rxjs/operators';
 
-const presenceIndicators = ['ping.0.iobroker.172_16_0_15'];
-const presence = ['0_userdata.0', 'presence'];
+const config = {
+  presenceIndicators: ['ping.0.iobroker.172_16_0_15'],
+  presence: ['0_userdata.0', 'presence'],
+};
 
 await ObjectCreator.create(
   {
-    [presence[1]]: {
+    [config.presence[1]]: {
       type: 'state',
       common: {
         name: 'Presence',
@@ -27,10 +29,10 @@ await ObjectCreator.create(
       native: {},
     },
   },
-  presence[0],
+  config.presence[0],
 );
 
-const presenceIndication = presenceIndicators.map(indicator => {
+const presenceIndication = config.presenceIndicators.map(indicator => {
   return new Stream<boolean>(indicator).stream;
 });
 
@@ -40,7 +42,7 @@ const present = combineLatest(presenceIndication)
     distinctUntilChanged(),
     tap(present => log(`Presence indication: ${present}`)),
     tap(present => {
-      setState(presence.join('.'), present, true, err => {
+      setState(config.presence.join('.'), present, true, err => {
         if (err) {
           log(`Could not set presence to ${present}: ${err}`, 'error');
         } else {

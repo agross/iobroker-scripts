@@ -1,10 +1,12 @@
 import { EMPTY, timer } from 'rxjs';
 import { first, map, switchMap, tap } from 'rxjs/operators';
 
-const returningHomeAt = '0_userdata.0.GW.Journey To Home.end';
-const presence = 'hm-rega.0.950';
+const config = {
+  returningHomeAt: '0_userdata.0.GW.Journey To Home.end',
+  presence: 'hm-rega.0.950',
+};
 
-const arrivingAtHome = new Stream<string>(returningHomeAt).stream;
+const arrivingAtHome = new Stream<string>(config.returningHomeAt).stream;
 
 const subscription = arrivingAtHome
   .pipe(
@@ -41,7 +43,7 @@ const subscription = arrivingAtHome
         `Pretending to be at home for arrival at ${arrival.toLocaleString()}`,
       );
 
-      setState(presence, true);
+      setState(config.presence, true);
     }),
   )
   .subscribe();
