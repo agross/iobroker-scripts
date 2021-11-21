@@ -36,7 +36,7 @@ const deebots = [
             write: true,
             def: false,
             custom: {
-              ['lovelace.0']: {
+              [AdapterIds.lovelace]: {
                 enabled: true,
                 entity: 'switch',
                 name: Lovelace.id(`Schedule Clean ${areaName}`),

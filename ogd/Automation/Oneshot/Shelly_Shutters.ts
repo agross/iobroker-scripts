@@ -58,7 +58,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
         read: true,
         write: true,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'input_number',
             name: Lovelace.id(`${stateIdToPurpose(stateId)} Level`),
@@ -78,7 +78,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${stateIdToPurpose(stateId)} Close`),
@@ -98,7 +98,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${stateIdToPurpose(stateId)} Open`),
@@ -118,7 +118,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${stateIdToPurpose(stateId)} Stop`),

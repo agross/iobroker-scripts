@@ -16,7 +16,7 @@ await ObjectCreator.create(
         write: false,
         role: 'state',
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id('Presence'),

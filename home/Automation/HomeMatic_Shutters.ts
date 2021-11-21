@@ -37,7 +37,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         read: true,
         write: true,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'input_number',
             name: Lovelace.id(`${Device.deviceName(stateId)} Level`),
@@ -60,7 +60,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${Device.deviceName(stateId)} Close`),
@@ -83,7 +83,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${Device.deviceName(stateId)} Open`),
@@ -103,7 +103,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${Device.deviceName(stateId)} Stop`),
@@ -125,7 +125,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         read: true,
         write: true,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'input_number',
             name: Lovelace.id(`${Device.deviceName(stateId)} Tilt Level`),
@@ -148,7 +148,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${Device.deviceName(stateId)} Tilt Close`),
@@ -171,7 +171,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         write: true,
         def: false,
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id(`${Device.deviceName(stateId)} Tilt Open`),

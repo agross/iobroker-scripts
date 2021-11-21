@@ -30,7 +30,7 @@ await ObjectCreator.create(
         write: true,
         role: 'indicator',
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'sensor',
             name: Lovelace.id('Repower Washing Machine'),

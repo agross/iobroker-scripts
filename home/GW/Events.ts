@@ -83,7 +83,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           role: 'value',
           type: def.type as iobJS.CommonType,
           custom: {
-            'lovelace.0': {
+            [AdapterIds.lovelace]: {
               enabled: true,
               entity: 'sensor',
               name: Lovelace.id(`${channel} ${def.name}`),

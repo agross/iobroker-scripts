@@ -28,7 +28,7 @@ concat() {
 
 for location in "${locations[@]}"; do
   mapfile -t typescripts < <(find "$location" -type f,l -name '*.ts' -not -iwholename '*/global/*')
-  mapfile -t globals < <(cd "$location/global" && find -- * -type f -name '*.ts')
+  mapfile -t globals < <(cd "$location/global" && find -L -- * -type f -name '*.ts')
 
 
   for ts in "${typescripts[@]}"; do

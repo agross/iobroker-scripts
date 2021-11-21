@@ -46,7 +46,7 @@ function getAliasDefinition(
               write: false,
               name: 'Distance to oil change',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car distance to oil change'),
@@ -66,7 +66,7 @@ function getAliasDefinition(
               write: false,
               name: 'Time to oil change',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car time to oil change'),
@@ -86,7 +86,7 @@ function getAliasDefinition(
               write: false,
               name: 'Distance to inspection',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car distance to inspection'),
@@ -106,7 +106,7 @@ function getAliasDefinition(
               write: false,
               name: 'Time to inspection',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car time to inspection'),
@@ -158,7 +158,7 @@ function getAliasDefinition(
               write: false,
               name: 'Car locked',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'binary_sensor',
                   name: Lovelace.id('Car locked'),
@@ -179,7 +179,7 @@ function getAliasDefinition(
               write: true,
               name: 'Lock or unlock car',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'switch',
                   name: Lovelace.id('Car lock'),
@@ -198,7 +198,7 @@ function getAliasDefinition(
               write: false,
               name: 'Outside temperature',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car outside temperature'),
@@ -217,7 +217,7 @@ function getAliasDefinition(
               write: false,
               name: 'Parking brake engaged',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'binary_sensor',
                   name: Lovelace.id('Car parking brake engaged'),
@@ -237,7 +237,7 @@ function getAliasDefinition(
               write: false,
               name: 'Mileage',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car mileage'),
@@ -263,7 +263,7 @@ function getAliasDefinition(
               write: false,
               name: 'Remaining AdBlue range',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car remaining AdBlue range'),
@@ -282,7 +282,7 @@ function getAliasDefinition(
               write: false,
               name: 'Remaining fuel range',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car remaining fuel range'),
@@ -301,7 +301,7 @@ function getAliasDefinition(
               write: false,
               name: 'Fuel level',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car fuel level'),
@@ -321,7 +321,7 @@ function getAliasDefinition(
               write: false,
               name: 'Oil level',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car oil level'),
@@ -369,7 +369,7 @@ function getUserDataDefinition(
               write: false,
               name: 'Reason',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car alarm reason'),
@@ -383,7 +383,7 @@ function getUserDataDefinition(
               write: false,
               name: 'Alarm timestamp',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car alarm timestamp'),
@@ -405,7 +405,7 @@ function getUserDataDefinition(
               write: true,
               name: 'Tyre change',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'script',
                   name: Lovelace.id('Car tyre change'),
@@ -420,7 +420,7 @@ function getUserDataDefinition(
               write: true,
               name: 'Tighten tyres at mileage',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'sensor',
                   name: Lovelace.id('Car tighten tyres at mileage'),
@@ -442,7 +442,7 @@ function getUserDataDefinition(
               write: false,
               name: 'Windows open',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'binary_sensor',
                   name: Lovelace.id('Car windows open'),
@@ -457,7 +457,7 @@ function getUserDataDefinition(
               write: false,
               name: 'Windows closed',
               custom: {
-                'lovelace.0': {
+                [AdapterIds.lovelace]: {
                   enabled: true,
                   entity: 'binary_sensor',
                   name: Lovelace.id('Car windows closed'),

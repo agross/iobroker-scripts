@@ -2,7 +2,6 @@ import util from 'util';
 
 const config = {
   dryRun: false,
-  lovelaceAdapterId: 'lovelace.0',
 };
 
 async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
@@ -76,7 +75,7 @@ function zigbeeDoorContacts() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'binary_sensor',
           name: Lovelace.id(name),
@@ -96,7 +95,7 @@ function scenes() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'scene',
           name: Lovelace.id(name),
@@ -115,7 +114,7 @@ function homeMaticPresenceDetectors() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'sensor',
           name: Lovelace.id(name),
@@ -134,7 +133,7 @@ function homeMaticPresenceDetectors() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'binary_sensor',
           name: Lovelace.id(name),
@@ -170,7 +169,7 @@ function homeMaticVariables() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'switch',
           name: Lovelace.id(name),
@@ -195,7 +194,7 @@ function scripts() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'automation',
           name: Lovelace.id(lovelaceId),
@@ -216,7 +215,7 @@ function pingedMachines() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'binary_sensor',
           name: Lovelace.id(name),
@@ -236,7 +235,7 @@ function kodi() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'binary_sensor',
           name: Lovelace.id(name),
@@ -260,7 +259,7 @@ function androidDebugBridge() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'binary_sensor',
           name: Lovelace.id(name),
@@ -280,7 +279,7 @@ function maxDayTemperature() {
   ).each(async id => {
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'sensor',
           name: Lovelace.id('Weather Max Temp Today'),
@@ -298,7 +297,7 @@ function ecovacsDeebot() {
   $('state[id=ecovacs-deebot.*.control.clean]').each(async id => {
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'switch',
           name: Lovelace.id('Clean All Rooms'),
@@ -315,7 +314,7 @@ function ecovacsDeebot() {
   $('state[id=ecovacs-deebot.*.control.charge]').each(async id => {
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'switch',
           name: Lovelace.id('Return To Charge'),
@@ -346,7 +345,7 @@ function ecovacsDeebot() {
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'switch',
           name: Lovelace.id(`Clean ${area}`),
@@ -363,7 +362,7 @@ function ecovacsDeebot() {
   $('state[id=ecovacs-deebot.*.control.pause]').each(async id => {
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'switch',
           name: Lovelace.id(`Pause Cleaning`),
@@ -379,7 +378,7 @@ function ecovacsDeebot() {
   $('state[id=ecovacs-deebot.*.control.resume]').each(async id => {
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'switch',
           name: Lovelace.id(`Resume Cleaning`),
@@ -395,7 +394,7 @@ function ecovacsDeebot() {
   $('state[id=ecovacs-deebot.*.control.stop]').each(async id => {
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [config.lovelaceAdapterId]: {
+        [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'switch',
           name: Lovelace.id(`Stop Cleaning`),

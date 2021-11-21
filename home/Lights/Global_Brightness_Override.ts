@@ -27,7 +27,7 @@ await ObjectCreator.create(
         write: true,
         role: 'level.dimmer',
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'input_number',
             name: Lovelace.id('Global Brightness Override'),

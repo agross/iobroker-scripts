@@ -63,7 +63,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           write: true,
           name: `${stateIdToPurpose(stateId)} Power`,
           custom: {
-            'lovelace.0': {
+            [AdapterIds.lovelace]: {
               enabled: true,
               entity: lovelaceEntityType,
               name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),

@@ -12,7 +12,9 @@ import {
 const alarmEnabled = ['0_userdata.0', 'alarm-enabled'];
 const presence = '0_userdata.0.presence';
 const hmPresence = 'hm-rega.0.950';
-const triggerAlarmOn = ['zigbee.1.00158d00045bedc5.opened'];
+const triggerAlarmOn = [
+  AdapterId.build(AdapterIds.zigbee, '00158d00045bedc5.opened'),
+];
 
 await ObjectCreator.create(
   {
@@ -26,7 +28,7 @@ await ObjectCreator.create(
         write: true,
         role: 'state',
         custom: {
-          'lovelace.0': {
+          [AdapterIds.lovelace]: {
             enabled: true,
             entity: 'switch',
             name: Lovelace.id('Alarm Enabled'),

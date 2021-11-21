@@ -1,4 +1,4 @@
-const sensor = 'zigbee.1.00158d00045c1216.opened';
+const sensor = AdapterId.build(AdapterIds.zigbee, '00158d00045c1216.opened');
 const scene = 'scene.0.Utility Room.Entered';
 const timeoutMinutes = 2;
 const timeout = timeoutMinutes * 60 * 1000;

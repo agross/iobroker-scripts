@@ -10,7 +10,7 @@ const payload = {
 };
 
 sendTo(
-  'zigbee.0',
+  AdapterIds.zigbee,
   'SendToDevice',
   {
     device: config.device,
