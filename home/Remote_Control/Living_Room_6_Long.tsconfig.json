@@ -3,14 +3,14 @@
   "files": [
     "../../iobroker.d.ts",
     "../global/AdapterIds.ts",
-    "../global/Shared/Lovelace.ts",
-    "../global/Shared/Utils.ts",
     "../global/Shared/AdapterId.ts",
-    "../global/Shared/Stream.ts",
+    "../global/Shared/Device.ts",
+    "../global/Shared/Lovelace.ts",
     "../global/Shared/Notify.ts",
     "../global/Shared/Object_Creator.ts",
-    "../global/Shared/Device.ts",
     "../global/Shared/Remotes.ts",
+    "../global/Shared/Stream.ts",
+    "../global/Shared/Utils.ts",
     "Living_Room_6_Long.ts"
   ],
   "compilerOptions": {

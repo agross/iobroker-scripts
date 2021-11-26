@@ -5,18 +5,6 @@ set -euo pipefail
 
 locations=(home ogd)
 
-template="$(cat <<EOT
-{
-  "extends": "%stsconfig.json",
-  "files": ["%siobroker.d.ts", %s"%s"],
-  "compilerOptions": {
-    "composite": true,
-    "rootDir": "%s"
-  }
-}
-EOT
-)"
-
 concat() {
   str="${1?Need string}"
   times="${2?Need repetitions}"
@@ -40,18 +28,24 @@ for location in "${locations[@]}"; do
     root_relative="$(concat '../' "$depth")"
     global_relative="$(concat '../' "$((depth - 1))")"
 
-    printf -v global_scripts "\"${global_relative}global/%s\", " "${globals[@]}"
+    printf -v global_scripts "\"${global_relative}global/%s\"," "${globals[@]}"
 
-    # shellcheck disable=SC2059
-    printf "$template" \
-           "$root_relative" \
-           "$root_relative" \
-           "$global_scripts" \
-           "${ts##*/}" \
-           "$global_relative" \
-           > "${ts%.ts}.tsconfig.json"
+    jq --null-input \
+       --arg root_relative "$root_relative" \
+       --arg global_relative "$global_relative" \
+       --argjson globals "[${global_scripts%,}]" \
+       --arg ts "${ts##*/}" \
+       '{
+          extends: "\($root_relative)tsconfig.json",
+          files: (["\($root_relative)iobroker.d.ts"] + ($globals | sort) + [$ts]),
+          compilerOptions: {
+            composite: true,
+            rootDir: $global_relative
+          }
+        }' > "${ts%.ts}.tsconfig.json"
 
     npx prettier --write "${ts%.ts}.tsconfig.json"
+
   done
 done
 
@@ -62,12 +56,12 @@ for tsconfig in "${tsconfigs[@]}"; do
   paths+="{ \"path\": \"$tsconfig\" },"
 done
 
-tmp="$(mktemp)"
+jq --null-input \
+   --argjson references "[${paths%,}]" \
+  '{
+     extends: "./tsconfig.base.json",
+     exclude: ["*"],
+     references: ($references | sort_by(.path))
+  }' > tsconfig.json
 
-jq --argjson references "[${paths%,}]" \
-   '.references |= $references' \
-   -- \
-   tsconfig.json > "$tmp"
-
-mv -- "$tmp" tsconfig.json
 npx prettier --write tsconfig.json
