@@ -5,12 +5,12 @@ declare global {
   export class Stream<T> {
     constructor(
       stateOrSubscribeOptions: string | iobJS.SubscribeOptions,
-      eventMapper?: EventMapper,
+      eventMapper?: EventMapper<T>,
     );
     get stream(): Observable<T>;
   }
 
-  export type EventMapper = (event: iobJS.ChangedStateObject) => any;
+  export type EventMapper<T> = (event: iobJS.ChangedStateObject) => T;
 }
 
 export class Stream<T> {
@@ -18,7 +18,7 @@ export class Stream<T> {
 
   constructor(
     stateOrSubscribeOptions: string | iobJS.SubscribeOptions,
-    eventMapper?: EventMapper,
+    eventMapper?: EventMapper<T>,
   ) {
     if (!eventMapper) {
       eventMapper = e => e.state.val;
@@ -40,7 +40,7 @@ export class Stream<T> {
 
   private initialValue(
     state: string,
-    eventMapper?: EventMapper,
+    eventMapper?: EventMapper<T>,
   ): Observable<T> {
     if (!existsState(state)) {
       log(
@@ -76,7 +76,7 @@ export class Stream<T> {
 
   private stateChanges(
     state: string,
-    eventMapper?: EventMapper,
+    eventMapper?: EventMapper<T>,
   ): Observable<T> {
     return new Observable<T>(observer => {
       on({ id: state, ack: true }, event => {
@@ -87,7 +87,7 @@ export class Stream<T> {
 
   private changes(
     subscribeOptions: iobJS.SubscribeOptions,
-    eventMapper?: EventMapper,
+    eventMapper?: EventMapper<T>,
   ): Observable<T> {
     return new Observable<T>(observer => {
       on(subscribeOptions, event => {
