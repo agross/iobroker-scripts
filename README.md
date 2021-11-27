@@ -1,4 +1,4 @@
-# iobroker-scripts ![CI](https://github.com/agross/iobroker-scripts/actions/workflows/node.js.yml/badge.svg)
+# iobroker-scripts ![CI](https://github.com/agross/iobroker-scripts/actions/workflows/typescript.yml/badge.svg)
 
 My collection of scripts for ioBroker.
 
