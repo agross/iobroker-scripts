@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "got": "^11.8.2",
-    "rxjs": "^6.6.2"
+    "rxjs": "^7.4.0"
   },
   "devDependencies": {
     "@types/got": "^9.6.11",

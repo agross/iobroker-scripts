@@ -6,7 +6,7 @@ My collection of scripts for ioBroker.
 
 You need to install the following dependencies in your ioBroker.javascript instances:
 
-* `rxjs@6`
+* `rxjs@7`
 * `got@11`
 
 Syntax help may be added for the following npm modules:
