@@ -1,6 +1,19 @@
-# iobroker-scripts
+# iobroker-scripts ![CI](https://github.com/agross/iobroker-scripts/actions/workflows/node.js.yml/badge.svg)
 
 My collection of scripts for ioBroker.
+
+## Dependencies
+
+You need to install the following dependencies in your ioBroker.javascript instances:
+
+* `rxjs@6`
+* `got@11`
+
+Syntax help may be added for the following npm modules:
+
+* `rxjs`
+* `rxjs/operators`
+* `got`
 
 ## Remote development
 
@@ -19,6 +32,7 @@ Assuming you run ioBroker on docker:
    instance number at the end). The contents of this directory will then be made
    available on the host via the mount created in step 1.
 1. There is a `mount` script that will connect to ioBroker's host via SSH and
-   mount the remote directory to the `pi` subdirectory. You can work normally.
+   mount the remote directory to the `host` subdirectory. You can work normally.
    When you save files, these will be saved to the ioBroker host and the
-   JavaScript adapter will reload the script accordingly.
+   JavaScript adapter will reload the script accordingly. To specify a specific
+   host run `MOUNT=your-host ./mount`.
