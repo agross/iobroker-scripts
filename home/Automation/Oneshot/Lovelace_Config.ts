@@ -210,7 +210,7 @@ function scripts() {
 function pingedMachines() {
   $('state[id=ping.*.iobroker.*]').each(async id => {
     const aliveMachine = (await getObjectAsync(id)).common.name;
-    const machine = aliveMachine.replace(/^Alive\s+/, '').toUpperCase();
+    const machine = aliveMachine.replace(/^Alive\s+/, '');
     const name = `${machine} On`;
 
     const expect: Partial<iobJS.StateCommon> = {
