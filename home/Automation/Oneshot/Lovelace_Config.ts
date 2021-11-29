@@ -187,13 +187,10 @@ function homeMaticPresenceDetectors() {
 }
 
 function homeMaticVariables() {
-  $('state[id=hm-rega.*]').each(async id => {
-    if (!id.match(/hm-rega\.\d\.\d+$/)) {
-      return;
-    }
-
+  $('state[id=hm-rega.*][role=state]{TypeName=VARDP}').each(async id => {
     let name = await (await getObjectAsync(id)).common.name;
-    let icon;
+    let icon: string;
+
     switch (name) {
       case '${sysVarPresence}':
         name = 'HomeMatic Presence';
@@ -201,8 +198,11 @@ function homeMaticVariables() {
         break;
 
       case 'Heating Period':
-        name = 'HomeMatic Heating Period';
         icon = 'mdi:radiator';
+      // Fall through to default.
+
+      default:
+        name = `HomeMatic ${name}`;
         break;
     }
 
