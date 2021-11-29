@@ -335,10 +335,6 @@ function homeMaticCommon(enabledDataPoints: {}) {
 
 function homeMaticThermostats(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.1.ACTUAL_TEMPERATURE]').each(id => {
-    if (id.endsWith('_STATUS')) {
-      return;
-    }
-
     const expect = {
       enabled: true,
       changesOnly: false,
@@ -354,10 +350,6 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   });
 
   $('state[id=hm-rpc.*.1.HUMIDITY]').each(id => {
-    if (id.match(/^admin\./) || id.match(/_STATUS$/)) {
-      return;
-    }
-
     const expect = {
       enabled: true,
       changesOnly: false,
@@ -373,10 +365,6 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   });
 
   $('state[id=hm-rpc.*.1.SET_POINT_TEMPERATURE]').each(id => {
-    if (id.match(/^admin\./)) {
-      return;
-    }
-
     const expect = {
       enabled: true,
       changesOnly: false,
@@ -392,10 +380,6 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   });
 
   $('state[id=hm-rpc.*.1.LEVEL]').each(id => {
-    if (id.match(/^admin\./) || id.match(/_STATUS$/)) {
-      return;
-    }
-
     const expect = {
       enabled: true,
       changesOnly: false,
@@ -413,10 +397,6 @@ function homeMaticThermostats(enabledDataPoints: {}) {
 
 function homeMaticPresenceDetectors(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.1.ILLUMINATION]').each(id => {
-    if (id.match(/^admin\./) || id.match(/_STATUS$/)) {
-      return;
-    }
-
     const expect = {
       enabled: true,
       changesOnly: false,
@@ -432,10 +412,6 @@ function homeMaticPresenceDetectors(enabledDataPoints: {}) {
   });
 
   $('state[id=hm-rpc.*.1.PRESENCE_DETECTION_STATE]').each(id => {
-    if (id.match(/^admin\./)) {
-      return;
-    }
-
     const expect = {
       enabled: true,
       changesOnly: false,
