@@ -38,6 +38,7 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
 
 zigbeeLights();
 zigbeeDoorContacts();
+zigbeeMotionSensors();
 
 scenes();
 
@@ -81,6 +82,45 @@ function zigbeeDoorContacts() {
           name: Lovelace.id(name),
           attr_device_class: 'opening',
           attr_friendly_name: name.replace(/\s+Contact$/, ''),
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+}
+
+function zigbeeMotionSensors() {
+  $('state[id=zigbee.*.illuminance]').each(async id => {
+    const name = Device.deviceName(id);
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'illuminance',
+          attr_unit_of_measurement: 'lux',
+          attr_friendly_name: name,
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+
+  $('state[id=zigbee.*.occupancy]').each(async id => {
+    const name = Device.deviceName(id);
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'motion',
+          attr_friendly_name: name,
         },
       },
     };
