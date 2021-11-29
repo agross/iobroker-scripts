@@ -61,7 +61,7 @@ ecovacsDeebot();
 function zigbeeLights() {
   $('state[id=zigbee.*.state](functions=light)').each(async id => {
     const deviceId = id.replace(/\.state$/, '');
-    const name = (await getObjectAsync(deviceId)).common.name;
+    const name = Device.deviceName(id);
 
     const expect: Partial<iobJS.StateCommon> = { smartName: name };
 
@@ -71,8 +71,7 @@ function zigbeeLights() {
 
 function zigbeeDoorContacts() {
   $('state[id=zigbee.*.opened]').each(async id => {
-    const deviceId = id.replace(/\.opened$/, '');
-    const name = (await getObjectAsync(deviceId)).common.name;
+    const name = Device.deviceName(id);
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
