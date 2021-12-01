@@ -62,6 +62,16 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
         read: true,
         write: true,
         name: 'Power',
+        custom: {
+          [AdapterIds.lovelace]: {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id('Living Room TV'),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:television',
+            attr_friendly_name: 'TV',
+          },
+        },
       },
       volume: {
         alias: {
@@ -80,7 +90,7 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
     acc[device] = {
       type: 'device',
       native: {},
-      common: { name: 'Living Room TV Testing', role: 'device' },
+      common: { name: 'Living Room TV', role: 'device' },
       nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
         acc[id] = { type: 'state', native: {}, common: common };
         return acc;
@@ -104,8 +114,12 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
     } = {
       state: {
         alias: {
-          id: 'kodi.0.state',
+          id: {
+            read: 'kodi.0.state',
+            write: 'kodi.0.stop',
+          },
           read: 'val === "play" ? 1 : val === "stop" ? 2 : 0',
+          write: 'true',
         },
         role: 'media.state',
         type: 'number',
@@ -116,8 +130,9 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       cover: {
         alias: {
           id: 'kodi.0.info.fanart',
-          read:
-            "decodeURIComponent(val.replace(/^image:\\/\\//, '')).replace(/\\/$/, '').replace(/^http:\\/\\//, 'https://')",
+          read: "decodeURIComponent(val.replace(/^image:\\/\\//, '')) \
+                                       .replace(/\\/$/, '') \
+                                       .replace(/^http:\\/\\//, 'https://')",
           // No write function makes this read-only.
         },
         role: 'media.cover',
@@ -129,8 +144,9 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       'cover-big': {
         alias: {
           id: 'kodi.0.info.fanart',
-          read:
-            "decodeURIComponent(val.replace(/^image:\\/\\//, '')).replace(/\\/$/, '').replace(/^http:\\/\\//, 'https://')",
+          read: "decodeURIComponent(val.replace(/^image:\\/\\//, '')) \
+                                       .replace(/\\/$/, '') \
+                                       .replace(/^http:\\/\\//, 'https://')",
           // No write function makes this read-only.
           // http://firetv:8080/image/image%3A%2F%2Fsmb%253a%252f%252frouter%252fagross%252fnextcloud%252fMusic%252fMassive%2520Attack%2520-%2520100th%2520Window%252fcover.jpg%2F
         },
@@ -253,7 +269,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       duration: {
         alias: {
           id: 'kodi.0.info.playing_time_total',
-          read: 'val.split(":").reduce((acc, time) => (60 * acc) + time, 0)',
+          read: 'val.split(":").reduce((acc, time, index) => (60 * acc) + +time, 0)',
         },
         role: 'media.duration',
         type: 'number',
@@ -265,7 +281,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       elapsed: {
         alias: {
           id: 'kodi.0.info.playing_time',
-          read: 'val.split(":").reduce((acc, time) => (60 * acc) + time, 0)',
+          read: 'val.split(":").reduce((acc, time) => (60 * acc) + +time, 0)',
         },
         role: 'media.elapsed',
         type: 'number',
@@ -314,7 +330,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
     acc[device] = {
       type: 'device',
       native: {},
-      common: { name: 'Kodi Testing', role: 'device' },
+      common: { name: 'Kodi', role: 'device' },
       nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
         acc[id] = { type: 'state', native: {}, common: common };
         return acc;
@@ -326,7 +342,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
 }
 
 export {};
-await ObjectCreator.create(lgtvObjectDefinition(), 'alias.0.Testing');
-await ObjectCreator.create(kodiObjectDefinition(), 'alias.0.Testing');
+await ObjectCreator.create(lgtvObjectDefinition(), 'alias.0');
+await ObjectCreator.create(kodiObjectDefinition(), 'alias.0');
 
 stopScript(undefined);
