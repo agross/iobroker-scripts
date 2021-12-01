@@ -22,16 +22,56 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     }
   }
 
+  function lovelaceConfig(stateId: string): {} {
+    const entityType = ObjectCreator.getEnumIds(stateId, 'functions').includes(
+      'enum.functions.light',
+    )
+      ? 'light'
+      : 'switch';
+
+    switch (stateId.match(/\.gosund-sp111-(\d+)\./)[1]) {
+      case '1':
+        return {
+          entity: entityType,
+          name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
+          attr_device_class: 'outlet',
+          attr_icon: 'mdi:music-box-outline',
+          attr_friendly_name: 'NAD C350',
+        };
+
+      case '2':
+        return {
+          entity: entityType,
+          name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
+          attr_device_class: 'outlet',
+          attr_icon: 'mdi:lightbulb',
+          attr_friendly_name: stateIdToPurpose(stateId),
+        };
+
+      case '3':
+        return {
+          entity: entityType,
+          name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
+          attr_device_class: 'outlet',
+          attr_icon: 'mdi:washing-machine',
+        };
+
+      case '4':
+        return {
+          entity: entityType,
+          name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
+          attr_device_class: 'outlet',
+          attr_icon: 'mdi:desktop-tower-monitor',
+        };
+
+      default:
+        throw new Error(`No mapping from ${stateId} to lovelace config`);
+    }
+  }
+
   return [...$('state[id=*.cmnd.gosund-sp111-*.POWER]')].reduce(
     (acc, stateId) => {
       const device = deviceId(stateId);
-
-      const lovelaceEntityType = ObjectCreator.getEnumIds(
-        stateId,
-        'functions',
-      ).includes('enum.functions.light')
-        ? 'light'
-        : 'switch';
 
       const deviceStates: {
         [id: string]: iobJS.StateCommon;
@@ -65,10 +105,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           custom: {
             [AdapterIds.lovelace]: {
               enabled: true,
-              entity: lovelaceEntityType,
-              name: Lovelace.id(`${stateIdToPurpose(stateId)} Power`),
-              attr_device_class: 'outlet',
-              attr_icon: 'mdi:power-socket-eu',
+              ...lovelaceConfig(stateId),
             },
           },
         },
@@ -77,7 +114,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       acc[device] = {
         type: 'device',
         native: {},
-        common: { name: stateIdToPurpose(stateId), role: 'device' },
+        common: { name: `${stateIdToPurpose(stateId)} Power`, role: 'device' },
         enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
         nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
           acc[id] = { type: 'state', native: {}, common: common };
