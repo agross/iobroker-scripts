@@ -97,7 +97,7 @@ function zigbeeMotionSensors() {
       custom: {
         [AdapterIds.lovelace]: {
           enabled: true,
-          entity: 'binary_sensor',
+          entity: 'sensor',
           name: Lovelace.id(name),
           attr_device_class: 'illuminance',
           attr_unit_of_measurement: 'lux',
