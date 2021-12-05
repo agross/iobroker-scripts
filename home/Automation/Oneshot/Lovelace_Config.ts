@@ -58,6 +58,8 @@ maxDayTemperature();
 
 ecovacsDeebot();
 
+fuelPrices();
+
 function zigbeeLights() {
   $('state[id=zigbee.*.state](functions=light)').each(async id => {
     const deviceId = id.replace(/\.state$/, '');
@@ -444,6 +446,38 @@ function ecovacsDeebot() {
     };
 
     await check(id, expect);
+  });
+}
+
+function fuelPrices() {
+  $('state[id=tankerkoenig.*.stations.*.diesel.short]').each(id => {
+    if (id.includes('.cheapest.')) {
+      return;
+    }
+
+    const stationNameId = id.split('.').slice(0, -2).concat(['name']).join('.');
+
+    if (!existsState(stationNameId)) {
+      return;
+    }
+
+    const stationName = getState(stationNameId).val;
+    const name = `Diesel Price ${stationName}`;
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(name),
+          attr_friendly_name: stationName,
+          attr_unit_of_measurement: '€',
+          attr_icon: 'mdi:currency-eur',
+        },
+      },
+    };
+
+    check(id, expect);
   });
 }
 
