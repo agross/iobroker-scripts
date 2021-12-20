@@ -13,8 +13,6 @@ import {
 
 declare global {
   namespace Remotes {
-    const BRIGHTNESS_CHANGE = 5;
-
     type States = string[] | ObjectsWithStateQuery;
 
     interface CycleConfig {

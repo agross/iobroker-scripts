@@ -1,9 +1,13 @@
+const config = {
+  brightnessChange: 5,
+};
+
 const remotes = [
   new Remotes.TradfriDimmer({
     // Kitchen TRADFRI on/off switch
     device: AdapterId.build(AdapterIds.zigbee, '588e81fffe2bacf4'),
     dim: {
-      brightnessChange: Remotes.BRIGHTNESS_CHANGE,
+      brightnessChange: config.brightnessChange,
       lights: Remotes.DimmableLights.for(
         ...new Remotes.ObjectsWithStateQuery({
           rooms: 'kitchen',
@@ -27,7 +31,7 @@ const remotes = [
     // Bedroom TRADFRI on/off switch
     device: AdapterId.build(AdapterIds.zigbee, '588e81fffe17a8ca'),
     dim: {
-      brightnessChange: Remotes.BRIGHTNESS_CHANGE,
+      brightnessChange: config.brightnessChange,
       lights: Remotes.DimmableLights.for(
         ...new Remotes.ObjectsWithStateQuery({
           rooms: 'bedroom',
@@ -48,7 +52,7 @@ const remotes = [
     // Hue Remote RWL021
     device: AdapterId.build(AdapterIds.zigbee, '001788010872fbc4'),
     dim: {
-      brightnessChange: Remotes.BRIGHTNESS_CHANGE,
+      brightnessChange: config.brightnessChange,
       lights: Remotes.DimmableLights.for(
         ...new Remotes.ObjectsWithStateQuery({
           rooms: 'living_room',
