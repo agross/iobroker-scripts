@@ -24,7 +24,7 @@ await ObjectCreator.create(
       type: 'state',
       common: {
         name: 'Repower Washing Machine',
-        type: 'mixed',
+        type: 'string',
         def: null,
         read: true,
         write: true,
@@ -105,18 +105,23 @@ const done = running
     tap(_ => {
       const dueDate = new Date(Date.now() + config.repowerTimeout);
 
-      setState(config.repowerState.join('.'), dueDate, true, err => {
-        if (err) {
-          log(
-            `Could not set timestamp to repower washing machine to ${dueDate.toLocaleString()}: ${err}`,
-            'error',
-          );
-        } else {
-          log(
-            `Set timestamp to repower washing machine to ${dueDate.toLocaleString()}`,
-          );
-        }
-      });
+      setState(
+        config.repowerState.join('.'),
+        dueDate.toISOString(),
+        true,
+        err => {
+          if (err) {
+            log(
+              `Could not set timestamp to repower washing machine to ${dueDate.toLocaleString()}: ${err}`,
+              'error',
+            );
+          } else {
+            log(
+              `Set timestamp to repower washing machine to ${dueDate.toLocaleString()}`,
+            );
+          }
+        },
+      );
     }),
   )
   .subscribe();
