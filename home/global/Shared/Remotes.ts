@@ -405,7 +405,7 @@ export namespace Remotes {
 
       const minBrightness = brightnesses
         .map(stateId => ({ source: stateId, state: getState(stateId) }))
-        .filter(state => !state.state.notExist)
+        .filter(state => !state.state.notExist && state.state.val)
         .reduce(
           (acc, item) => (selector(acc.state.val, item.state.val) ? item : acc),
           { source: undefined, state: { val: undefined } },
