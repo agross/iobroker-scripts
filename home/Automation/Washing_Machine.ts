@@ -24,7 +24,7 @@ await ObjectCreator.create(
       type: 'state',
       common: {
         name: 'Repower Washing Machine',
-        type: 'string',
+        type: 'mixed',
         def: null,
         read: true,
         write: true,
