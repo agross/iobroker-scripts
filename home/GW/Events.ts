@@ -48,7 +48,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         device_class: 'timestamp',
         script: {
           source: (event: Event) => {
-            return formatDate(new Date(event._date), 'YYYY-MM-DD hh:mm');
+            return new Date(event._date).toISOString();
           },
         },
       },
@@ -58,7 +58,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         device_class: 'timestamp',
         script: {
           source: (event: Event) => {
-            return formatDate(new Date(event._end), 'YYYY-MM-DD hh:mm');
+            return new Date(event._end).toISOString();
           },
         },
       },

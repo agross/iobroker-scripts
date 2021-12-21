@@ -536,7 +536,7 @@ const alarms = cars.map(car => {
       ),
       tap(x => {
         const reason = x.acknowledged ? '' : x.reason;
-        const ts = x.acknowledged ? null : x.timestamp.toLocaleString();
+        const ts = x.acknowledged ? null : x.timestamp.toISOString();
 
         setState('0_userdata.0.' + car.root + '.Alarm.reason', reason, true);
         setState('0_userdata.0.' + car.root + '.Alarm.timestamp', ts, true);
