@@ -70,6 +70,7 @@ sendTo(
     zigbeeMotionSensors(enabledDataPoints);
     zigbeeDoorAndWindowContacts(enabledDataPoints);
     zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints);
+    zigbeeVibrationSensors(enabledDataPoints);
     zigbeeLights(enabledDataPoints);
 
     homeMaticCommon(enabledDataPoints);
@@ -245,6 +246,56 @@ function zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints: {}) {
       changesMinDelta: 0,
       storageType: false,
       aliasId: `${Device.deviceName(id)} Pressure`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+}
+
+function zigbeeVibrationSensors(enabledDataPoints: {}) {
+  $('state[id=zigbee.*.drop]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 100,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${Device.deviceName(id)} Drop`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=zigbee.*.tilt]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 100,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${Device.deviceName(id)} Tilt`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=zigbee.*.vibration]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 100,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${Device.deviceName(id)} Vibration`,
     };
 
     check(enabledDataPoints, id, expect);
