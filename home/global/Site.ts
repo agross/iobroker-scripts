@@ -1,0 +1,3 @@
+const Site = {
+  name: 'Home',
+};

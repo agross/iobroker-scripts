@@ -20,7 +20,7 @@ const updates = new Stream<string>(config.indicator).stream
     tap(adapters => {
       const updates = adapters.join(', ');
 
-      return Notify.mobile(`New updates available: ${updates}`);
+      return Notify.mobile(`${Site.name}: New updates available: ${updates}`);
     }),
   )
   .subscribe();
