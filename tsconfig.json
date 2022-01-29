@@ -57,6 +57,9 @@
       "path": "home/Automation/TV_Idle_Monitor.tsconfig.json"
     },
     {
+      "path": "home/Automation/Update_Notification.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Washing_Machine.tsconfig.json"
     },
     {
@@ -115,6 +118,9 @@
     },
     {
       "path": "ogd/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
+    },
+    {
+      "path": "ogd/Automation/Update_Notification.tsconfig.json"
     }
   ]
 }
