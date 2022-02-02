@@ -4,6 +4,7 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
+  scan,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -496,9 +497,13 @@ const alarms = cars.map(car => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  const reasons = `^${escape(car.root)}\\.history\\.dwaPushHistory\\..*\\.id$`;
+  // This is the last datapoint written, so other datapoints related to the
+  // timestamp should be available to read.
+  const timestamps = `^${escape(
+    car.root,
+  )}\\.history\\.dwaPushHistory\\..*\\.vehicleUtcTimestamp$`;
 
-  log(`Subscribing to alarms ${reasons}`);
+  log(`Subscribing to alarms ${timestamps}`);
 
   return new Stream<{
     id: string;
@@ -507,16 +512,17 @@ const alarms = cars.map(car => {
     timestamp: Date;
   }>(
     {
-      id: new RegExp(reasons),
+      id: new RegExp(timestamps),
     },
     event => {
       const entry = event.id.replace(/\.\w+$/, '');
+      const id = getState(entry + '.id').val;
       const reason = getState(entry + '.dwaAlarmReasonClustered').val;
       const ack = getState(entry + '.fnsAcknowledged').val === true;
-      const ts = new Date(getState(entry + '.vehicleUtcTimestamp').val);
+      const ts = new Date(event.state.val);
 
       return {
-        id: event.state.val,
+        id: id,
         reason: reason,
         acknowledged: ack,
         timestamp: ts,
@@ -524,6 +530,22 @@ const alarms = cars.map(car => {
     },
   ).stream
     .pipe(
+      scan(
+        (acc, current) => {
+          if (current.timestamp > acc.timestamp) {
+            acc = current;
+            return current;
+          }
+
+          return acc;
+        },
+        {
+          id: undefined,
+          reason: undefined,
+          acknowledged: undefined,
+          timestamp: new Date(0),
+        },
+      ),
       distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
       tap(x =>
         Notify.mobile(
