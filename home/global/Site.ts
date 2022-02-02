@@ -1,3 +1,3 @@
-const Site = {
-  name: 'Home',
-};
+class Site {
+  public static location = 'Home';
+}
