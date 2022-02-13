@@ -114,7 +114,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       acc[device] = {
         type: 'device',
         native: {},
-        common: { name: `${stateIdToPurpose(stateId)} Power`, role: 'device' },
+        common: { name: stateIdToPurpose(stateId), role: 'device' },
         enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
         nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
           acc[id] = { type: 'state', native: {}, common: common };
