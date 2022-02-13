@@ -91,6 +91,20 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           write: false,
           name: `${stateIdToPurpose(stateId)} Power Usage`,
         },
+        'negated-state': {
+          alias: {
+            id: stateId.replace('.cmnd.', '.stat.'),
+            read: 'val === "OFF"',
+            // No write function makes this read-only.
+          },
+          role: 'indicator.state',
+          type: 'boolean',
+          read: true,
+          write: false,
+          name: `${stateIdToPurpose(
+            stateId,
+          )} Power (negated for easier toggling in scenes)`,
+        },
         state: {
           alias: {
             id: { read: stateId.replace('.cmnd.', '.stat.'), write: stateId },
