@@ -9,6 +9,7 @@ import {
   timeInterval,
   share,
   tap,
+  delay,
 } from 'rxjs/operators';
 
 declare global {
@@ -48,6 +49,12 @@ declare global {
 
     abstract class Remote {
       setUp(): Subscription;
+    }
+
+    class Aquara extends Remote {
+      constructor(
+        config: DeviceConfig & CycleDeviceConfig & DimmerDeviceConfig,
+      );
     }
 
     class TradfriDimmer extends Remote {
@@ -463,6 +470,123 @@ export namespace Remotes {
 
     protected addFeature(...feature: IFeature[]): void {
       feature.forEach(feature => this.features.push(feature));
+    }
+  }
+
+  export class Aquara extends Remote {
+    constructor(config: DeviceConfig & CycleDeviceConfig & DimmerDeviceConfig) {
+      super();
+
+      const features: IFeature[] = [];
+
+      if (config.cycle) {
+        features.push(new Cycle(this.cycleStreams(config)));
+      }
+
+      if (config.dim) {
+        features.push(new Dimmer(this.dimmerStreams(config)));
+      }
+
+      this.addFeature(...features);
+    }
+
+    private cycleStreams(
+      config: DeviceConfig & CycleDeviceConfig,
+    ): CycleStreams {
+      const left = new Observable<string>(observer => {
+        on(
+          { id: `${config.device}.single_left`, val: true, ack: true },
+          event => {
+            observer.next(event.id);
+          },
+        );
+      }).pipe(share());
+
+      const right = new Observable<string>(observer => {
+        on(
+          { id: `${config.device}.single_right`, val: true, ack: true },
+          event => {
+            observer.next(event.id);
+          },
+        );
+      }).pipe(share());
+
+      const lightState = new Observable<iobJS.State>(observer => {
+        on({ id: config.cycle.off, ack: true }, event =>
+          observer.next(event.state),
+        );
+      }).pipe(
+        share(),
+        startWith(getState(config.cycle.off)),
+        // False -> false.
+        // Anything else (true and Uncertain, for scenes) -> true.
+        map(state => state.val !== false),
+        distinctUntilChanged(),
+      );
+
+      const turnOn = merge(left, right).pipe(
+        withLatestFrom(lightState),
+        filter(([_, anyLightOn]) => anyLightOn === false),
+        tap(_ => log(`switch on: ${JSON.stringify(_)}`)),
+      );
+
+      const cycleNext = right.pipe(
+        withLatestFrom(lightState),
+        filter(([_, anyLightOn]) => anyLightOn === true),
+        tap(_ => log(`switch next: ${JSON.stringify(_)}`)),
+      );
+
+      const next = merge(turnOn, cycleNext);
+
+      const turnOff = left.pipe(
+        withLatestFrom(lightState),
+        filter(([_, anyLightOn]) => anyLightOn === true),
+        tap(_ => log(`switch off: ${JSON.stringify(_)}`)),
+      );
+
+      return {
+        off: turnOff.pipe(
+          map(_ => {
+            return { device: config.device, state: config.cycle.off };
+          }),
+        ),
+        next: next.pipe(
+          map(_ => {
+            return { device: config.device, states: config.cycle.on };
+          }),
+        ),
+      };
+    }
+
+    private dimmerStreams(
+      config: DeviceConfig & DimmerDeviceConfig,
+    ): DimmerStreams {
+      const down = new Observable<iobJS.ChangedStateObject>(observer => {
+        on({ id: `${config.device}.double_left`, ack: true }, event => {
+          observer.next(event);
+        });
+      }).pipe(share());
+
+      const up = new Observable<iobJS.ChangedStateObject>(observer => {
+        on({ id: `${config.device}.double_right`, ack: true }, event => {
+          observer.next(event);
+        });
+      }).pipe(share());
+
+      const darker = down.pipe(filter(event => event.state.val));
+      const brighter = up.pipe(filter(event => event.state.val));
+      const stop = merge(down, up).pipe(
+        filter(event => !event.state.val),
+        delay(200),
+      );
+
+      return {
+        brightnessChange: config.dim.brightnessChange,
+        lights: config.dim.lights,
+        darker: darker.pipe(map(_event => config.device)),
+        brighter: brighter.pipe(map(_event => config.device)),
+        stop: stop.pipe(map(_event => config.device)),
+      };
     }
   }
 

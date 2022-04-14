@@ -124,6 +124,9 @@
     },
     {
       "path": "ogd/Automation/Update_Notification.tsconfig.json"
+    },
+    {
+      "path": "ogd/Lights/Remote_Control.tsconfig.json"
     }
   ]
 }
