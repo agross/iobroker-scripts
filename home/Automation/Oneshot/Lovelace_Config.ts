@@ -193,6 +193,9 @@ function zigbeeTemperatureHumidityAndPressureSensors() {
 function scenes() {
   $('state[id=scene.*][role=scene.state]').each(async id => {
     const name = id.replace(/^scene\.\d+\./, '').replace(/[._]/g, ' ');
+    const friendlyName = id
+      .substring(id.lastIndexOf('.') + 1)
+      .replace(/[._]/g, ' ');
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
@@ -200,7 +203,7 @@ function scenes() {
           enabled: true,
           entity: 'scene',
           name: Lovelace.id(name),
-          attr_friendly_name: name,
+          attr_friendly_name: friendlyName,
         },
       },
     };
