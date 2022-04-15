@@ -39,6 +39,7 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
 zigbeeLights();
 zigbeeDoorContacts();
 zigbeeMotionSensors();
+zigbeeTemperatureHumidityAndPressureSensors();
 
 scenes();
 
@@ -122,6 +123,65 @@ function zigbeeMotionSensors() {
           name: Lovelace.id(name),
           attr_device_class: 'motion',
           attr_friendly_name: name,
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+}
+
+function zigbeeTemperatureHumidityAndPressureSensors() {
+  $('state[id=zigbee.*.humidity]').each(async id => {
+    const name = Device.deviceName(id);
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(`${name} Humidity`),
+          attr_device_class: 'humidity',
+          attr_unit_of_measurement: '%',
+          attr_friendly_name: name.replace('Sensor', 'Humidity'),
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+
+  $('state[id=zigbee.*.temperature]').each(async id => {
+    const name = Device.deviceName(id);
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(`${name} Temperature`),
+          attr_device_class: 'temperature',
+          attr_unit_of_measurement: '°C',
+          attr_friendly_name: name.replace('Sensor', 'Temperature'),
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+
+  $('state[id=zigbee.*.pressure]').each(async id => {
+    const name = Device.deviceName(id);
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(`${name} Pressure`),
+          attr_device_class: 'pressure',
+          attr_unit_of_measurement: 'hPa',
+          attr_friendly_name: name.replace('Sensor', 'Pressure'),
         },
       },
     };
