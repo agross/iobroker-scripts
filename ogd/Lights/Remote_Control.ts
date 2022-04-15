@@ -5,6 +5,15 @@ const config = {
 const remotes = [
   new Remotes.Aquara({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af12f'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'bedroom_east',
+          functions: 'light',
+        }).values(),
+      ),
+    },
     cycle: {
       off: 'scene.0.Bedroom East.Lights',
       on: [
@@ -16,6 +25,15 @@ const remotes = [
   }),
   new Remotes.Aquara({
     device: AdapterId.build(AdapterIds.zigbee, '54ef441000123198'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'bedroom_west',
+          functions: 'light',
+        }).values(),
+      ),
+    },
     cycle: {
       off: 'scene.0.Bedroom West.Lights',
       on: [
