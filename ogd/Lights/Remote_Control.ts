@@ -3,7 +3,7 @@ const config = {
 };
 
 const remotes = [
-  new Remotes.Aquara({
+  new Remotes.AquaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af12f'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -23,7 +23,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.Aquara({
+  new Remotes.AquaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef441000123198'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -43,7 +43,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.Aquara({
+  new Remotes.AquaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af4b3'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -59,7 +59,7 @@ const remotes = [
       on: ['scene.0.Staircase.Lights_Cozy', 'scene.0.Staircase.Lights_Bright'],
     },
   }),
-  new Remotes.Aquara({
+  new Remotes.AquaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001aea56'),
     cycle: {
       off: 'scene.0.Equipment Room.Lights',
