@@ -51,6 +51,10 @@ declare global {
       setUp(): Subscription;
     }
 
+    class AquaraWS_EUK03 extends Remote {
+      constructor(config: DeviceConfig & ToggleDeviceConfig);
+    }
+
     class AquaraWRS_R02 extends Remote {
       constructor(
         config: DeviceConfig & CycleDeviceConfig & DimmerDeviceConfig,
@@ -470,6 +474,44 @@ export namespace Remotes {
 
     protected addFeature(...feature: IFeature[]): void {
       feature.forEach(feature => this.features.push(feature));
+    }
+  }
+
+  export class AquaraWS_EUK03 extends Remote {
+    constructor(config: DeviceConfig & ToggleDeviceConfig) {
+      super();
+
+      const features: IFeature[] = [];
+
+      if (config.toggle) {
+        features.push(new ToggleAndSwitch(this.toggleStreams(config)));
+      }
+
+      this.addFeature(...features);
+    }
+
+    private toggleStreams(
+      config: DeviceConfig & ToggleDeviceConfig,
+    ): ToggleAndSwitchStreams {
+      const left = new Observable<string>(observer => {
+        on({ id: `${config.device}.single`, val: true, ack: true }, event => {
+          observer.next(event.id);
+        });
+      }).pipe(
+        share(),
+        map(_event => {
+          return {
+            device: config.device,
+            states: config.toggle.states,
+            off: config.toggle.off,
+          };
+        }),
+      );
+
+      return {
+        turnedOn: left,
+        turnedOff: left,
+      };
     }
   }
 

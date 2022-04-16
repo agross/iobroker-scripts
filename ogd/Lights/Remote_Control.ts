@@ -3,6 +3,13 @@ const config = {
 };
 
 const remotes = [
+  new Remotes.AquaraWS_EUK03({
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001ce745'),
+    toggle: {
+      off: ['scene.0.Kitchen.Lights'],
+      states: ['scene.0.Kitchen.Lights_Cozy'],
+    },
+  }),
   new Remotes.AquaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af12f'),
     dim: {
