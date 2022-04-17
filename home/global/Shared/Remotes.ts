@@ -52,7 +52,9 @@ declare global {
     }
 
     class AquaraWS_EUK03 extends Remote {
-      constructor(config: DeviceConfig & ToggleDeviceConfig);
+      constructor(
+        config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig,
+      );
     }
 
     class AquaraWRS_R02 extends Remote {
@@ -478,13 +480,17 @@ export namespace Remotes {
   }
 
   export class AquaraWS_EUK03 extends Remote {
-    constructor(config: DeviceConfig & ToggleDeviceConfig) {
+    constructor(config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig) {
       super();
 
       const features: IFeature[] = [];
 
       if (config.toggle) {
         features.push(new ToggleAndSwitch(this.toggleStreams(config)));
+      }
+
+      if (config.cycle) {
+        features.push(new Cycle(this.cycleStreams(config)));
       }
 
       this.addFeature(...features);
@@ -511,6 +517,66 @@ export namespace Remotes {
       return {
         turnedOn: left,
         turnedOff: left,
+      };
+    }
+
+    private cycleStreams(
+      config: DeviceConfig & CycleDeviceConfig,
+    ): CycleStreams {
+      const switched = new Observable<string>(observer => {
+        on({ id: `${config.device}.single`, val: true, ack: true }, event => {
+          observer.next(event.id);
+        });
+      }).pipe(share());
+
+      const lightState = new Observable<iobJS.State>(observer => {
+        on({ id: config.cycle.off, ack: true }, event =>
+          observer.next(event.state),
+        );
+      }).pipe(
+        share(),
+        startWith(getState(config.cycle.off)),
+        // False -> false.
+        // Anything else (true and Uncertain, for scenes) -> true.
+        map(state => state.val !== false),
+        distinctUntilChanged(),
+      );
+
+      const doSomething = switched.pipe(
+        timeInterval(),
+        withLatestFrom(lightState),
+      );
+
+      const turnOn = doSomething.pipe(
+        filter(([_, anyLightOn]) => anyLightOn === false),
+        tap(_ => log(`switch on: ${JSON.stringify(_)}`)),
+      );
+
+      const cycleNext = doSomething.pipe(
+        filter(([_, anyLightOn]) => anyLightOn === true),
+        filter(([switched, _]) => switched.interval < 5000),
+        tap(_ => log(`switch next: ${JSON.stringify(_)}`)),
+      );
+
+      const next = merge(turnOn, cycleNext);
+
+      const turnOff = doSomething.pipe(
+        filter(([_, anyLightOn]) => anyLightOn === true),
+        filter(([switched, _]) => switched.interval >= 5000),
+        tap(_ => log(`switch off: ${JSON.stringify(_)}`)),
+      );
+
+      return {
+        off: turnOff.pipe(
+          map(_ => {
+            return { device: config.device, state: config.cycle.off };
+          }),
+        ),
+        next: next.pipe(
+          map(_ => {
+            return { device: config.device, states: config.cycle.on };
+          }),
+        ),
       };
     }
   }
