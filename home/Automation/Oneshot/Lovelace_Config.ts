@@ -4,33 +4,8 @@ const config = {
   dryRun: false,
 };
 
-function patchMultipleLovelaceInstances(
-  expected: Partial<iobJS.StateCommon>,
-): Partial<iobJS.StateCommon> {
-  if (!expected.custom) {
-    return expected;
-  }
-
-  const instances = [...$('state[id=system.adapter.lovelace.*.alive]')].map(
-    alive => alive.replace(/^system\.adapter./, '').replace(/\.alive$/, ''),
-  );
-
-  if (instances.length <= 1) {
-    return expected;
-  }
-
-  const template = expected.custom[instances[0]];
-
-  instances.slice(1).forEach(instance => {
-    expected.custom[instance] = template;
-  });
-
-  return expected;
-}
-
 async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   const state = await getObjectAsync(stateId);
-  expected = patchMultipleLovelaceInstances(expected);
   const commonShrunkDownToExpected = Utils.shrink(state.common, expected);
 
   if (
