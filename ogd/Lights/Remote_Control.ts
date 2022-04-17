@@ -11,6 +11,13 @@ const remotes = [
     },
   }),
   new Remotes.AquaraWRS_R02({
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6983'),
+    cycle: {
+      off: 'scene.0.Staircase.Lights',
+      on: ['scene.0.Staircase.Lights_Cozy', 'scene.0.Staircase.Lights_Bright'],
+    },
+  }),
+  new Remotes.AquaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af12f'),
     dim: {
       brightnessChange: config.brightnessChange,
