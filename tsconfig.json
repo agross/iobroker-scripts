@@ -129,10 +129,10 @@
       "path": "ogd/Automation/Update_Notification.tsconfig.json"
     },
     {
-      "path": "ogd/Lights/Remote_Control.tsconfig.json"
+      "path": "ogd/Lights/Global_Brightness_Override.tsconfig.json"
     },
     {
-      "path": "ogd/Script_1.tsconfig.json"
+      "path": "ogd/Lights/Remote_Control.tsconfig.json"
     }
   ]
 }
