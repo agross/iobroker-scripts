@@ -6,6 +6,7 @@ declare global {
     constructor(
       stateOrSubscribeOptions: string | iobJS.SubscribeOptions,
       eventMapper?: EventMapper<T>,
+      everyValue?: boolean,
     );
     get stream(): Observable<T>;
   }
@@ -19,6 +20,7 @@ export class Stream<T> {
   constructor(
     stateOrSubscribeOptions: string | iobJS.SubscribeOptions,
     eventMapper?: EventMapper<T>,
+    everyValue?: boolean,
   ) {
     if (!eventMapper) {
       eventMapper = e => e.state.val;
@@ -32,10 +34,14 @@ export class Stream<T> {
     } else {
       this._stream = this.changes(stateOrSubscribeOptions, eventMapper);
     }
+
+    if (!everyValue) {
+      this._stream = this._stream.pipe(distinctUntilChanged());
+    }
   }
 
   public get stream(): Observable<T> {
-    return this._stream.pipe(distinctUntilChanged());
+    return this._stream;
   }
 
   private initialValue(

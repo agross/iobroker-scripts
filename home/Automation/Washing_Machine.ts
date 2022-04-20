@@ -47,6 +47,7 @@ await ObjectCreator.create(
 const powerUsage = new Stream<number>(
   config.powerMonitor,
   event => event.state.val as number,
+  true,
 ).stream;
 
 const running = powerUsage.pipe(
