@@ -439,7 +439,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
       changesRelogInterval: 60,
       changesMinDelta: 0,
       storageType: false,
-      aliasId: `${Device.deviceName(id)} Valve`,
+      aliasId: `${Device.deviceName(id)} Valve Level`,
     };
 
     check(enabledDataPoints, id, expect);
