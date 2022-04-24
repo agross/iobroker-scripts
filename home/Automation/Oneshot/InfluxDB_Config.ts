@@ -444,6 +444,21 @@ function homeMaticThermostats(enabledDataPoints: {}) {
 
     check(enabledDataPoints, id, expect);
   });
+
+  $('state[id=hm-rpc.*.10.STATE]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 500,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${Device.deviceName(id)} Valve Open`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 }
 
 function homeMaticPresenceDetectors(enabledDataPoints: {}) {
