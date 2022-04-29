@@ -1,3 +1,4 @@
+import got from 'got';
 import util from 'util';
 
 const config = {
@@ -36,6 +37,7 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   });
 }
 
+zigbeeIcons();
 zigbeeLights();
 zigbeeDoorContacts();
 zigbeeMotionSensors();
@@ -60,6 +62,33 @@ maxDayTemperature();
 ecovacsDeebot();
 
 fuelPrices();
+
+function zigbeeIcons() {
+  [...$('state[id=zigbee.*.available]')]
+    .map(id => id.replace(/\.available$/, ''))
+    .forEach(async deviceId => {
+      const device = await getObjectAsync(deviceId);
+
+      if (device.common.icon && device.common.icon !== 'img/unknown.png') {
+        return;
+      }
+
+      const iconUrl = `https://www.zigbee2mqtt.io/images/devices/${device.common.type}.jpg`;
+
+      try {
+        const response = await got(iconUrl).buffer();
+        const iconAsBase64 = response.toString('base64');
+
+        const expect: Partial<iobJS.StateCommon> = {
+          icon: `data:image/jpeg;base64,${iconAsBase64}`,
+        };
+
+        await check(deviceId, expect);
+      } catch (error) {
+        log(`Error downloading ${iconUrl}: ${error}`, 'error');
+      }
+    });
+}
 
 function zigbeeLights() {
   $('state[id=zigbee.*.state](functions=light)').each(async id => {
