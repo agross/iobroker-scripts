@@ -72,7 +72,7 @@ function custom() {
 
 async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
   const instances = [...$('state[id=system.adapter.lovelace.*.alive]')].map(
-    alive => alive.replace(/^system\.adapter./, '').replace(/\.alive$/, ''),
+    alive => alive.replace(/^system\.adapter\./, '').replace(/\.alive$/, ''),
   );
 
   if (instances.length <= 1) {
