@@ -88,6 +88,8 @@ async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
     return;
   }
 
+  template.attr_friendly_name = translate(template.attr_friendly_name);
+
   instances.slice(1).forEach(instance => {
     state.common.custom[instance] = template;
   });
@@ -99,6 +101,85 @@ async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
   await extendObjectAsync(stateId, {
     common: state.common,
   });
+}
+
+function translate(str: string) {
+  if (!str) {
+    return undefined;
+  }
+
+  // Translations are checked in order.
+  const translations = {
+    'Kitchen Table Light': 'Küchentisch Licht',
+    'Kitchen Counter Light': 'Küchenzeile Licht',
+    'Living Room': 'Wohnzimmer',
+    Bathroom: 'Bad',
+    Kitchen: 'Küche',
+    Staircase: 'Treppenaufgang',
+    Bedroom: 'Schlafzimmer',
+    Workshop: 'Werkstatt',
+    'Equipment Room': 'Lager',
+    Outside: 'Draußen',
+
+    East: 'Ost',
+    'South Roof': 'Süd',
+    'North Roof': 'Nord',
+    Middle: 'Mitte',
+
+    Temperature: 'Temperatur',
+    Humidity: 'Luftfeuchtigkeit',
+    'Table Light': 'Tischlampe',
+    'Ceiling Light': 'Deckenlicht',
+    Light: 'Licht',
+
+    On: 'an',
+    Off: 'aus',
+    Open: 'geöffnet',
+  };
+
+  let loop = 0;
+  let index = 0;
+  let result = str;
+
+  while (index < result.length) {
+    if (loop++ > 100) {
+      log(`Loop detected while translating '${str}'`, 'error');
+      return str;
+    }
+
+    const found = Object.keys(translations).find(k =>
+      result.startsWith(k, index),
+    );
+
+    if (found) {
+      const processed = result.substring(0, index);
+      const replacement = translations[found];
+      const rest = result.substring(processed.length + found.length);
+
+      result = `${processed}${replacement}${rest}`;
+      index += replacement.length;
+
+      log(
+        `Replace: '${processed}' '${replacement}' '${rest}', new index ${index}, new result '${result}'`,
+        'debug',
+      );
+    } else {
+      index += 1;
+
+      log(
+        `Nothing found for '${result.substring(
+          index,
+        )}', new index ${index}, new result '${result}'`,
+        'debug',
+      );
+
+      if (index >= result.length) {
+        return result;
+      }
+    }
+  }
+
+  return result;
 }
 
 function statesWithLovelaceConfig() {
