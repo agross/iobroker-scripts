@@ -1,5 +1,13 @@
-import { combineLatest } from 'rxjs';
-import { distinctUntilKeyChanged, filter, map, tap } from 'rxjs/operators';
+import { combineLatest, EMPTY, iif } from 'rxjs';
+import {
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  filter,
+  map,
+  shareReplay,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 
 const config = {
   presence: 'hm-rpc.1.000C1A49A87471.1.PRESENCE_DETECTION_STATE',
@@ -24,34 +32,27 @@ const config = {
 };
 
 const presence = new Stream<boolean>(config.presence).stream;
-const overriddenBy = new Stream<boolean>(config.overriddenBy).stream;
-const illumination = new Stream<number>(config.illumination).stream;
+const overridden = new Stream<boolean>(config.overriddenBy).stream;
 
-const reactToPresence = combineLatest([
-  presence,
-  overriddenBy,
-  illumination,
-]).pipe(
-  map(([p, o, i]) => {
-    return { presence: p, override: o, illumination: i };
-  }),
-  tap(x => log(JSON.stringify(x), 'debug')),
-  filter(x => {
-    if (x.override) {
+const reactToPresence = combineLatest([overridden, presence]).pipe(
+  filter(([overridden, _]) => {
+    if (overridden) {
       log('Bathroom lights overridden by switch');
       return false;
     }
 
     return true;
   }),
-  distinctUntilKeyChanged('presence'),
+  map(([_, presence]) => presence),
+  distinctUntilChanged(),
+  shareReplay(1),
 );
 
 const turnOff = reactToPresence
   .pipe(
-    filter(x => x.presence === false),
+    filter(present => present === false),
     tap(_ => {
-      log('Bathroom empty, turning off lights');
+      log('Bathroom unoccupied, turning off lights');
       setState(config.turnOff, false);
     }),
   )
@@ -59,10 +60,28 @@ const turnOff = reactToPresence
 
 const turnOn = reactToPresence
   .pipe(
-    filter(x => x.presence === true),
-    filter(x => x.illumination <= config.illuminationThreshold),
+    switchMap(present =>
+      iif(
+        () => {
+          // If present, start monitoring illumination and turn on light
+          // the first time it falls below the threshold.
+          return present === true;
+        },
+        new Stream<number>(config.illumination).stream.pipe(
+          map(x => {
+            return {
+              belowThreshold: x <= config.illuminationThreshold,
+              illumination: x,
+            };
+          }),
+          filter(x => x.belowThreshold),
+          distinctUntilKeyChanged('belowThreshold'),
+        ),
+        EMPTY,
+      ),
+    ),
     map(x => {
-      return { ...x, scene: config.determineScene() };
+      return { illumination: x.illumination, scene: config.determineScene() };
     }),
     tap(x => {
       log(`Bathroom occupied with ${x.illumination} lm, turning on ${x.scene}`);
