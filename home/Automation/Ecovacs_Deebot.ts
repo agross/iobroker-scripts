@@ -217,7 +217,7 @@ const acknowledge = [
 ].map(area => {
   return new Stream<iobJS.ChangedStateObject>(
     { id: area, ack: false },
-    event => event,
+    { map: event => event },
   ).stream
     .pipe(tap(state => setState(area, state.state.val, true)))
     .subscribe();
@@ -253,11 +253,13 @@ const scheduledSpotAreas = combineLatest(spotAreas).pipe(
 const cleanSpotAreas = [
   ...$(`state[id=0_userdata.0.${config.adapter}.clean-scheduled-spot-areas]`),
 ].map(clean => {
-  return new Stream(clean, event => {
-    return {
-      id: event.id,
-      value: event.state.val,
-    };
+  return new Stream(clean, {
+    map: event => {
+      return {
+        id: event.id,
+        value: event.state.val,
+      };
+    },
   }).stream
     .pipe(
       filter(x => x.value === true),
@@ -321,11 +323,13 @@ const scheduledCustomAreas = combineLatest(customAreas).pipe(
 const cleanCustomAreas = [
   ...$(`state[id=0_userdata.0.${config.adapter}.clean-scheduled-custom-areas]`),
 ].map(clean => {
-  return new Stream(clean, event => {
-    return {
-      id: event.id,
-      value: event.state.val,
-    };
+  return new Stream(clean, {
+    map: event => {
+      return {
+        id: event.id,
+        value: event.state.val,
+      };
+    },
   }).stream
     .pipe(
       filter(x => x.value === true),

@@ -44,11 +44,10 @@ await ObjectCreator.create(
   config.repowerState[0],
 );
 
-const powerUsage = new Stream<number>(
-  config.powerMonitor,
-  event => event.state.val as number,
-  true,
-).stream;
+const powerUsage = new Stream<number>(config.powerMonitor, {
+  map: event => event.state.val as number,
+  pipe: obs => obs, // All values, not distinct ones.
+}).stream;
 
 const running = powerUsage.pipe(
   tap(watts => log(`Usage ${JSON.stringify(watts)}`, 'debug')),

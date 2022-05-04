@@ -514,19 +514,21 @@ const alarms = cars.map(car => {
     {
       id: new RegExp(timestamps),
     },
-    event => {
-      const entry = event.id.replace(/\.\w+$/, '');
-      const id = getState(entry + '.id').val;
-      const reason = getState(entry + '.dwaAlarmReasonClustered').val;
-      const ack = getState(entry + '.fnsAcknowledged').val === true;
-      const ts = new Date(event.state.val);
+    {
+      map: event => {
+        const entry = event.id.replace(/\.\w+$/, '');
+        const id = getState(entry + '.id').val;
+        const reason = getState(entry + '.dwaAlarmReasonClustered').val;
+        const ack = getState(entry + '.fnsAcknowledged').val === true;
+        const ts = new Date(event.state.val);
 
-      return {
-        id: id,
-        reason: reason,
-        acknowledged: ack,
-        timestamp: ts,
-      };
+        return {
+          id: id,
+          reason: reason,
+          acknowledged: ack,
+          timestamp: ts,
+        };
+      },
     },
   ).stream
     .pipe(
