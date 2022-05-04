@@ -62,7 +62,8 @@ const coffeeBrewed = new Stream<boolean>({
   ack: true,
 }).stream
   .pipe(
-    throttleTime(30000),
+    filter(x => x === true),
+    throttleTime(60000),
     tap(_ => {
       const counterState = config.counter.join('.') + '.counter';
 
