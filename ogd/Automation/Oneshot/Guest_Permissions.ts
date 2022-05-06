@@ -80,7 +80,6 @@ async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
   }
 
   const state = await getObjectAsync(stateId);
-
   const template = state.common.custom[instances[0]];
 
   if (!template) {
@@ -88,10 +87,13 @@ async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
     return;
   }
 
-  template.attr_friendly_name = translate(template.attr_friendly_name);
+  const lovelace = Object.assign({}, template);
+  lovelace.attr_friendly_name = translate(
+    lovelace.attr_friendly_name || state.common.name,
+  );
 
   instances.slice(1).forEach(instance => {
-    state.common.custom[instance] = template;
+    state.common.custom[instance] = lovelace;
   });
 
   if (config.dryRun) {
@@ -148,7 +150,7 @@ function translate(str: string) {
 
   let loop = 0;
   let index = 0;
-  let result = str;
+  let result = str.slice(0);
 
   while (index < result.length) {
     if (loop++ > 100) {
