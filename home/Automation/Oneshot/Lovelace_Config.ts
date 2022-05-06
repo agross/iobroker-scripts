@@ -130,10 +130,10 @@ function zigbeeMotionSensors() {
         [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'sensor',
-          name: Lovelace.id(name),
+          name: Lovelace.id(`${name} Illuminance`),
           attr_device_class: 'illuminance',
           attr_unit_of_measurement: 'lux',
-          attr_friendly_name: name,
+          attr_friendly_name: name.replace('Motion Sensor', 'Illuminance'),
         },
       },
     };
@@ -149,9 +149,9 @@ function zigbeeMotionSensors() {
         [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'binary_sensor',
-          name: Lovelace.id(name),
+          name: Lovelace.id(`${name} Occupancy`),
           attr_device_class: 'motion',
-          attr_friendly_name: name,
+          attr_friendly_name: name.replace('Motion Sensor', 'Occupancy'),
         },
       },
     };
