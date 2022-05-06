@@ -4,7 +4,7 @@ const config = {
   dryRun: false,
 };
 
-var permissions = [...zigbeeLights(), ...scenes(), ...custom()].map(
+const permissions = [...zigbeeLights(), ...scenes(), ...custom()].map(
   async stateId => {
     const expect: Partial<iobJS.StateACL> = { state: 1638 };
 
@@ -12,11 +12,17 @@ var permissions = [...zigbeeLights(), ...scenes(), ...custom()].map(
   },
 );
 
-var lovelace = [...statesWithLovelaceConfig()].map(async stateId => {
-  await copyLovelaceConfigFromFirstToOtherInstances(stateId);
-});
+const [sourceInstance, ...targetInstances] = lovelaceInstances();
 
-await Promise.all([permissions, lovelace]);
+const lovelaceStateConfig = [...statesWithLovelaceConfig()].map(
+  async stateId => {
+    await copyLovelaceConfig(stateId, sourceInstance, targetInstances);
+  },
+);
+
+const lovelaceLayout = copyLovelaceLayout(sourceInstance, targetInstances);
+
+await Promise.all([permissions, lovelaceStateConfig, lovelaceLayout]);
 
 async function setPermissions(
   stateId: string,
@@ -70,17 +76,24 @@ function custom() {
   return ['0_userdata.0.global-brightness-override'];
 }
 
-async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
-  const instances = [...$('state[id=system.adapter.lovelace.*.alive]')].map(
-    alive => alive.replace(/^system\.adapter\./, '').replace(/\.alive$/, ''),
+function lovelaceInstances() {
+  return [...$('state[id=system.adapter.lovelace.*.alive]')].map(alive =>
+    alive.replace(/^system\.adapter\./, '').replace(/\.alive$/, ''),
   );
+}
 
-  if (instances.length <= 1) {
+async function copyLovelaceConfig(
+  stateId: string,
+  sourceInstance: string,
+  targetInstances: string[],
+) {
+  if (targetInstances.length < 1) {
+    log(`No target instances for config of ${sourceInstance}`, 'warn');
     return;
   }
 
   const state = await getObjectAsync(stateId);
-  const template = state.common.custom[instances[0]];
+  const template = state.common.custom[sourceInstance];
 
   if (!template) {
     log(`${stateId} should have Lovelace config but does not`, 'warn');
@@ -92,7 +105,7 @@ async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
     lovelace.attr_friendly_name || state.common.name,
   );
 
-  instances.slice(1).forEach(instance => {
+  targetInstances.forEach(instance => {
     state.common.custom[instance] = lovelace;
   });
 
@@ -102,6 +115,25 @@ async function copyLovelaceConfigFromFirstToOtherInstances(stateId: string) {
 
   await extendObjectAsync(stateId, {
     common: state.common,
+  });
+}
+
+async function copyLovelaceLayout(
+  sourceInstance: string,
+  targetInstances: string[],
+) {
+  if (targetInstances.length < 1) {
+    log(`No target instances for layout of ${sourceInstance}`, 'warn');
+    return;
+  }
+
+  const config = await getObjectAsync(`${sourceInstance}.configuration`);
+  const views = config.native.views;
+
+  return targetInstances.map(async instance => {
+    const config = `${instance}.configuration`;
+
+    await extendObjectAsync(config, { native: { views: views } });
   });
 }
 
