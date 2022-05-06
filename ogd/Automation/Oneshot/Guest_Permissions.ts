@@ -122,8 +122,9 @@ function translate(str: string) {
     Workshop: 'Werkstatt',
     'Equipment Room': 'Lager',
     Outdoor: 'Draußen',
-    Patio: 'Terasse',
+    Patio: 'Terrasse',
     Hall: 'Flur',
+    Entrance: 'Eingang',
 
     East: 'Ost',
     'South Roof': 'Süd',
@@ -135,7 +136,7 @@ function translate(str: string) {
     Motion: 'Bewegung',
     'Table Light': 'Tischlampe',
     'Ceiling Light': 'Deckenlicht',
-    Lights: 'Lichter',
+    Lights: 'Licht',
     'Light Switch': 'Lichtschalter',
     Light: 'Licht',
     Door: 'Tür',
@@ -143,9 +144,12 @@ function translate(str: string) {
 
     Only: '',
     All: 'Alle',
+    Off: 'aus',
+    On: 'an',
 
     Bright: 'hell',
     Cozy: 'gemütlich',
+    'Global Brightness Override': 'Globale Helligkeit',
   };
 
   let loop = 0;
