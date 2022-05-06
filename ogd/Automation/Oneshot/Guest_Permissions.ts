@@ -119,7 +119,9 @@ function translate(str: string) {
     Bedroom: 'Schlafzimmer',
     Workshop: 'Werkstatt',
     'Equipment Room': 'Lager',
-    Outside: 'Draußen',
+    Outdoor: 'Draußen',
+    Patio: 'Terasse',
+    Hall: 'Flur',
 
     East: 'Ost',
     'South Roof': 'Süd',
@@ -128,13 +130,20 @@ function translate(str: string) {
 
     Temperature: 'Temperatur',
     Humidity: 'Luftfeuchtigkeit',
+    Motion: 'Bewegung',
     'Table Light': 'Tischlampe',
     'Ceiling Light': 'Deckenlicht',
+    Lights: 'Lichter',
+    'Light Switch': 'Lichtschalter',
     Light: 'Licht',
+    Door: 'Tür',
+    Shutters: 'Rollladen',
 
-    On: 'an',
-    Off: 'aus',
-    Open: 'geöffnet',
+    Only: '',
+    All: 'Alle',
+
+    Bright: 'hell',
+    Cozy: 'gemütlich',
   };
 
   let loop = 0;
