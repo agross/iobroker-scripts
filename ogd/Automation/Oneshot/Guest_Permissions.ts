@@ -93,10 +93,14 @@ async function copyLovelaceConfig(
   }
 
   const state = await getObjectAsync(stateId);
-  const template = state.common.custom[sourceInstance];
+  const template = state.common.custom?.[sourceInstance];
 
   if (!template) {
-    log(`${stateId} should have Lovelace config but does not`, 'warn');
+    log(
+      `${stateId} does not have ${sourceInstance} Lovelace config, creating one`,
+      'warn',
+    );
+
     return;
   }
 
@@ -106,8 +110,11 @@ async function copyLovelaceConfig(
   );
 
   targetInstances.forEach(instance => {
+    state.common.custom ||= {};
     state.common.custom[instance] = lovelace;
   });
+
+  log(JSON.stringify(state.common));
 
   if (config.dryRun) {
     return;
@@ -166,6 +173,7 @@ function translate(str: string) {
     Temperature: 'Temperatur',
     Humidity: 'Luftfeuchtigkeit',
     Motion: 'Bewegung',
+    Occupancy: 'Anwesenheit',
     'Table Light': 'Tischlampe',
     'Ceiling Light': 'Deckenlicht',
     Lights: 'Licht',
@@ -233,6 +241,13 @@ function statesWithLovelaceConfig() {
   return [...$('state')].filter(stateId => {
     return getAttr(getObject(stateId), ['common', 'custom', 'lovelace.0']);
   });
+}
+
+function autodetectedDevices() {
+  return [
+    ...$('state[id=zigbee.*.state](functions=light)'),
+    'alias.0.mqtt.0.ogd.living-room.shutter.shelly25-1',
+  ].map(x => x.replace(/\.state$/, ''));
 }
 
 stopScript(undefined);
