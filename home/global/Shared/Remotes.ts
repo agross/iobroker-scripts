@@ -1,4 +1,4 @@
-import { Observable, merge, combineLatest, Subscription } from 'rxjs';
+import { Observable, merge, combineLatest, Subscription, NEVER } from 'rxjs';
 import {
   filter,
   debounceTime,
@@ -499,7 +499,7 @@ export namespace Remotes {
     private toggleStreams(
       config: DeviceConfig & ToggleDeviceConfig,
     ): ToggleAndSwitchStreams {
-      const left = new Observable<string>(observer => {
+      const clicked = new Observable<string>(observer => {
         on({ id: `${config.device}.single`, val: true, ack: true }, event => {
           observer.next(event.id);
         });
@@ -514,9 +514,10 @@ export namespace Remotes {
         }),
       );
 
+      // Since both streams are merged, only pass the click event.
       return {
-        turnedOn: left,
-        turnedOff: left,
+        turnedOn: clicked,
+        turnedOff: NEVER,
       };
     }
 
