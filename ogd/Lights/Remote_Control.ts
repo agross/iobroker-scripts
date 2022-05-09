@@ -5,9 +5,16 @@ const config = {
 const remotes = [
   new Remotes.AquaraWS_EUK03({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001ce745'),
+    toggle: {
+      off: ['scene.0.Hall.Lights'],
+      states: ['scene.0.Hall.Lights_Bright'],
+    },
+  }),
+  new Remotes.AquaraWRS_R02({
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6707'),
     cycle: {
-      off: 'scene.0.Kitchen.Lights',
-      on: ['scene.0.Kitchen.Lights_Cozy', 'scene.0.Kitchen.Lights_Bright'],
+      off: 'scene.0.House.Lights',
+      on: ['scene.0.House.Lights_Cozy', 'scene.0.House.Lights_Bright'],
     },
   }),
   new Remotes.AquaraWRS_R02({
