@@ -135,6 +135,9 @@
       "path": "ogd/Lights/Good_Night.tsconfig.json"
     },
     {
+      "path": "ogd/Lights/Hall_Lights.tsconfig.json"
+    },
+    {
       "path": "ogd/Lights/Remote_Control.tsconfig.json"
     }
   ]
