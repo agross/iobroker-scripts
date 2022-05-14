@@ -18,7 +18,7 @@ const config = {
   determineScene: () => {
     let scene = 'scene.0.Hall.Lights_Default';
 
-    if (compareTime('1:00', '6:00', 'between')) {
+    if (compareTime('23:00', '6:00', 'between')) {
       scene = 'scene.0.Hall.Lights_Night';
 
       // If any light is on, use a brighter scene.
