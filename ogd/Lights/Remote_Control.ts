@@ -88,12 +88,42 @@ const remotes = [
     },
   }),
   new Remotes.AquaraWRS_R02({
-    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001aea56'),
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c66c6'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'living_room',
+          functions: 'light',
+        }).values(),
+      ),
+    },
     cycle: {
-      off: 'scene.0.Equipment Room.Lights',
+      off: 'scene.0.Living Room.Lights',
       on: [
-        'scene.0.Equipment Room.Lights_Bright',
-        'scene.0.Equipment Room.Lights_Cozy',
+        'scene.0.Living Room.Lights_Cozy',
+        'scene.0.Living Room.Lights_Bright',
+        'scene.0.Living Room.Lights_Colorful',
+      ],
+    },
+  }),
+  new Remotes.AquaraWRS_R02({
+    device: AdapterId.build(AdapterIds.zigbee, '001788010c66ea0c'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'living_room',
+          functions: 'light',
+        }).values(),
+      ),
+    },
+    cycle: {
+      off: 'scene.0.Living Room.Lights',
+      on: [
+        'scene.0.Living Room.Lights_Cozy',
+        'scene.0.Living Room.Lights_Bright',
+        'scene.0.Living Room.Lights_Colorful',
       ],
     },
   }),
@@ -114,6 +144,17 @@ const remotes = [
       on: [
         'scene.0.Living Room.Lights_Cozy',
         'scene.0.Living Room.Lights_Bright',
+        'scene.0.Living Room.Lights_Colorful',
+      ],
+    },
+  }),
+  new Remotes.AquaraWRS_R02({
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001aea56'),
+    cycle: {
+      off: 'scene.0.Equipment Room.Lights',
+      on: [
+        'scene.0.Equipment Room.Lights_Bright',
+        'scene.0.Equipment Room.Lights_Cozy',
       ],
     },
   }),
