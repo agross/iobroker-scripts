@@ -18,7 +18,7 @@ const remotes = [
     },
   }),
   new Remotes.AquaraWRS_R02({
-    device: AdapterId.build(AdapterIds.zigbee, 'not-installed-yet'),
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6638'),
     cycle: {
       off: 'scene.0.Kitchen.Lights',
       on: ['scene.0.Kitchen.Lights_Cozy', 'scene.0.Kitchen.Lights_Bright'],
