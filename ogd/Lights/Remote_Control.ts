@@ -102,8 +102,8 @@ const remotes = [
       off: 'scene.0.Living Room.Lights',
       on: [
         'scene.0.Living Room.Lights_Cozy',
-        'scene.0.Living Room.Lights_Bright',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Bright',
       ],
     },
   }),
@@ -122,8 +122,8 @@ const remotes = [
       off: 'scene.0.Living Room.Lights',
       on: [
         'scene.0.Living Room.Lights_Cozy',
-        'scene.0.Living Room.Lights_Bright',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Bright',
       ],
     },
   }),
@@ -142,8 +142,8 @@ const remotes = [
       off: 'scene.0.Living Room.Lights',
       on: [
         'scene.0.Living Room.Lights_Cozy',
-        'scene.0.Living Room.Lights_Bright',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Bright',
       ],
     },
   }),
@@ -163,8 +163,8 @@ const remotes = [
       off: 'scene.0.Living Room.Lights',
       on: [
         'scene.0.Living Room.Lights_Cozy',
-        'scene.0.Living Room.Lights_Bright',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Bright',
       ],
     },
   }),
