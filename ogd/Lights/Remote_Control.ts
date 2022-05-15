@@ -127,6 +127,26 @@ const remotes = [
       ],
     },
   }),
+  new Remotes.AquaraWRS_R02({
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c84c8'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'living_room',
+          functions: 'light',
+        }).values(),
+      ),
+    },
+    cycle: {
+      off: 'scene.0.Living Room.Lights',
+      on: [
+        'scene.0.Living Room.Lights_Cozy',
+        'scene.0.Living Room.Lights_Bright',
+        'scene.0.Living Room.Lights_Colorful',
+      ],
+    },
+  }),
   new Remotes.Philips({
     // Hue Remote RWL021
     device: AdapterId.build(AdapterIds.zigbee, '00178801096ab2d7'),
