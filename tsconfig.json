@@ -105,6 +105,9 @@
       "path": "home/Remote_Control/Living_Room_6_Short.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Leaving_Home.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Oneshot/Get_Zigbee_Light_Color_Temperature_Range.tsconfig.json"
     },
     {
