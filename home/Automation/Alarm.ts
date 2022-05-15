@@ -12,10 +12,8 @@ import {
 const config = {
   alarmEnabled: ['0_userdata.0', 'alarm-enabled'],
   presence: '0_userdata.0.presence',
-  hmPresence: 'hm-rega.0.950',
-  triggerAlarmOn: [
-    AdapterId.build(AdapterIds.zigbee, '00158d00045bedc5.opened'),
-  ],
+  homematicPresence: AlarmConfig.homematicPresence,
+  triggerAlarmOn: AlarmConfig.triggerAlarmOn,
 };
 
 await ObjectCreator.create(
@@ -54,16 +52,18 @@ const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
         `Setting alarm=${!present} and HomeMatic presence=${present} in ${delayByMinutes} min`,
       );
 
-      setStateDelayed(config.hmPresence, present, delay, true, err => {
-        if (err) {
-          log(
-            `Could not set HomeMatic presence to ${present}: ${err}`,
-            'error',
-          );
-        } else {
-          log(`Set HomeMatic presence to ${present}`);
-        }
-      });
+      if (config.homematicPresence) {
+        setStateDelayed(config.homematicPresence, present, delay, true, err => {
+          if (err) {
+            log(
+              `Could not set HomeMatic presence to ${present}: ${err}`,
+              'error',
+            );
+          } else {
+            log(`Set HomeMatic presence to ${present}`);
+          }
+        });
+      }
 
       setStateDelayed(
         config.alarmEnabled.join('.'),
@@ -105,7 +105,9 @@ const alarmTriggers = new Observable<string>(observer => {
 const alarmEnabledNotifications = alarmEnabledChanges
   .pipe(
     tap(enabled => {
-      const message = `Alarm ${enabled ? 'enabled' : 'disabled'}`;
+      const message = `${Site.location}: Alarm ${
+        enabled ? 'enabled' : 'disabled'
+      }`;
 
       Notify.mobile(message);
     }),
@@ -117,7 +119,7 @@ const alarmNotifications = alarmTriggers
     withLatestFrom(alarmEnabledChanges),
     filter(([_device, enabled]) => enabled),
     map(([device, _enabled]) => device),
-    map(device => `Alarm triggered by ${device}`),
+    map(device => `${Site.location}: Alarm triggered by ${device}`),
     tap(message => {
       Notify.mobile(message, 'warn');
     }),

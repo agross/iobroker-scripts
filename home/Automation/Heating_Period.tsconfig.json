@@ -3,6 +3,7 @@
   "files": [
     "../../iobroker.d.ts",
     "../global/AdapterIds.ts",
+    "../global/AlarmConfig.ts",
     "../global/Shared/AdapterId.ts",
     "../global/Shared/Device.ts",
     "../global/Shared/Lovelace.ts",
