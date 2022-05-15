@@ -84,6 +84,9 @@ sendTo(
 
     system(enabledDataPoints);
 
+    alarm(enabledDataPoints);
+    presence(enabledDataPoints);
+
     $('state[id=lgtv.*.states.power]').each(id => {
       const expect = {
         enabled: true,
@@ -763,6 +766,42 @@ function system(enabledDataPoints: {}) {
       changesMinDelta: 0,
       storageType: false,
       aliasId: 'Raspberry Pi Uptime',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+}
+
+function alarm(enabledDataPoints: {}) {
+  $('state[id=0_userdata.0.alarm-enabled]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Alarm Enabled',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+}
+
+function presence(enabledDataPoints: {}) {
+  $('state[id=0_userdata.0.presence]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Presence Detected',
     };
 
     check(enabledDataPoints, id, expect);
