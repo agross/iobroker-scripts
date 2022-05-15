@@ -2,7 +2,7 @@ import { combineLatest } from 'rxjs';
 import { tap, map, distinctUntilChanged } from 'rxjs/operators';
 
 const config = {
-  presenceIndicators: ['ping.0.iobroker.172_16_0_15'],
+  presenceIndicators: PresenceConfig.presenceIndicators,
   presence: ['0_userdata.0', 'presence'],
 };
 

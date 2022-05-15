@@ -129,6 +129,9 @@
       "path": "ogd/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Presence.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Shelly_Shutters.tsconfig.json"
     },
     {

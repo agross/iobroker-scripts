@@ -4,6 +4,7 @@
     "../../../iobroker.d.ts",
     "../../global/AdapterIds.ts",
     "../../global/AlarmConfig.ts",
+    "../../global/PresenceConfig.ts",
     "../../global/Shared/AdapterId.ts",
     "../../global/Shared/Device.ts",
     "../../global/Shared/Lovelace.ts",
