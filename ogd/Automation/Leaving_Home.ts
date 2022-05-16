@@ -10,7 +10,8 @@ const config = [
     activate: 'scene.0.Leaving.Long-Term',
   },
 ];
-var subscriptions = config.map(c => {
+
+const subscriptions = config.map(c => {
   return new Stream<boolean>({
     id: c.trigger,
     ack: true,
