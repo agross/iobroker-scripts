@@ -178,6 +178,13 @@ const remotes = [
       ],
     },
   }),
+  new Remotes.AquaraWRS_R02({
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af501'),
+    cycle: {
+      off: 'scene.0.Bathroom.Lights',
+      on: ['scene.0.Bathroom.Lights_Default', 'scene.0.Bathroom.Lights_Bright'],
+    },
+  }),
 ];
 
 const subscriptions = remotes.map(remote => remote.setUp());
