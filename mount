@@ -19,6 +19,6 @@ if [ $# = 0 ]; then
   sshfs "$host:$remote_dir" "$local_dir" -o transform_symlinks
 else
   if ! umount "$local_dir"; then
-    hash diskutil 2> /dev/null && sudo diskutil unmount  force "$local_dir"
+    hash diskutil 2> /dev/null && sudo diskutil unmount force "$local_dir"
   fi
 fi
