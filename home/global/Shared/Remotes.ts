@@ -18,7 +18,7 @@ declare global {
 
     interface CycleConfig {
       off: string;
-      on: string[];
+      on: string[] | (() => string[]);
     }
 
     interface ToggleConfig {
@@ -117,11 +117,11 @@ export namespace Remotes {
     setUp(): Subscription;
   }
 
-  type States = string[] | ObjectsWithStateQuery;
+  type States = string[] | (() => string[]) | ObjectsWithStateQuery;
 
   interface CycleConfig {
     off: string;
-    on: string[];
+    on: string[] | (() => string[]);
   }
 
   interface CycleStreams {
@@ -149,6 +149,10 @@ export namespace Remotes {
 
       const next = this.config.next.pipe(
         tap(({ device, states }) => {
+          if (typeof states === 'function') {
+            states = states();
+          }
+
           const currentIndex = states
             .map(obj => {
               return { object: obj, state: getState(obj) };
@@ -201,6 +205,10 @@ export namespace Remotes {
     public setUp(): Subscription {
       const on = this.config.turnedOn.pipe(
         tap(({ device, states }) => {
+          if (typeof states === 'function') {
+            states = states();
+          }
+
           log(`${device}: Turned on. States to set: ${JSON.stringify(states)}`);
 
           states.forEach(state => setState(state, true));
@@ -209,6 +217,10 @@ export namespace Remotes {
 
       const off = this.config.turnedOff.pipe(
         tap(({ device, states }) => {
+          if (typeof states === 'function') {
+            states = states();
+          }
+
           log(
             `${device}: Turned off. States to set: ${JSON.stringify(states)}`,
           );
@@ -252,7 +264,11 @@ export namespace Remotes {
     public setUp(): Subscription {
       const toggled = merge(this.config.turnedOn, this.config.turnedOff).pipe(
         map(({ device, states, off }) => {
-          const anyOnDeterminedBy = off || states;
+          let anyOnDeterminedBy = off || states;
+
+          if (typeof anyOnDeterminedBy === 'function') {
+            anyOnDeterminedBy = anyOnDeterminedBy();
+          }
 
           const anyOn = anyOnDeterminedBy
             .map(object => getState(object))
@@ -273,6 +289,10 @@ export namespace Remotes {
       const noneOn = toggled.pipe(
         filter(x => !x.anyOn),
         tap(({ device, states, off, anyOn }) => {
+          if (typeof states === 'function') {
+            states = states();
+          }
+
           log(`${device}: None on. Setting true for ${JSON.stringify(states)}`);
 
           states.forEach(state => setState(state, true));
@@ -284,6 +304,10 @@ export namespace Remotes {
       const explicitOffTurnedOff = someOn.pipe(
         filter(x => !!x.off),
         tap(({ device, states, off, anyOn }) => {
+          if (typeof off === 'function') {
+            off = off();
+          }
+
           log(
             `${device}: Explicit off. Setting false for ${JSON.stringify(off)}`,
           );
@@ -295,6 +319,10 @@ export namespace Remotes {
       const implicitOffTurnedOff = someOn.pipe(
         filter(x => !x.off),
         tap(({ device, states, off, anyOn }) => {
+          if (typeof states === 'function') {
+            states = states();
+          }
+
           log(
             `${device}: Implicit off. Setting false for ${JSON.stringify(
               states,
@@ -414,6 +442,10 @@ export namespace Remotes {
       selector: (reference: number, brightness: number) => boolean,
       newBrightness: (brightness: number) => number,
     ) {
+      if (typeof states === 'function') {
+        states = states();
+      }
+
       const brightnesses = states.map(light => `${light}.brightness`);
 
       const minBrightness = brightnesses
