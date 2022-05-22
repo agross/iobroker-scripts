@@ -45,7 +45,7 @@ function getAliasDefinition(
               unit: 'km',
               read: true,
               write: false,
-              name: 'Distance to oil change',
+              name: 'Distance to Oil Change',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -65,7 +65,7 @@ function getAliasDefinition(
               unit: 'd',
               read: true,
               write: false,
-              name: 'Time to oil change',
+              name: 'Time to Oil Change',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -85,7 +85,7 @@ function getAliasDefinition(
               unit: 'km',
               read: true,
               write: false,
-              name: 'Distance to inspection',
+              name: 'Distance to Inspection',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -105,7 +105,7 @@ function getAliasDefinition(
               unit: 'd',
               read: true,
               write: false,
-              name: 'Time to inspection',
+              name: 'Time to Inspection',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -157,7 +157,7 @@ function getAliasDefinition(
               type: 'boolean',
               read: true,
               write: false,
-              name: 'Car locked',
+              name: 'Car Locked',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -178,7 +178,7 @@ function getAliasDefinition(
               type: 'boolean',
               read: true,
               write: true,
-              name: 'Lock or unlock car',
+              name: 'Lock or Unlock Car',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -197,7 +197,7 @@ function getAliasDefinition(
               unit: '°C',
               read: true,
               write: false,
-              name: 'Outside temperature',
+              name: 'Outside Temperature',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -216,7 +216,7 @@ function getAliasDefinition(
               type: 'boolean',
               read: true,
               write: false,
-              name: 'Parking brake engaged',
+              name: 'Parking Brake Engaged',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -262,7 +262,7 @@ function getAliasDefinition(
               unit: 'km',
               read: true,
               write: false,
-              name: 'Remaining AdBlue range',
+              name: 'Remaining AdBlue Range',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -281,7 +281,7 @@ function getAliasDefinition(
               unit: 'km',
               read: true,
               write: false,
-              name: 'Remaining fuel range',
+              name: 'Remaining Fuel Range',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -300,7 +300,7 @@ function getAliasDefinition(
               unit: '%',
               read: true,
               write: false,
-              name: 'Fuel level',
+              name: 'Fuel Level',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -320,7 +320,7 @@ function getAliasDefinition(
               unit: '%',
               read: true,
               write: false,
-              name: 'Oil level',
+              name: 'Oil Level',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -382,7 +382,7 @@ function getUserDataDefinition(
               type: 'mixed',
               read: true,
               write: false,
-              name: 'Alarm timestamp',
+              name: 'Alarm Timestamp',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -404,7 +404,7 @@ function getUserDataDefinition(
               type: 'boolean',
               read: true,
               write: true,
-              name: 'Tyre change',
+              name: 'Tyre Change',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -419,7 +419,7 @@ function getUserDataDefinition(
               unit: 'km',
               read: true,
               write: true,
-              name: 'Tighten tyres at mileage',
+              name: 'Tighten Tyres at Mileage',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -441,7 +441,7 @@ function getUserDataDefinition(
               type: 'boolean',
               read: true,
               write: false,
-              name: 'Windows open',
+              name: 'Windows Open',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
@@ -456,7 +456,7 @@ function getUserDataDefinition(
               type: 'boolean',
               read: true,
               write: false,
-              name: 'Windows closed',
+              name: 'Windows Closed',
               custom: {
                 [AdapterIds.lovelace]: {
                   enabled: true,
