@@ -25,7 +25,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   const stateObjects: (channel: string) => ObjectDefinitionRoot = channel => {
     const channelStates: { [id: string]: any } = {
       summary: {
-        name: 'Event summary',
+        name: 'Event Summary',
         type: 'string',
         script: {
           source: (event: Event) => {
@@ -34,7 +34,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         },
       },
       location: {
-        name: 'Event location',
+        name: 'Event Location',
         type: 'string',
         script: {
           source: (event: Event) => {
@@ -43,7 +43,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         },
       },
       start: {
-        name: 'Start date',
+        name: 'Start Date',
         type: 'mixed',
         device_class: 'timestamp',
         script: {
@@ -53,7 +53,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         },
       },
       end: {
-        name: 'End date',
+        name: 'End Date',
         type: 'mixed',
         device_class: 'timestamp',
         script: {
@@ -63,7 +63,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         },
       },
       description: {
-        name: 'Event description',
+        name: 'Event Description',
         type: 'string',
         script: {
           source: (event: Event) => {
@@ -117,9 +117,9 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     },
     'Journey From Home': {
       type: 'channel',
-      common: { name: 'Next Journey From Home' },
+      common: { name: 'Next Journey from Home' },
       native: {},
-      nested: stateObjects('Next Journey From Home'),
+      nested: stateObjects('Next Journey from Home'),
       script: {
         filter: (event: Event) => {
           return event.event.startsWith('Journey from Leipzig');

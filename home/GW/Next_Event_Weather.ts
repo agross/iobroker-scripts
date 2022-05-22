@@ -24,11 +24,11 @@ function nextEventExtension(): ObjectDefinitionRoot {
   const stateObjects: (channel: string) => ObjectDefinitionRoot = channel => {
     const channelStates: { [id: string]: any } = {
       [config.computedBasedOn]: {
-        name: 'Data used to determine computed event location ',
+        name: 'Data Used to Determine Computed Event Location',
         type: 'string',
       },
       [config.computed]: {
-        name: 'Computed event location',
+        name: 'Computed Event Location',
         type: 'string',
       },
     };
