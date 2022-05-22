@@ -3,35 +3,35 @@ const config = {
 };
 
 const remotes = [
-  new Remotes.AquaraWS_EUK03({
+  new Remotes.AqaraWS_EUK03({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001ce745'),
     toggle: {
       off: ['scene.0.Hall.Lights'],
       states: ['scene.0.Hall.Lights_Bright'],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6707'),
     cycle: {
       off: 'scene.0.House.Lights',
       on: ['scene.0.House.Lights_Cozy', 'scene.0.House.Lights_Bright'],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6638'),
     cycle: {
       off: 'scene.0.Kitchen.Lights',
       on: ['scene.0.Kitchen.Lights_Cozy', 'scene.0.Kitchen.Lights_Bright'],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6983'),
     cycle: {
       off: 'scene.0.Staircase.Lights',
       on: ['scene.0.Staircase.Lights_Cozy', 'scene.0.Staircase.Lights_Bright'],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af12f'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -51,7 +51,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef441000123198'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -71,7 +71,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af4b3'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -87,7 +87,7 @@ const remotes = [
       on: ['scene.0.Staircase.Lights_Cozy', 'scene.0.Staircase.Lights_Bright'],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c66c6'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -107,7 +107,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '001788010c66ea0c'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -127,7 +127,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c84c8'),
     dim: {
       brightnessChange: config.brightnessChange,
@@ -168,7 +168,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001aea56'),
     cycle: {
       off: 'scene.0.Equipment Room.Lights',
@@ -178,7 +178,7 @@ const remotes = [
       ],
     },
   }),
-  new Remotes.AquaraWRS_R02({
+  new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af501'),
     cycle: {
       off: 'scene.0.Bathroom.Lights',

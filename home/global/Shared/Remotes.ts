@@ -51,13 +51,13 @@ declare global {
       setUp(): Subscription;
     }
 
-    class AquaraWS_EUK03 extends Remote {
+    class AqaraWS_EUK03 extends Remote {
       constructor(
         config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig,
       );
     }
 
-    class AquaraWRS_R02 extends Remote {
+    class AqaraWRS_R02 extends Remote {
       constructor(
         config: DeviceConfig & CycleDeviceConfig & DimmerDeviceConfig,
       );
@@ -511,7 +511,7 @@ export namespace Remotes {
     }
   }
 
-  export class AquaraWS_EUK03 extends Remote {
+  export class AqaraWS_EUK03 extends Remote {
     constructor(config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig) {
       super();
 
@@ -614,7 +614,7 @@ export namespace Remotes {
     }
   }
 
-  export class AquaraWRS_R02 extends Remote {
+  export class AqaraWRS_R02 extends Remote {
     constructor(config: DeviceConfig & CycleDeviceConfig & DimmerDeviceConfig) {
       super();
 
