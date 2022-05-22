@@ -12,17 +12,30 @@ const permissions = [...zigbeeLights(), ...scenes(), ...custom()].map(
   },
 );
 
-const [sourceInstance, ...targetInstances] = lovelaceInstances();
+const translateCommonNames = [
+  ...autodetectedDevices(),
+  ...statesWithLovelaceConfig(),
+].map(async deviceOrStateId => {
+  log(deviceOrStateId);
+  await copyCommonNameToSmartNameWithGermanTranslation(deviceOrStateId);
+});
 
-const lovelaceStateConfig = [...statesWithLovelaceConfig()].map(
+const translateCustomLovelaceConfig = [...statesWithLovelaceConfig()].map(
   async stateId => {
-    await copyLovelaceConfig(stateId, sourceInstance, targetInstances);
+    await copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyName(
+      stateId,
+    );
   },
 );
 
-const lovelaceLayout = copyLovelaceLayout(sourceInstance, targetInstances);
+const lovelaceLayout = copyLovelaceLayout();
 
-await Promise.all([permissions, lovelaceStateConfig, lovelaceLayout]);
+await Promise.all([
+  permissions,
+  translateCommonNames,
+  translateCustomLovelaceConfig,
+  lovelaceLayout,
+]);
 
 async function setPermissions(
   stateId: string,
@@ -76,71 +89,62 @@ function custom() {
   return ['0_userdata.0.global-brightness-override'];
 }
 
-function lovelaceInstances() {
-  return [...$('state[id=system.adapter.lovelace.*.alive]')].map(alive =>
-    alive.replace(/^system\.adapter\./, '').replace(/\.alive$/, ''),
-  );
+function autodetectedDevices() {
+  return [
+    ...$('state[id=zigbee.*.state](functions=light)'),
+    'alias.0.mqtt.0.ogd.living-room.shutter.shelly25-1',
+  ].map(x => x.replace(/\.state$/, ''));
 }
 
-async function copyLovelaceConfig(
-  stateId: string,
-  sourceInstance: string,
-  targetInstances: string[],
+function statesWithLovelaceConfig() {
+  return [...$('state')].filter(stateId => {
+    if (!existsObject(stateId)) {
+      return false;
+    }
+
+    const object = getObject(stateId);
+    if (!object) {
+      return false;
+    }
+
+    return getAttr(object, ['common', 'custom', AdapterIds.lovelace]);
+  });
+}
+
+async function copyCommonNameToSmartNameWithGermanTranslation(
+  deviceOrStateId: string,
 ) {
-  if (targetInstances.length < 1) {
-    log(`No target instances for config of ${sourceInstance}`, 'warn');
+  if (!(await existsObjectAsync(deviceOrStateId))) {
+    log(`Object ${deviceOrStateId} does not exist`, 'warn');
     return;
   }
 
-  const state = await getObjectAsync(stateId);
-  const template = state.common.custom?.[sourceInstance];
+  const object = await getObjectAsync(deviceOrStateId);
 
-  if (!template) {
+  if (!object?.common?.name) {
+    log(`Object ${deviceOrStateId} does not have a common.name`, 'warn');
+    return;
+  }
+
+  const german = translate(object.common.name);
+  if (german === object.common.name) {
     log(
-      `${stateId} does not have ${sourceInstance} Lovelace config, creating one`,
+      `No translation for ${deviceOrStateId}.common.name: "${object.common.name}"`,
       'warn',
     );
-
     return;
   }
 
-  const lovelace = Object.assign({}, template);
-  lovelace.attr_friendly_name = translate(
-    lovelace.attr_friendly_name || state.common.name,
-  );
-
-  targetInstances.forEach(instance => {
-    state.common.custom ||= {};
-    state.common.custom[instance] = lovelace;
-  });
-
-  log(JSON.stringify(state.common));
+  object.common.smartName = {
+    de: german,
+  };
 
   if (config.dryRun) {
     return;
   }
 
-  await extendObjectAsync(stateId, {
-    common: state.common,
-  });
-}
-
-async function copyLovelaceLayout(
-  sourceInstance: string,
-  targetInstances: string[],
-) {
-  if (targetInstances.length < 1) {
-    log(`No target instances for layout of ${sourceInstance}`, 'warn');
-    return;
-  }
-
-  const config = await getObjectAsync(`${sourceInstance}.configuration`);
-  const views = config.native.views;
-
-  return targetInstances.map(async instance => {
-    const config = `${instance}.configuration`;
-
-    await extendObjectAsync(config, { native: { views: views } });
+  await extendObjectAsync(deviceOrStateId, {
+    common: object.common,
   });
 }
 
@@ -170,6 +174,7 @@ function translate(str: string) {
     'North Roof': 'Nord',
     Middle: 'Mitte',
 
+    Illumination: 'Lichtstärke',
     Temperature: 'Temperatur',
     Humidity: 'Luftfeuchtigkeit',
     Motion: 'Bewegung',
@@ -190,6 +195,7 @@ function translate(str: string) {
     Bright: 'hell',
     Cozy: 'gemütlich',
     'Global Brightness Override': 'Globale Helligkeit',
+    Presence: 'Präsenz',
   };
 
   let loop = 0;
@@ -237,17 +243,73 @@ function translate(str: string) {
   return result;
 }
 
-function statesWithLovelaceConfig() {
-  return [...$('state')].filter(stateId => {
-    return getAttr(getObject(stateId), ['common', 'custom', 'lovelace.0']);
+function lovelaceInstances() {
+  return [...$('state[id=system.adapter.lovelace.*.alive]')].map(alive =>
+    alive.replace(/^system\.adapter\./, '').replace(/\.alive$/, ''),
+  );
+}
+
+async function copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyName(
+  stateId: string,
+) {
+  const [sourceInstance, ...targetInstances] = lovelaceInstances();
+
+  if (targetInstances.length < 1) {
+    log(`No target instances for config of ${sourceInstance}`, 'warn');
+    return;
+  }
+
+  if (!(await existsObjectAsync(stateId))) {
+    log(`Object ${stateId} does not exist`, 'warn');
+    return;
+  }
+
+  const state = await getObjectAsync(stateId);
+  const template = state.common.custom?.[sourceInstance];
+
+  if (!template) {
+    log(`${stateId} does not have ${sourceInstance} Lovelace config`, 'warn');
+
+    return;
+  }
+
+  const lovelace = Object.assign({}, template);
+  lovelace.attr_friendly_name = translate(lovelace.attr_friendly_name);
+
+  targetInstances.forEach(instance => {
+    state.common.custom ||= {};
+    state.common.custom[instance] = lovelace;
+  });
+
+  if (config.dryRun) {
+    return;
+  }
+
+  await extendObjectAsync(stateId, {
+    common: state.common,
   });
 }
 
-function autodetectedDevices() {
-  return [
-    ...$('state[id=zigbee.*.state](functions=light)'),
-    'alias.0.mqtt.0.ogd.living-room.shutter.shelly25-1',
-  ].map(x => x.replace(/\.state$/, ''));
+async function copyLovelaceLayout() {
+  const [sourceInstance, ...targetInstances] = lovelaceInstances();
+
+  if (targetInstances.length < 1) {
+    log(`No target instances for layout of ${sourceInstance}`, 'warn');
+    return;
+  }
+
+  const configuration = await getObjectAsync(`${sourceInstance}.configuration`);
+  const views = configuration.native.views;
+
+  if (config.dryRun) {
+    return;
+  }
+
+  return targetInstances.map(async instance => {
+    const configuration = `${instance}.configuration`;
+
+    await extendObjectAsync(configuration, { native: { views: views } });
+  });
 }
 
 stopScript(undefined);
