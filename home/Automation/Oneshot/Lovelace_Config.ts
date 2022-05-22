@@ -69,11 +69,7 @@ function zigbeeIcons() {
     .forEach(async deviceId => {
       const device = await getObjectAsync(deviceId);
 
-      if (
-        device.common.icon &&
-        device.common.icon !== 'img/unknown.png' &&
-        device.common.icon !== 'img/philips_ensis.png'
-      ) {
+      if (device.common.icon && device.common.icon !== 'img/unknown.png') {
         return;
       }
 
