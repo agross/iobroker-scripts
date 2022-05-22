@@ -38,7 +38,6 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
 }
 
 zigbeeIcons();
-zigbeeLights();
 zigbeeDoorContacts();
 zigbeeMotionSensors();
 zigbeeTemperatureHumidityAndPressureSensors();
@@ -88,17 +87,6 @@ function zigbeeIcons() {
         log(`Error downloading ${iconUrl}: ${error}`, 'error');
       }
     });
-}
-
-function zigbeeLights() {
-  $('state[id=zigbee.*.state](functions=light)').each(async id => {
-    const deviceId = id.replace(/\.state$/, '');
-    const name = Device.deviceName(id);
-
-    const expect: Partial<iobJS.StateCommon> = { smartName: name };
-
-    await check(deviceId, expect);
-  });
 }
 
 function zigbeeDoorContacts() {
