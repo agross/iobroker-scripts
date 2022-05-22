@@ -19,11 +19,11 @@ const config = {
     let scene = 'scene.0.Bathroom.Lights_Default';
 
     if (compareTime('1:00', '6:00', 'between')) {
-      scene = 'scene.0.Bathroom.Lights_Ultra_Low';
+      scene = 'scene.0.Bathroom.Lights_Ultra_Dim';
 
       // If any light is on, use a brighter scene.
       if (getState('scene.0.Lights.All_Lights_Off').val !== true) {
-        scene = 'scene.0.Bathroom.Lights_Low';
+        scene = 'scene.0.Bathroom.Lights_Dim';
       }
     }
 

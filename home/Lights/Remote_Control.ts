@@ -18,7 +18,7 @@ const remotes = [
     cycle: {
       off: 'scene.0.Kitchen.Lights',
       on: [
-        'scene.0.Kitchen.Lights_Low',
+        'scene.0.Kitchen.Lights_Dim',
         'scene.0.Kitchen.Lights_Downlight',
         'scene.0.Kitchen.Lights_Downlight_+_Dining',
         'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
@@ -43,7 +43,7 @@ const remotes = [
       off: 'scene.0.Lights.In_Bed',
       on: [
         'scene.0.Bedroom.Lights_Cozy',
-        'scene.0.Bedroom.Lights_Low',
+        'scene.0.Bedroom.Lights_Dim',
         'scene.0.Bedroom.Lights_Bright',
       ],
     },
@@ -76,7 +76,7 @@ const remotes = [
       off: 'scene.0.Office.Lights',
       on: [
         'scene.0.Office.Lights_Cozy',
-        'scene.0.Office.Lights_Low',
+        'scene.0.Office.Lights_Dim',
         'scene.0.Office.Lights_Bright',
       ],
     },
@@ -93,7 +93,7 @@ const remotes = [
       off: 'scene.0.Bedroom.Lights',
       on: [
         'scene.0.Bedroom.Lights_Bright',
-        'scene.0.Bedroom.Lights_Low',
+        'scene.0.Bedroom.Lights_Dim',
         'scene.0.Bedroom.Lights_Cozy',
       ],
     },
