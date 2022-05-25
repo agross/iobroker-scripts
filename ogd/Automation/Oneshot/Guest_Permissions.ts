@@ -308,6 +308,7 @@ async function copyLovelaceLayout() {
   return targetInstances.map(async instance => {
     const configuration = `${instance}.configuration`;
 
+    await extendObjectAsync(configuration, { native: { views: null } });
     await extendObjectAsync(configuration, { native: { views: views } });
   });
 }
