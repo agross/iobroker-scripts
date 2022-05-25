@@ -108,7 +108,7 @@
       "path": "ogd/Automation/Alarm.tsconfig.json"
     },
     {
-      "path": "ogd/Automation/Leaving_Home.tsconfig.json"
+      "path": "ogd/Automation/Leaving_And_Returning.tsconfig.json"
     },
     {
       "path": "ogd/Automation/Oneshot/Get_Zigbee_Light_Color_Temperature_Range.tsconfig.json"
