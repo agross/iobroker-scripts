@@ -3,6 +3,26 @@ const config = {
 };
 
 const remotes = [
+  new Remotes.TradfriDimmer({
+    // Mobile Switch 1.
+    device: AdapterId.build(AdapterIds.zigbee, '50325ffffe784bdf'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'equipment_room',
+          functions: 'light',
+        }).values(),
+      ),
+    },
+    cycle: {
+      off: 'scene.0.Equipment Room.Lights',
+      on: [
+        'scene.0.Equipment Room.Lights_Cozy',
+        'scene.0.Equipment Room.Lights_Bright',
+      ],
+    },
+  }),
   new Remotes.AqaraWS_EUK03({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001ce745'),
     toggle: {
