@@ -202,7 +202,35 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af501'),
     cycle: {
       off: 'scene.0.Bathroom.Lights',
-      on: ['scene.0.Bathroom.Lights_Default', 'scene.0.Bathroom.Lights_Bright'],
+      on: () => {
+        const day = [
+          'scene.0.Bathroom.Lights_Default',
+          'scene.0.Bathroom.Lights_Bright',
+        ];
+
+        const dim = [
+          'scene.0.Bathroom.Lights_Dim',
+          'scene.0.Bathroom.Lights_Bright',
+        ];
+
+        const night = [
+          'scene.0.Bathroom.Lights_Night',
+          'scene.0.Bathroom.Lights_Bright',
+        ];
+
+        if (isAstroDay()) {
+          log('Bathroom lights default');
+          return day;
+        } else {
+          if (compareTime('23:00', '6:00', 'between')) {
+            log('Bathroom lights night');
+            return night;
+          }
+
+          log('Bathroom lights dim');
+          return dim;
+        }
+      },
     },
   }),
 ];
