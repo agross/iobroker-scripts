@@ -16,12 +16,14 @@ const translateCommonNames = [
   ...autodetectedDevices(),
   ...statesWithLovelaceConfig(),
 ].map(async deviceOrStateId => {
-  log(deviceOrStateId);
+  log(`Translating common.name for ${deviceOrStateId}`);
   await copyCommonNameToSmartNameWithGermanTranslation(deviceOrStateId);
 });
 
 const translateCustomLovelaceConfig = [...statesWithLovelaceConfig()].map(
   async stateId => {
+    log(`Translating custom Lovelace config for ${stateId}`);
+
     await copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyName(
       stateId,
     );
@@ -135,17 +137,15 @@ async function copyCommonNameToSmartNameWithGermanTranslation(
     return;
   }
 
-  object.common.smartName = {
-    de: german,
-  };
-
   if (config.dryRun) {
     return;
   }
 
-  await extendObjectAsync(deviceOrStateId, {
-    common: object.common,
-  });
+  object.common.smartName = {
+    de: german,
+  };
+
+  await setObjectAsync(deviceOrStateId, object as any);
 }
 
 function translate(str: string) {
@@ -155,8 +155,14 @@ function translate(str: string) {
 
   // Translations are checked in order.
   const translations = {
+    'All Lights On': 'Alle Lichter an',
+    'All Lights Off': 'Alle Lichter aus',
+    'Global Brightness Override': 'Globale Helligkeit',
+
     'Kitchen Table Light': 'Küchentisch Licht',
     'Kitchen Counter Light': 'Küchenzeile Licht',
+    'Living Room Table Top Light': 'Wohnzimmertisch Licht oben',
+    'Living Room Table Bottom Light': 'Wohnzimmertisch Licht unten',
     'Living Room': 'Wohnzimmer',
     Bathroom: 'Bad',
     Kitchen: 'Küche',
@@ -164,38 +170,48 @@ function translate(str: string) {
     Bedroom: 'Schlafzimmer',
     Workshop: 'Werkstatt',
     'Equipment Room': 'Lager',
-    Outdoor: 'Draußen',
+    Outdoor: 'Außen',
     Patio: 'Terrasse',
     Hall: 'Flur',
-    Entrance: 'Eingang',
+    'House Entrance': 'Hauseingang',
 
     East: 'Ost',
     'South Roof': 'Süd',
     'North Roof': 'Nord',
     Middle: 'Mitte',
 
-    Illumination: 'Lichtstärke',
+    Illuminance: 'Lichtstärke',
     Temperature: 'Temperatur',
     Humidity: 'Luftfeuchtigkeit',
     Motion: 'Bewegung',
     Occupancy: 'Anwesenheit',
+    'Smoke Detected': 'Rauchmelder',
+    'Alarm Enabled': 'Alarm scharfgeschaltet',
     'Table Light': 'Tischlampe',
     'Ceiling Light': 'Deckenlicht',
     Lights: 'Licht',
+    'Light Strip': 'Light Strip',
     'Light Switch': 'Lichtschalter',
     Light: 'Licht',
     Door: 'Tür',
     Shutters: 'Rollladen',
+    'Level of Shutters': 'Behanghöhe',
 
     Only: '',
-    All: 'Alle',
     Off: 'aus',
-    On: 'an',
+    All: 'Alle',
 
     Bright: 'hell',
+    Colorful: 'farbig',
     Cozy: 'gemütlich',
-    'Global Brightness Override': 'Globale Helligkeit',
-    Presence: 'Präsenz',
+    Presence: 'Anwesenheit',
+    Default: 'normal',
+    Dim: 'gedämpft',
+    Night: 'schwach',
+
+    'Short-Term': 'Kurzzeit',
+    'Long-Term': 'Langzeit',
+    Returning: 'Rückkehr',
   };
 
   let loop = 0;
@@ -285,9 +301,7 @@ async function copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyNa
     return;
   }
 
-  await extendObjectAsync(stateId, {
-    common: state.common,
-  });
+  await setObjectAsync(stateId, state as any);
 }
 
 async function copyLovelaceLayout() {
