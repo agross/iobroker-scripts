@@ -71,6 +71,7 @@ sendTo(
     zigbeeDoorAndWindowContacts(enabledDataPoints);
     zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints);
     zigbeeVibrationSensors(enabledDataPoints);
+    zigbeeSmokeDetectors(enabledDataPoints);
     zigbeeLights(enabledDataPoints);
 
     homeMaticCommon(enabledDataPoints);
@@ -299,6 +300,24 @@ function zigbeeVibrationSensors(enabledDataPoints: {}) {
       changesMinDelta: 0,
       storageType: false,
       aliasId: `${Device.deviceName(id)} Vibration`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+}
+
+function zigbeeSmokeDetectors(enabledDataPoints: {}) {
+  $('state[id=zigbee.*.smoke]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: false,
+      debounce: 100,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: 60,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${Device.deviceName(id)} Smoke Detected`,
     };
 
     check(enabledDataPoints, id, expect);

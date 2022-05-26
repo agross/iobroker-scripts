@@ -41,6 +41,7 @@ zigbeeIcons();
 zigbeeDoorContacts();
 zigbeeMotionSensors();
 zigbeeTemperatureHumidityAndPressureSensors();
+zigbeeSmokeDetectors();
 
 scenes();
 
@@ -199,6 +200,26 @@ function zigbeeTemperatureHumidityAndPressureSensors() {
           attr_device_class: 'pressure',
           attr_unit_of_measurement: 'hPa',
           attr_friendly_name: name.replace('Sensor', 'Pressure'),
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+}
+
+function zigbeeSmokeDetectors() {
+  $('state[id=zigbee.*.smoke]').each(async id => {
+    const name = Device.deviceName(id);
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(`${name} Smoke Detected`),
+          attr_device_class: 'smoke',
+          attr_friendly_name: name.replace('Detector', 'Detected'),
         },
       },
     };
