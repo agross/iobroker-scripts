@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import {
   share,
   tap,
@@ -126,10 +126,34 @@ const alarmNotifications = alarmTriggers
   )
   .subscribe();
 
+const smokeAlarm = combineLatest(
+  [...$('state[id=zigbee.*.smoke]')].map(id => {
+    const deviceName = Device.deviceName(id);
+
+    return new Stream(id, {
+      map: event => {
+        return { smokeDetected: event.state.val, deviceName: deviceName };
+      },
+    }).stream.pipe(
+      filter(x => x.smokeDetected === true),
+      map(x => x.deviceName),
+    );
+  }),
+)
+  .pipe(
+    map(detected => detected.sort().join(', ')),
+    distinctUntilChanged(),
+    tap(x => {
+      Notify.mobile(`${Site.location}: Smoke detected for ${x}`);
+    }),
+  )
+  .subscribe();
+
 onStop(() => {
   [
     presenceForAlarmAndHeating,
     alarmEnabledNotifications,
     alarmNotifications,
+    smokeAlarm,
   ].forEach(x => x.unsubscribe());
 });
