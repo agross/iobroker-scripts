@@ -111,7 +111,7 @@ function zigbeeCommon(enabledDataPoints: {}) {
   $('state[id=zigbee.*.available]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -127,7 +127,7 @@ function zigbeeCommon(enabledDataPoints: {}) {
   $('state[id=zigbee.*.battery]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -142,7 +142,7 @@ function zigbeeCommon(enabledDataPoints: {}) {
   $('state[id=zigbee.*.link_quality]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -159,7 +159,7 @@ function zigbeeMotionSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.illuminance]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -175,7 +175,7 @@ function zigbeeMotionSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.occupancy]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -193,7 +193,7 @@ function zigbeeDoorAndWindowContacts(enabledDataPoints: {}) {
   $('state[id=zigbee.*.opened]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -211,7 +211,7 @@ function zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.temperature]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -227,7 +227,7 @@ function zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.humidity]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -243,7 +243,7 @@ function zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.pressure]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -261,7 +261,7 @@ function zigbeeVibrationSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.drop]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 100,
       maxLength: 10,
       retention: 63072000,
@@ -277,7 +277,7 @@ function zigbeeVibrationSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.tilt]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 100,
       maxLength: 10,
       retention: 63072000,
@@ -293,7 +293,7 @@ function zigbeeVibrationSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.vibration]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 100,
       maxLength: 10,
       retention: 63072000,
@@ -311,7 +311,7 @@ function zigbeeSmokeDetectors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.smoke]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 100,
       maxLength: 10,
       retention: 63072000,
@@ -329,7 +329,7 @@ function zigbeeLights(enabledDataPoints: {}) {
   $('state[id=zigbee.*.state](functions=light)').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -347,7 +347,7 @@ function homeMaticCommon(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.0.UNREACH]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -363,7 +363,7 @@ function homeMaticCommon(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.0.RSSI_PEER]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -378,7 +378,7 @@ function homeMaticCommon(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.0.RSSI_DEVICE]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -393,7 +393,7 @@ function homeMaticCommon(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.0.LOW_BAT]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
@@ -411,7 +411,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   $('state[id=hm-rpc.1.*.1.ACTUAL_TEMPERATURE]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -426,7 +426,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   $('state[id=hm-rpc.1.*.1.HUMIDITY]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -441,7 +441,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   $('state[id=hm-rpc.1.*.1.SET_POINT_TEMPERATURE]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -456,7 +456,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   $('state[id=hm-rpc.1.*.1.LEVEL]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -471,7 +471,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
   $('state[id=hm-rpc.1.*.10.STATE]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -488,7 +488,7 @@ function homeMaticPresenceDetectors(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.1.ILLUMINATION]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       retention: 63072000,
       changesRelogInterval: config.changesRelogInterval,
@@ -503,7 +503,7 @@ function homeMaticPresenceDetectors(enabledDataPoints: {}) {
   $('state[id=hm-rpc.*.1.PRESENCE_DETECTION_STATE]').each(id => {
     const expect = {
       enabled: true,
-      changesOnly: false,
+      changesOnly: true,
       debounce: 500,
       maxLength: 10,
       retention: 63072000,
