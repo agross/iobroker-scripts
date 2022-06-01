@@ -84,7 +84,9 @@ function zigbeeLights() {
 }
 
 function scenes() {
-  return [...$('state[role=scene.state]')];
+  return [...$('state[role=scene.state]')].filter(
+    x => !x.includes('scene.0.Leaving'),
+  );
 }
 
 function custom() {
