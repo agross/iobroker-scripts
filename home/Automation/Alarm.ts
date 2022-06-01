@@ -42,6 +42,18 @@ await ObjectCreator.create(
   config.alarmEnabled[0],
 );
 
+const alarmEnabledId = config.alarmEnabled.join('.');
+
+const acknowledgeCommand = new Stream<boolean>({
+  id: alarmEnabledId,
+  ack: false,
+}).stream
+  .pipe(
+    tap(x => log(`Acknowledging command: ${alarmEnabledId} = ${x}`)),
+    tap(x => setState(alarmEnabledId, x, true)),
+  )
+  .subscribe();
+
 const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
   .pipe(
     tap(present => {
@@ -151,6 +163,7 @@ const smokeAlarm = combineLatest(
 
 onStop(() => {
   [
+    acknowledgeCommand,
     presenceForAlarmAndHeating,
     alarmEnabledNotifications,
     alarmNotifications,

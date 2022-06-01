@@ -15,7 +15,7 @@ await ObjectCreator.create(
         type: 'boolean',
         def: false,
         read: true,
-        write: false,
+        write: true,
         role: 'state',
         custom: {
           [AdapterIds.lovelace]: {
@@ -31,6 +31,18 @@ await ObjectCreator.create(
   },
   config.presence[0],
 );
+
+const presenceId = config.presence.join('.');
+
+const acknowledgeCommand = new Stream<boolean>({
+  id: presenceId,
+  ack: false,
+}).stream
+  .pipe(
+    tap(x => log(`Acknowledging command: ${presenceId} = ${x}`)),
+    tap(x => setState(presenceId, x, true)),
+  )
+  .subscribe();
 
 const presenceIndication = config.presenceIndicators.map(indicator => {
   return new Stream<boolean>(indicator).stream;
@@ -54,5 +66,5 @@ const present = combineLatest(presenceIndication)
   .subscribe();
 
 onStop(() => {
-  [present].forEach(x => x.unsubscribe());
+  [present, acknowledgeCommand].forEach(x => x.unsubscribe());
 });
