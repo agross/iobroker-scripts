@@ -233,7 +233,10 @@ function scenes() {
     const name = id.replace(/^scene\.\d+\./, '').replace(/[._]/g, ' ');
     const friendlyName = id
       .substring(id.lastIndexOf('.') + 1)
-      .replace(/[._]/g, ' ');
+      .replace(/[._]/g, ' ')
+      .replace(/^(Lights\s)((?!Off))/, (_match, _lightsPrefix, scene) => {
+        return scene;
+      });
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
