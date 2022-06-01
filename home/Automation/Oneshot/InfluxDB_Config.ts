@@ -826,6 +826,22 @@ function presence(enabledDataPoints: {}) {
 
     check(enabledDataPoints, id, expect);
   });
+
+  $('state[id=0_userdata.0.long-term-absence]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: config.changesRelogInterval,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: 'Long-Term Absence',
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 }
 
 stopScript(undefined);
