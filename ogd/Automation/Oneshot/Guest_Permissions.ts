@@ -320,6 +320,25 @@ async function copyLovelaceLayout() {
   const configuration = await getObjectAsync(`${sourceInstance}.configuration`);
   const views = configuration.native.views;
 
+  views.forEach(view => {
+    const viewCards = view.cards as any[];
+    viewCards.forEach(viewCard => {
+      if (!viewCard.cards) {
+        return;
+      }
+
+      const cards = viewCard.cards as any[];
+      cards.forEach(card => {
+        if (!card.title) {
+          return;
+        }
+
+        log(`Translating Lovelace card title ${card.title}`);
+        card.title = translate(card.title);
+      });
+    });
+  });
+
   if (config.dryRun) {
     return;
   }
