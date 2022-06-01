@@ -1,6 +1,7 @@
 import { filter, tap, withLatestFrom } from 'rxjs/operators';
 
 const config = {
+  longTermAbsence: ['0_userdata.0', 'long-term-absence'],
   leaving: [
     {
       trigger: AdapterId.build(AdapterIds.zigbee, '54ef4410001ce745.double'),
@@ -15,18 +16,45 @@ const config = {
     },
   ],
   returning: {
-    trigger: new Stream<boolean>({
-      id: '0_userdata.0.presence',
-    }).stream.pipe(
+    trigger: new Stream<boolean>('0_userdata.0.presence').stream.pipe(
       withLatestFrom(
-        new Stream('scene.0.Leaving.Long-Term', { map: e => e.state.val })
-          .stream,
+        new Stream<boolean>('0_userdata.0.long-term-absence').stream,
       ),
-      filter(([presence, longGone]) => presence === true && longGone !== false), // true or uncertain
+      filter(([presence, longTermAbsence]) => {
+        log(`${presence} ${longTermAbsence}`);
+        return presence === true && longTermAbsence === true;
+      }),
+      tap(_ => log('Return after long-term absence, preparing the house')),
     ),
     activate: 'scene.0.Leaving.Returning',
   },
 };
+
+await ObjectCreator.create(
+  {
+    [config.longTermAbsence[1]]: {
+      type: 'state',
+      common: {
+        name: 'Long-Term Absence',
+        type: 'boolean',
+        def: false,
+        read: true,
+        write: false,
+        role: 'state',
+        custom: {
+          [AdapterIds.lovelace]: {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id('Long-Term Absence'),
+            attr_icon: 'mdi:car-traction-control',
+          },
+        },
+      } as iobJS.StateCommon,
+      native: {},
+    },
+  },
+  config.longTermAbsence[0],
+);
 
 const leaving = config.leaving.map(c => {
   return new Stream<boolean>(c.trigger).stream

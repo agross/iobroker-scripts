@@ -211,6 +211,7 @@ function translate(str: string) {
     Night: 'schwach',
 
     'Short-Term': 'Kurzzeit',
+    'Long-Term Absence': 'Langzeit-Abwesenheit',
     'Long-Term': 'Langzeit',
     Returning: 'Rückkehr',
   };
