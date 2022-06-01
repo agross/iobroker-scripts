@@ -40,11 +40,11 @@ await Promise.all([
 ]);
 
 async function setPermissions(
-  stateId: string,
+  objectId: string,
   expected: Partial<iobJS.StateACL>,
 ) {
-  const state = await getObjectAsync(stateId);
-  const aclShrunkDownToExpected = Utils.shrink(state.acl, expected);
+  const object = await getObjectAsync(objectId);
+  const aclShrunkDownToExpected = Utils.shrink(object.acl, expected);
 
   if (
     aclShrunkDownToExpected &&
@@ -57,7 +57,7 @@ async function setPermissions(
   }
 
   log(
-    `${stateId}: expected ${JSON.stringify(
+    `${objectId}: expected ${JSON.stringify(
       expected,
       null,
       2,
@@ -69,7 +69,7 @@ async function setPermissions(
     return;
   }
 
-  await extendObjectAsync(stateId, {
+  await extendObjectAsync(objectId, {
     acl: expected,
   });
 }
@@ -116,24 +116,24 @@ function statesWithLovelaceConfig() {
 }
 
 async function copyCommonNameToSmartNameWithGermanTranslation(
-  deviceOrStateId: string,
+  deviceOrObjectId: string,
 ) {
-  if (!(await existsObjectAsync(deviceOrStateId))) {
-    log(`Object ${deviceOrStateId} does not exist`, 'warn');
+  if (!(await existsObjectAsync(deviceOrObjectId))) {
+    log(`Object ${deviceOrObjectId} does not exist`, 'warn');
     return;
   }
 
-  const object = await getObjectAsync(deviceOrStateId);
+  const object = await getObjectAsync(deviceOrObjectId);
 
   if (!object?.common?.name) {
-    log(`Object ${deviceOrStateId} does not have a common.name`, 'warn');
+    log(`Object ${deviceOrObjectId} does not have a common.name`, 'warn');
     return;
   }
 
   const german = translate(object.common.name);
   if (german === object.common.name) {
     log(
-      `No translation for ${deviceOrStateId}.common.name: "${object.common.name}"`,
+      `No translation for ${deviceOrObjectId}.common.name: "${object.common.name}"`,
       'warn',
     );
     return;
@@ -147,7 +147,7 @@ async function copyCommonNameToSmartNameWithGermanTranslation(
     de: german,
   };
 
-  await setObjectAsync(deviceOrStateId, object as any);
+  await setObjectAsync(deviceOrObjectId, object as any);
 }
 
 function translate(str: string) {
@@ -271,7 +271,7 @@ function lovelaceInstances() {
 }
 
 async function copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyName(
-  stateId: string,
+  objectId: string,
 ) {
   const [sourceInstance, ...targetInstances] = lovelaceInstances();
 
@@ -280,16 +280,16 @@ async function copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyNa
     return;
   }
 
-  if (!(await existsObjectAsync(stateId))) {
-    log(`Object ${stateId} does not exist`, 'warn');
+  if (!(await existsObjectAsync(objectId))) {
+    log(`Object ${objectId} does not exist`, 'warn');
     return;
   }
 
-  const state = await getObjectAsync(stateId);
+  const state = await getObjectAsync(objectId);
   const template = state.common.custom?.[sourceInstance];
 
   if (!template) {
-    log(`${stateId} does not have ${sourceInstance} Lovelace config`, 'warn');
+    log(`${objectId} does not have ${sourceInstance} Lovelace config`, 'warn');
 
     return;
   }
@@ -306,7 +306,7 @@ async function copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyNa
     return;
   }
 
-  await setObjectAsync(stateId, state as any);
+  await setObjectAsync(objectId, state as any);
 }
 
 async function copyLovelaceLayout() {
