@@ -20,10 +20,11 @@ const config = {
       withLatestFrom(
         new Stream<boolean>('0_userdata.0.long-term-absence').stream,
       ),
-      filter(([presence, longTermAbsence]) => {
-        log(`${presence} ${longTermAbsence}`);
-        return presence === true && longTermAbsence === true;
-      }),
+      filter(
+        ([presence, longTermAbsence]) =>
+          presence === true && longTermAbsence === true,
+      ),
+      tap(_ => Notify.mobile(`Welcome back to ${Site.location}!`)),
       tap(_ => log('Return after long-term absence, preparing the house')),
     ),
     activate: 'scene.0.Leaving.Returning',
@@ -39,7 +40,7 @@ await ObjectCreator.create(
         type: 'boolean',
         def: false,
         read: true,
-        write: false,
+        write: true,
         role: 'state',
         custom: {
           [AdapterIds.lovelace]: {
@@ -56,6 +57,18 @@ await ObjectCreator.create(
   config.longTermAbsence[0],
 );
 
+const longTermAbsenceId = config.longTermAbsence.join('.');
+
+const acknowledgeCommand = new Stream<boolean>({
+  id: longTermAbsenceId,
+  ack: false,
+}).stream
+  .pipe(
+    tap(x => log(`Acknowledging command: ${longTermAbsenceId} = ${x}`)),
+    tap(x => setState(longTermAbsenceId, x, true)),
+  )
+  .subscribe();
+
 const leaving = config.leaving.map(c => {
   return new Stream<boolean>(c.trigger).stream
     .pipe(
@@ -70,5 +83,5 @@ const returning = config.returning.trigger
   .subscribe();
 
 onStop(() => {
-  [...leaving, returning].forEach(x => x.unsubscribe());
+  [...leaving, returning, acknowledgeCommand].forEach(x => x.unsubscribe());
 });
