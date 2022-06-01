@@ -13,6 +13,7 @@
     "../global/Shared/Remotes.ts",
     "../global/Shared/Stream.ts",
     "../global/Shared/Utils.ts",
+    "../global/ShutterConfig.ts",
     "../global/Site.ts",
     "Entrance_Door_Lights.ts"
   ],

@@ -1,39 +1,68 @@
+const config = {
+  sunnyDay: ShutterConfig.sunnyDay,
+  afternoon: ShutterConfig.afternoon,
+  scenes: {
+    night: 'scene.0.Shutters.Night',
+    day: 'scene.0.Shutters.Day',
+    sunnyDay: 'scene.0.Shutters.Sunny_Day',
+    sunnyDayAfternoon: 'scene.0.Shutters.Sunny_Day_Afternoon',
+  },
+  disable: ShutterConfig.disable,
+};
+
 log(`Next sunset: ${getAstroDate('sunsetStart')}`);
 const sunset = schedule({ astro: 'sunsetStart' }, async () => {
+  if (await config.disable()) {
+    return;
+  }
+
   await setStateAsync('scene.0.Shutters.Night', true);
 });
 
 log(`Next sunrise: ${getAstroDate('sunrise')}`);
 const sunrise = schedule({ astro: 'sunrise' }, async () => {
-  const maxTempToday = await getStateAsync(
-    'daswetter.0.NextDays.Location_1.Day_1.Maximale_Temperatur_value',
-  );
+  if (await config.disable()) {
+    return;
+  }
 
-  if (maxTempToday.val >= 25) {
-    const noonPlusOneHour = getAstroDate('solarNoon', new Date().valueOf(), 60);
+  if (await config.sunnyDay()) {
+    const afternoon = config.afternoon();
 
     Notify.mobile(
-      `Sunny day shutters until ${noonPlusOneHour.toLocaleString()}`,
+      `${
+        Site.location
+      }: Sunny day shutters until ${afternoon.toLocaleString()}`,
     );
 
-    await setStateAsync('scene.0.Shutters.Sunny_Day', true);
+    await setStateAsync(config.scenes.sunnyDay, true);
 
-    const setDayShutters = schedule(
-      formatDate(noonPlusOneHour, 'm h * * *'),
+    const afternoonShutters = schedule(
+      formatDate(afternoon, 'm h * * *'),
       async () => {
-        Notify.mobile('Setting shutters to sunny day afternoon levels');
+        if (await config.disable()) {
+          if (!clearSchedule(afternoonShutters)) {
+            log(
+              'Error clearing schedule to return shutters to afternoon levels',
+              'error',
+            );
+          }
 
-        await setStateAsync('scene.0.Shutters.Sunny_Day_Afternoon', true);
-        if (!clearSchedule(setDayShutters)) {
+          return;
+        }
+
+        Notify.mobile('Setting shutters to sunny day afternoon levels');
+        await setStateAsync(config.scenes.sunnyDayAfternoon, true);
+
+        if (!clearSchedule(afternoonShutters)) {
           log(
-            'Error clearing schedule to return shutters to normal day levels',
+            'Error clearing schedule to return shutters to afternoon levels',
             'error',
           );
         }
       },
     );
   } else {
-    await setStateAsync('scene.0.Shutters.Day', true);
+    await setStateAsync(config.scenes.day, true);
   }
 });
 

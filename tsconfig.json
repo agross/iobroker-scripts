@@ -135,6 +135,9 @@
       "path": "ogd/Automation/Shelly_Shutters.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Shutters.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Update_Notification.tsconfig.json"
     },
     {
