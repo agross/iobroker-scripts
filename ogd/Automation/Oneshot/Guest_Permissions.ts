@@ -162,10 +162,8 @@ function translate(str: string) {
     'Global Brightness Override': 'Globale Helligkeit',
 
     'Kitchen Table': 'Küchentisch',
-    'Kitchen Counter': 'Küchenzeile',
     'Living Room Table Top': 'Wohnzimmertisch nach oben',
     'Living Room Table Bottom': 'Wohnzimmertisch nach unten',
-    'Living Room Roof': 'Wohnzimmer Dachschräge',
     'Living Room': 'Wohnzimmer',
     Bathroom: 'Bad',
     Kitchen: 'Küche',
@@ -199,6 +197,7 @@ function translate(str: string) {
     Door: 'Tür',
     Shutters: 'Rollladen',
     'Level of Shutters': 'Behanghöhe',
+    Roof: 'Dachschräge',
 
     Only: '',
     Off: 'aus',
