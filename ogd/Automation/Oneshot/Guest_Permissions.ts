@@ -216,6 +216,7 @@ function translate(str: string) {
     'Long-Term Absence': 'Langzeit-Abwesenheit',
     'Long-Term': 'Langzeit',
     Returning: 'Rückkehr',
+    'Highest Day Temperature': 'Tageshöchsttemperatur',
   };
 
   let loop = 0;
