@@ -171,7 +171,7 @@ function translate(str: string) {
     Bedroom: 'Schlafzimmer',
     Workshop: 'Werkstatt',
     'Equipment Room': 'Lager',
-    Outdoor: 'Außen',
+    Outside: 'Außen',
     Patio: 'Terrasse',
     Hall: 'Flur',
     'House Entrance': 'Hauseingang',
@@ -217,6 +217,8 @@ function translate(str: string) {
     'Long-Term': 'Langzeit',
     Returning: 'Rückkehr',
     'Highest Day Temperature': 'Tageshöchsttemperatur',
+    Day: 'Tag',
+    'Sunny Day': 'Sonniger Tag',
   };
 
   let loop = 0;
