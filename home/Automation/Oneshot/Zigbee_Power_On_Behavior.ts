@@ -37,6 +37,7 @@ const setPowerOnBehavior = [
   };
 });
 
+export {};
 await setPowerOnBehavior.reduce(async (_, set) => {
   await _;
   set();
