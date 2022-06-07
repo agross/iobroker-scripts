@@ -1,3 +1,4 @@
+import { merge, Observable } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 
 const config = {
@@ -61,6 +62,11 @@ function removeVisit(name): [boolean, string[]] {
   return [deleted, [...active]];
 }
 
+function clearVisits() {
+  const [visits, _] = getVisits();
+  setState(visits, [], true);
+}
+
 const locations = Object.entries(config.locations).map(([name, location]) => {
   const button = new Stream<boolean>(
     {
@@ -101,7 +107,12 @@ const locations = Object.entries(config.locations).map(([name, location]) => {
   return [on, off];
 });
 
-const subscriptions = locations
+const clearVisitsInTheMorning = new Observable<boolean>(subscriber => {
+  const scheduled = schedule({ astro: 'sunrise' }, () => subscriber.next(true));
+  return () => clearSchedule(scheduled);
+}).pipe(tap(_ => clearVisits()));
+
+const subscriptions = [...locations, [clearVisitsInTheMorning]]
   .reduce((acc, curr) => {
     return [...acc, ...curr];
   }, [])
