@@ -323,6 +323,22 @@ function zigbeeSmokeDetectors(enabledDataPoints: {}) {
 
     check(enabledDataPoints, id, expect);
   });
+
+  $('state[id=zigbee.*.device_temperature]').each(id => {
+    const expect = {
+      enabled: true,
+      changesOnly: true,
+      debounce: 500,
+      maxLength: 10,
+      retention: 63072000,
+      changesRelogInterval: config.changesRelogInterval,
+      changesMinDelta: 0,
+      storageType: false,
+      aliasId: `${Device.deviceName(id)} Temperature`,
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 }
 
 function zigbeeLights(enabledDataPoints: {}) {
