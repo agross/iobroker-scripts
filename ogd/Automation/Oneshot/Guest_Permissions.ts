@@ -186,6 +186,7 @@ function translate(str: string) {
     Humidity: 'Luftfeuchtigkeit',
     Motion: 'Bewegung',
     Occupancy: 'Anwesenheit',
+    Pressure: 'Luftdruck',
     'Smoke Detected': 'Rauchmelder',
     'Alarm Enabled': 'Alarm aktiv',
     'Table Light': 'Tischlampe',
