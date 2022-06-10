@@ -180,7 +180,7 @@ function zigbeeTemperatureHumidityAndPressureSensors() {
           name: Lovelace.id(`${name} Temperature`),
           attr_device_class: 'temperature',
           attr_unit_of_measurement: '°C',
-          attr_friendly_name: name.replace('Sensor', 'Temperature'),
+          attr_friendly_name: name.replace(/(Motion\s)?Sensor/, 'Temperature'),
         },
       },
     };
