@@ -142,19 +142,23 @@ const smokeAlarm = combineLatest(
   [...$('state[id=zigbee.*.smoke]')].map(id => {
     const deviceName = Device.deviceName(id);
 
+    log(`Monitoring smoke alarm for ${deviceName}`);
+
     return new Stream(id, {
       map: event => {
-        return { smokeDetected: event.state.val, deviceName: deviceName };
+        return {
+          smokeDetected: event.state.val as boolean,
+          deviceName: deviceName,
+        };
       },
-    }).stream.pipe(
-      filter(x => x.smokeDetected === true),
-      map(x => x.deviceName),
-    );
+    }).stream;
   }),
 )
   .pipe(
-    map(detected => detected.sort().join(', ')),
-    distinctUntilChanged(),
+    map(x => x.filter(detector => detector.smokeDetected !== false)),
+    filter(x => x.length > 0),
+    map(x => x.map(detector => detector.deviceName)),
+    map(devices => devices.sort().join(', ')),
     tap(x => {
       Notify.mobile(`${Site.location}: Smoke detected for ${x}`);
     }),
