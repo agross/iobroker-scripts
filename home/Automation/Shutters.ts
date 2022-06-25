@@ -50,7 +50,9 @@ const sunrise = schedule({ astro: 'sunrise' }, async () => {
           return;
         }
 
-        Notify.mobile('Setting shutters to sunny day afternoon levels');
+        Notify.mobile(
+          `${Site.location}: Setting shutters to sunny day afternoon levels`,
+        );
         await setStateAsync(config.scenes.sunnyDayAfternoon, true);
 
         if (!clearSchedule(afternoonShutters)) {
