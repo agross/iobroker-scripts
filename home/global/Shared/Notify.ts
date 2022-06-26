@@ -11,10 +11,6 @@ class Notify {
   public static mobile(message: string, severity?: iobJS.LogLevel): void {
     log(message, severity);
 
-    sendTo('pushbullet', {
-      message: message,
-      title: 'ioBroker',
-      type: 'note',
-    });
+    sendTo('telegram.0', { user: 'agross42', text: message });
   }
 }
