@@ -32,10 +32,11 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           type: 'state',
           common: {
             name: 'Next Shutter State as JSON',
-            type: 'mixed',
+            type: 'string',
             read: true,
             write: false,
-            role: 'value',
+            role: 'json',
+            def: JSON.stringify(null),
           },
           native: {},
         },

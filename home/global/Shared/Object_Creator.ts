@@ -57,7 +57,7 @@ export class ObjectCreator {
 
       if (!(await existsStateAsync(objectId))) {
         if (data.type === 'state' && !data.common.alias) {
-          const defaultValue = this.defaultValue(data.common.type);
+          const defaultValue = this.defaultValue(data.common);
           await setStateAsync(objectId, defaultValue, true);
 
           log(
@@ -74,8 +74,13 @@ export class ObjectCreator {
     await Promise.all(promises);
   }
 
-  private static defaultValue(type: iobJS.CommonType): any {
-    switch (type) {
+  private static defaultValue(common: iobJS.StateCommon): any {
+    const defaultValue = common.def;
+    if (defaultValue !== undefined) {
+      return defaultValue;
+    }
+
+    switch (common.type) {
       case 'array':
         return JSON.stringify([]);
 
