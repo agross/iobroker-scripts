@@ -1,3 +1,6 @@
+import { of, timer } from 'rxjs';
+import { filter, switchMap, tap } from 'rxjs/operators';
+
 const config = {
   sunnyDay: ShutterConfig.sunnyDay,
   afternoon: ShutterConfig.afternoon,
@@ -8,64 +11,238 @@ const config = {
     sunnyDayAfternoon: 'scene.0.Shutters.Sunny_Day_Afternoon',
   },
   disable: ShutterConfig.disable,
+  next: {
+    root: ['0_userdata.0', 'Shutters'],
+    combined: 'combined', // Stores the values blow in an object.
+    state: 'next-state', // These are for display purposes only.
+    dueDate: 'next-due-date',
+  },
 };
 
-log(`Next sunset: ${getAstroDate('sunsetStart')}`);
-const sunset = schedule({ astro: 'sunsetStart' }, async () => {
+type NextState = { state: 'day' | 'sunnyDayAfternoon' | 'night'; dueAt: Date };
+
+function getObjectDefinition(): ObjectDefinitionRoot {
+  return {
+    [config.next.root[1]]: {
+      type: 'channel',
+      common: { name: 'Scheduled Shutter State' },
+      native: {},
+      nested: {
+        [config.next.combined]: {
+          type: 'state',
+          common: {
+            name: 'Next Shutter State as JSON',
+            type: 'mixed',
+            read: true,
+            write: false,
+            role: 'value',
+          },
+          native: {},
+        },
+        [config.next.state]: {
+          type: 'state',
+          common: {
+            name: 'Next Shutter State',
+            type: 'string',
+            read: true,
+            write: false,
+            role: 'value',
+            custom: {
+              [AdapterIds.lovelace]: {
+                enabled: true,
+                entity: 'sensor',
+                name: Lovelace.id(`Next Shutter State`),
+              },
+            },
+          },
+          native: {},
+        },
+        [config.next.dueDate]: {
+          type: 'state',
+          common: {
+            name: 'Next Shutter State Due Date',
+            type: 'mixed',
+            read: true,
+            write: false,
+            role: 'value',
+            custom: {
+              [AdapterIds.lovelace]: {
+                enabled: true,
+                entity: 'sensor',
+                name: Lovelace.id(`Next Shutter State Due Date`),
+                attr_device_class: 'timestamp',
+              },
+            },
+          },
+          native: {},
+        },
+      },
+    },
+  };
+}
+
+export {};
+await ObjectCreator.create(getObjectDefinition(), config.next.root[0]);
+
+async function scheduleNextState(state: NextState) {
+  log(`Scheduling next shutter state: ${JSON.stringify(state)}`);
+
+  await setStateAsync(
+    config.next.root.concat([config.next.combined]).join('.'),
+    JSON.stringify(state),
+    true,
+  );
+  await setStateAsync(
+    config.next.root.concat([config.next.state]).join('.'),
+    state.state,
+    true,
+  );
+  await setStateAsync(
+    config.next.root.concat([config.next.dueDate]).join('.'),
+    state.dueAt.toISOString(),
+    true,
+  );
+}
+
+async function activateScene(scene: string, extra?: () => void) {
   if (await config.disable()) {
     return;
   }
 
-  await setStateAsync('scene.0.Shutters.Night', true);
-});
+  extra && extra();
 
-log(`Next sunrise: ${getAstroDate('sunrise')}`);
-const sunrise = schedule({ astro: 'sunrise' }, async () => {
-  if (await config.disable()) {
-    return;
-  }
+  await setStateAsync(scene, true);
+}
 
-  if (await config.sunnyDay()) {
-    const afternoon = config.afternoon();
+const next = new Stream<NextState>(
+  config.next.root.concat([config.next.combined]).join('.'),
+  {
+    map: e => {
+      const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
 
-    Notify.mobile(
-      `${
-        Site.location
-      }: Sunny day shutters until ${afternoon.toLocaleString()}`,
-    );
-
-    await setStateAsync(config.scenes.sunnyDay, true);
-
-    const afternoonShutters = schedule(
-      formatDate(afternoon, 'm h * * *'),
-      async () => {
-        if (await config.disable()) {
-          if (!clearSchedule(afternoonShutters)) {
-            log(
-              'Error clearing schedule to return shutters to afternoon levels',
-              'error',
-            );
-          }
-
-          return;
+      function reviver(_key, value) {
+        if (typeof value === 'string' && dateFormat.test(value)) {
+          return new Date(value);
         }
 
-        Notify.mobile(
-          `${Site.location}: Setting shutters to sunny day afternoon levels`,
-        );
-        await setStateAsync(config.scenes.sunnyDayAfternoon, true);
+        return value;
+      }
 
-        if (!clearSchedule(afternoonShutters)) {
+      return JSON.parse(e.state.val, reviver);
+    },
+  },
+);
+
+// If there is no initial "next state", start with "day" right now.
+const initialState = next.stream
+  .pipe(
+    filter(next => !next || next.state?.length === 0),
+    tap(async _ => {
+      log('Starting with initial "day" state due now', 'warn');
+
+      await scheduleNextState({
+        state: 'day',
+        dueAt: new Date(),
+      });
+    }),
+  )
+  .subscribe();
+
+const nextState = next.stream
+  .pipe(
+    filter(next => next?.state?.length > 0),
+    filter(next => {
+      if (!next.dueAt) {
+        log(
+          `Next shutter state without timestamp: ${JSON.stringify(next)}`,
+          'warn',
+        );
+
+        return false;
+      }
+
+      return true;
+    }),
+    switchMap(next => {
+      log(JSON.stringify(next));
+
+      // If the next.dueAt is in the past, run immediately.
+      const dueAt = new Date() > next.dueAt ? of(1) : timer(next.dueAt);
+
+      switch (next.state) {
+        case 'day':
+          return dueAt.pipe(
+            tap(async _ => {
+              if (await config.sunnyDay()) {
+                const afternoon = config.afternoon();
+
+                activateScene(config.scenes.sunnyDay, () => {
+                  Notify.mobile(
+                    `${
+                      Site.location
+                    }: Sunny day shutters until ${afternoon.toLocaleString()}`,
+                  );
+                });
+
+                await scheduleNextState({
+                  state: 'sunnyDayAfternoon',
+                  dueAt: afternoon,
+                });
+              } else {
+                activateScene(config.scenes.day);
+
+                await scheduleNextState({
+                  state: 'night',
+                  dueAt: getAstroDate('sunsetStart'),
+                });
+              }
+            }),
+          );
+
+        case 'sunnyDayAfternoon':
+          return dueAt.pipe(
+            tap(async _ => {
+              activateScene(config.scenes.sunnyDayAfternoon, () => {
+                Notify.mobile(
+                  `${Site.location}: Setting shutters to sunny day afternoon levels`,
+                );
+              });
+
+              await scheduleNextState({
+                state: 'night',
+                dueAt: getAstroDate('sunsetStart'),
+              });
+            }),
+          );
+
+        case 'night':
+          return dueAt.pipe(
+            tap(async _ => {
+              await activateScene(config.scenes.night);
+              await setStateAsync(config.scenes.night, true);
+
+              const tomorrow = new Date();
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              const sunriseTomorrow = getAstroDate('sunrise', tomorrow);
+
+              await scheduleNextState({
+                state: 'day',
+                dueAt: sunriseTomorrow,
+              });
+            }),
+          );
+
+        default:
           log(
-            'Error clearing schedule to return shutters to afternoon levels',
+            `Unsupported next shutter state: ${JSON.stringify(next)}`,
             'error',
           );
-        }
-      },
-    );
-  } else {
-    await setStateAsync(config.scenes.day, true);
-  }
-});
+          break;
+      }
 
-onStop(() => [sunset, sunrise].forEach(scheduled => clearSchedule(scheduled)));
+      return dueAt;
+    }),
+  )
+  .subscribe();
+
+onStop(() => [initialState, nextState].forEach(x => x.unsubscribe()));
