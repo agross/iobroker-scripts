@@ -23,11 +23,11 @@ await ObjectCreator.create(
       type: 'state',
       common: {
         name: 'Active Nighttime Bathroom Visits',
-        type: 'array',
+        type: 'string',
         def: JSON.stringify([]),
         read: true,
         write: true,
-        role: 'state',
+        role: 'json',
       } as iobJS.StateCommon,
       native: {},
     },
