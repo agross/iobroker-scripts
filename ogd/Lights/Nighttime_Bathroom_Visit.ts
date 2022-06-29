@@ -38,7 +38,7 @@ await ObjectCreator.create(
 function getVisits(): [string, Set<string>] {
   const visits = config.visits.join('.');
   try {
-    const active = getState(visits).val || [];
+    const active = JSON.parse(getState(visits).val) || [];
     return [visits, new Set<string>(active)];
   } catch {
     log('Could not load visits, returning empty set', 'warn');
@@ -50,21 +50,21 @@ function addVisit(name) {
   const [visits, active] = getVisits();
   active.add(name);
 
-  setState(visits, [...active], true);
+  setState(visits, JSON.stringify([...active]), true);
 }
 
 function removeVisit(name): [boolean, string[]] {
   const [visits, active] = getVisits();
   const deleted = active.delete(name);
 
-  setState(visits, [...active], true);
+  setState(visits, JSON.stringify([...active]), true);
 
   return [deleted, [...active]];
 }
 
 function clearVisits() {
   const [visits, _] = getVisits();
-  setState(visits, [], true);
+  setState(visits, JSON.stringify([]), true);
 }
 
 const locations = Object.entries(config.locations).map(([name, location]) => {
