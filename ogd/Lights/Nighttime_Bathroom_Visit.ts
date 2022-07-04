@@ -1,8 +1,9 @@
-import { merge, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 
 const config = {
   visits: ['0_userdata.0', 'nighttime-bathroom-visits'],
+  allLightsOff: 'scene.0.Lights.All_Lights_Off',
   locations: {
     east: {
       switch: 'zigbee.0.50325ffffe71dbf1.state',
@@ -89,6 +90,15 @@ const locations = Object.entries(config.locations).map(([name, location]) => {
   const off = button.pipe(
     filter(x => x === false),
     tap(_ => {
+      const [__, active] = getVisits();
+
+      if (active.size === 0) {
+        log(`Turning off all lights from ${name}`);
+
+        setState(config.allLightsOff, true);
+        return;
+      }
+
       log(`Bathroom visit ended: ${name}`);
 
       // Turn of our bedroom lights, keep the lights on the way to the bathroom
