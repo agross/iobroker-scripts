@@ -36,6 +36,7 @@ const remotes = [
       off: 'scene.0.House.Lights',
       on: [
         'scene.0.House.Lights_No_Light_Strips',
+        'scene.0.House.Lights_Patio_Only',
         'scene.0.House.Lights_Light_Strips_Only',
         'scene.0.House.Lights_Cozy',
         'scene.0.House.Lights_Bright',
