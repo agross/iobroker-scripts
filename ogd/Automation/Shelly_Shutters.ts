@@ -23,17 +23,17 @@ function getConfig(id: string): AliasDeviceConfig {
   };
 }
 
-function getAliasDefinition(): ObjectDefinitionRoot {
-  function stateIdToPurpose(stateId: string) {
-    switch (stateId.match(/\.shelly25-(\d+)\./)[1]) {
-      case '1':
-        return 'Living Room Shutters';
+function stateIdToPurpose(stateId: string) {
+  switch (stateId.match(/\.shelly25-(\d+)\./)[1]) {
+    case '1':
+      return 'Living Room Shutters';
 
-      default:
-        throw new Error(`No mapping from ${stateId} to purpose`);
-    }
+    default:
+      throw new Error(`No mapping from ${stateId} to purpose`);
   }
+}
 
+function getAliasDefinition(): ObjectDefinitionRoot {
   // Shelly 2.5 PM-based shutters.
   return [
     ...$('state[id=mqtt.*.stat.shelly25-*.SHUTTER1]'),
@@ -43,6 +43,21 @@ function getAliasDefinition(): ObjectDefinitionRoot {
     const deviceStates: {
       [id: string]: iobJS.StateCommon;
     } = {
+      device_temperature: {
+        alias: {
+          id: stateId
+            .replace('.stat.', '.tele.')
+            .replace('.SHUTTER1', '.SENSOR'),
+          read: 'JSON.parse(val).ANALOG.Temperature',
+          // No write function makes this read-only.
+        },
+        role: 'state',
+        type: 'number',
+        unit: '°C',
+        name: 'Temperature of the device',
+        read: true,
+        write: false,
+      },
       level: {
         alias: {
           id: {

@@ -92,6 +92,7 @@ sendTo(
     homeMaticPresenceDetectors(enabledDataPoints);
 
     powerPlugs(enabledDataPoints);
+    mqttDevicesWithTemperature(enabledDataPoints);
 
     car(enabledDataPoints);
     fuelPrices(enabledDataPoints);
@@ -351,6 +352,16 @@ function powerPlugs(enabledDataPoints: {}) {
   $('state[id=alias.0.mqtt.*.gosund-sp111-*.power]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Power Watts`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+}
+
+function mqttDevicesWithTemperature(enabledDataPoints: {}) {
+  $('state[id=alias.0.mqtt.*.device_temperature]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Temperature`,
     });
 
     check(enabledDataPoints, id, expect);
