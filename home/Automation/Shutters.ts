@@ -165,8 +165,6 @@ const nextState = next.stream
       return true;
     }),
     switchMap(next => {
-      log(JSON.stringify(next));
-
       // If the next.dueAt is in the past, run immediately.
       const dueAt = new Date() > next.dueAt ? of(1) : timer(next.dueAt);
 
