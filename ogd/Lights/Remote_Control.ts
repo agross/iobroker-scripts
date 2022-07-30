@@ -196,6 +196,15 @@ const remotes = [
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001aea56'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'equipment_room',
+          functions: 'light',
+        }).values(),
+      ),
+    },
     cycle: {
       off: 'scene.0.Equipment Room.Lights',
       on: [
@@ -206,6 +215,15 @@ const remotes = [
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af501'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'bathroom',
+          functions: 'light',
+        }).values(),
+      ),
+    },
     cycle: {
       off: 'scene.0.Bathroom.Lights',
       on: () => {
