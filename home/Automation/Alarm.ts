@@ -1,5 +1,5 @@
 import { combineLatest, Observable } from 'rxjs';
-import { share, tap, filter, map } from 'rxjs/operators';
+import { share, tap, filter, map, withLatestFrom } from 'rxjs/operators';
 
 const config = {
   alarmEnabled: ['0_userdata.0', 'alarm-enabled'],
@@ -87,10 +87,9 @@ const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
   )
   .subscribe();
 
-const alarmEnabledChanges = new Stream<boolean>(config.alarmEnabled.join('.'))
-  .stream;
+const alarmEnabled = new Stream<boolean>(config.alarmEnabled.join('.')).stream;
 
-const alarmEnabledNotifications = alarmEnabledChanges
+const alarmEnabledNotifications = alarmEnabled
   .pipe(
     tap(enabled => {
       const message = `${Site.location}: Alarm ${
@@ -103,18 +102,19 @@ const alarmEnabledNotifications = alarmEnabledChanges
   .subscribe();
 
 const alarmTriggers = new Observable<string>(observer => {
-  log(`Monitoring for alarm: ${config.triggerAlarmOn}`);
+  log(`Monitoring alarm trigger: ${config.triggerAlarmOn}`);
 
   on({ id: config.triggerAlarmOn, val: true, change: 'ne' }, event => {
     const deviceName = Device.deviceName(event.id);
 
-    log(`Triggered by ${deviceName}`);
+    log(`Potential alarm triggered by ${deviceName}`);
     observer.next(deviceName);
   });
 }).pipe(share());
 
-const alarmNotifications = combineLatest([alarmTriggers, alarmEnabledChanges])
+const alarmNotifications = alarmTriggers
   .pipe(
+    withLatestFrom(alarmEnabled),
     filter(([_device, enabled]) => enabled),
     map(([device, _enabled]) => device),
     map(device => `${Site.location}: Alarm triggered by ${device}`),
