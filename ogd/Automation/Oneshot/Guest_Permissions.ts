@@ -10,7 +10,7 @@ const permissions = [
   ...shutters(),
   ...custom(),
 ].map(async stateId => {
-  const expect: Partial<iobJS.StateACL> = { state: 1638 };
+  const expect: Partial<iobJS.StateACL> = { state: 0x666 };
 
   await setPermissions(stateId, expect);
 });
@@ -59,12 +59,20 @@ async function setPermissions(
     return;
   }
 
+  const hexPermissions = function (name: string, val: any) {
+    if (name === 'state') {
+      return `0x${val.toString(16)}`;
+    }
+
+    return val;
+  };
+
   log(
     `${objectId}: expected ${JSON.stringify(
       expected,
-      null,
+      hexPermissions,
       2,
-    )} but got ${JSON.stringify(aclShrunkDownToExpected, null, 2)}`,
+    )} but got ${JSON.stringify(aclShrunkDownToExpected, hexPermissions, 2)}`,
     'warn',
   );
 
