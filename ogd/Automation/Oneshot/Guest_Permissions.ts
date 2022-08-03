@@ -4,13 +4,16 @@ const config = {
   dryRun: false,
 };
 
-const permissions = [...zigbeeLights(), ...scenes(), ...custom()].map(
-  async stateId => {
-    const expect: Partial<iobJS.StateACL> = { state: 1638 };
+const permissions = [
+  ...zigbeeLights(),
+  ...scenes(),
+  ...shutters(),
+  ...custom(),
+].map(async stateId => {
+  const expect: Partial<iobJS.StateACL> = { state: 1638 };
 
-    await setPermissions(stateId, expect);
-  },
-);
+  await setPermissions(stateId, expect);
+});
 
 const translateCommonNames = [
   ...autodetectedDevices(),
@@ -87,6 +90,18 @@ function scenes() {
   return [...$('state[role=scene.state]')].filter(
     x => !x.includes('scene.0.Leaving'),
   );
+}
+
+function shutters() {
+  return [
+    ...$('state[id=mqtt.*.*.*.shutter.cmnd.shelly25-*.ShutterPosition1]'),
+    ...$('state[id=alias.*.mqtt.*.*.*.shutter.shelly25-*.*]'),
+  ]
+    .filter(x => !x.endsWith('.device_temperature'))
+    .map(x => {
+      log(x, 'warn');
+      return x;
+    });
 }
 
 function custom() {
