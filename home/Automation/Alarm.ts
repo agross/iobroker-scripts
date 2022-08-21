@@ -117,7 +117,7 @@ const alarmNotifications = alarmTriggers
     map(([device, _enabled]) => device),
     map(device => `Alarm triggered by ${device}`),
     tap(message => {
-      Notify.mobile(message, 'warn');
+      Notify.mobile(message, { severity: 'warn' });
     }),
   )
   .subscribe();
