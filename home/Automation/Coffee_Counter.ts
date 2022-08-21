@@ -1,8 +1,18 @@
-import { filter, tap, throttleTime } from 'rxjs/operators';
+import { filter, map, tap, throttleTime } from 'rxjs/operators';
 
 const config = {
   counter: ['0_userdata.0', 'coffee-counter'],
+  resetCounter: () => config.counter.join('.') + '.reset',
   indicator: 'zigbee.0.00158d000483b44d.vibration',
+  counterCallbacks: [
+    {
+      text: '0️⃣ Reset Counter',
+      callback_data: 'coffee-counter-reset',
+      callbackReceived: () => {
+        setState(config.resetCounter(), true);
+      },
+    },
+  ],
 };
 
 await ObjectCreator.create(
@@ -57,6 +67,16 @@ await ObjectCreator.create(
   config.counter[0],
 );
 
+const callbacks = Notify.subscribeToCallbacks()
+  .pipe(
+    tap(x => log(`Callback: ${JSON.stringify(x)}`)),
+    map(x => config.counterCallbacks.find(ex => ex.callback_data == x.value)),
+    filter(x => x !== undefined),
+    tap(x => log(`Callback match: ${JSON.stringify(x)}`)),
+    tap(x => x.callbackReceived()),
+  )
+  .subscribe();
+
 const coffeeBrewed = new Stream<boolean>({
   id: config.indicator,
   ack: true,
@@ -70,14 +90,19 @@ const coffeeBrewed = new Stream<boolean>({
       const count = (getState(counterState).val || 0) + 1;
 
       setState(counterState, count, true);
-      Notify.mobile(`Coffee count: ${count}`);
+      Notify.mobile(`Coffee count: ${count}`, {
+        telegram: {
+          reply_markup: {
+            inline_keyboard: [config.counterCallbacks],
+          },
+        },
+      });
     }),
   )
   .subscribe();
 
-const resetState = config.counter.join('.') + '.reset';
 const reset = new Stream<boolean>({
-  id: resetState,
+  id: config.resetCounter(),
   ack: false,
 }).stream
   .pipe(
@@ -86,11 +111,11 @@ const reset = new Stream<boolean>({
       const counterState = config.counter.join('.') + '.counter';
 
       setState(counterState, 0, true);
-      setState(resetState, false, true);
+      setState(config.resetCounter(), false, true);
     }),
   )
   .subscribe();
 
 onStop(() => {
-  [coffeeBrewed, reset].forEach(x => x.unsubscribe());
+  [callbacks, coffeeBrewed, reset].forEach(x => x.unsubscribe());
 });

@@ -1,8 +1,9 @@
 import { of, timer } from 'rxjs';
-import { filter, switchMap, tap } from 'rxjs/operators';
+import { filter, map, switchMap, tap } from 'rxjs/operators';
 
 const config = {
   sunnyDay: ShutterConfig.sunnyDay,
+  sunnyDayExceptions: ShutterConfig.sunnyDayExceptions,
   afternoon: ShutterConfig.afternoon,
   scenes: {
     night: 'scene.0.Shutters.Night',
@@ -115,6 +116,16 @@ async function activateScene(scene: string, extra?: () => void) {
   await setStateAsync(scene, true);
 }
 
+const sunnyDayExceptions = Notify.subscribeToCallbacks()
+  .pipe(
+    tap(x => log(`Callback: ${JSON.stringify(x)}`)),
+    map(x => config.sunnyDayExceptions.find(ex => ex.callback_data == x.value)),
+    filter(x => x !== undefined),
+    tap(x => log(`Callback match: ${JSON.stringify(x)}`)),
+    tap(x => x.callbackReceived()),
+  )
+  .subscribe();
+
 const next = new Stream<NextState>(
   config.next.root.concat([config.next.combined]).join('.'),
   {
@@ -178,6 +189,13 @@ const nextState = next.stream
                 activateScene(config.scenes.sunnyDay, () => {
                   Notify.mobile(
                     `Sunny day shutters until ${afternoon.toLocaleString()}`,
+                    {
+                      telegram: {
+                        reply_markup: {
+                          inline_keyboard: [ShutterConfig.sunnyDayExceptions],
+                        },
+                      },
+                    },
                   );
                 });
 
@@ -240,4 +258,6 @@ const nextState = next.stream
   )
   .subscribe();
 
-onStop(() => [initialState, nextState].forEach(x => x.unsubscribe()));
+onStop(() =>
+  [initialState, nextState, sunnyDayExceptions].forEach(x => x.unsubscribe()),
+);

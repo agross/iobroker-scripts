@@ -8,6 +8,18 @@ class ShutterConfig {
     return maxTempToday.val >= 25;
   };
 
+  public static get sunnyDayExceptions() {
+    return [
+      {
+        text: '⛅ Not Sunny',
+        callback_data: 'shutters-not-sunny',
+        callbackReceived: () => {
+          setState('scene.0.Shutters.Day', true);
+        },
+      },
+    ];
+  }
+
   public static afternoon = () => getAstroDate('sunrise', new Date(), 4 * 60);
 
   public static disable = async () => {
