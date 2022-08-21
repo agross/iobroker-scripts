@@ -92,9 +92,7 @@ const alarmEnabled = new Stream<boolean>(config.alarmEnabled.join('.')).stream;
 const alarmEnabledNotifications = alarmEnabled
   .pipe(
     tap(enabled => {
-      const message = `${Site.location}: Alarm ${
-        enabled ? 'enabled' : 'disabled'
-      }`;
+      const message = `Alarm ${enabled ? 'enabled' : 'disabled'}`;
 
       Notify.mobile(message);
     }),
@@ -117,7 +115,7 @@ const alarmNotifications = alarmTriggers
     withLatestFrom(alarmEnabled),
     filter(([_device, enabled]) => enabled),
     map(([device, _enabled]) => device),
-    map(device => `${Site.location}: Alarm triggered by ${device}`),
+    map(device => `Alarm triggered by ${device}`),
     tap(message => {
       Notify.mobile(message, 'warn');
     }),
@@ -146,7 +144,7 @@ const smokeAlarm = combineLatest(
     map(x => x.map(detector => detector.deviceName)),
     map(devices => devices.sort().join(', ')),
     tap(x => {
-      Notify.mobile(`${Site.location}: Smoke detected for ${x}`);
+      Notify.mobile(`Smoke detected for ${x}`);
     }),
   )
   .subscribe();

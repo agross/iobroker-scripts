@@ -177,9 +177,7 @@ const nextState = next.stream
 
                 activateScene(config.scenes.sunnyDay, () => {
                   Notify.mobile(
-                    `${
-                      Site.location
-                    }: Sunny day shutters until ${afternoon.toLocaleString()}`,
+                    `Sunny day shutters until ${afternoon.toLocaleString()}`,
                   );
                 });
 
@@ -202,9 +200,7 @@ const nextState = next.stream
           return dueAt.pipe(
             tap(async _ => {
               activateScene(config.scenes.sunnyDayAfternoon, () => {
-                Notify.mobile(
-                  `${Site.location}: Setting shutters to sunny day afternoon levels`,
-                );
+                Notify.mobile(`Setting shutters to sunny day afternoon levels`);
               });
 
               await scheduleNextState({
