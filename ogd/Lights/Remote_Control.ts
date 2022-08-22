@@ -45,6 +45,15 @@ const remotes = [
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6638'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'kitchen',
+          functions: 'light',
+        }).values(),
+      ),
+    },
     cycle: {
       off: 'scene.0.Kitchen.Lights',
       on: ['scene.0.Kitchen.Lights_Cozy', 'scene.0.Kitchen.Lights_Bright'],
