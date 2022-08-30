@@ -15,6 +15,15 @@ Syntax help may be added for the following npm modules:
 * `rxjs/operators`
 * `got`
 
+## Settings for the `iobroker.javascript` instance
+
+Most of the scripts require the option `Enable command "setObject"` to be
+enabled since they create channels, devices and states.
+
+If `Update_Notifcation.ts` is used along with the Telegram adapter and you want
+to trigger adapter updates straight from the Telegram notification, the
+`Enable command "exec"` option also needs to be enabled.
+
 ## Remote development
 
 Instead of coding locally (e.g. with VS Code) and always copy/pasting the script
