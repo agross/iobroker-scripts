@@ -16,6 +16,15 @@ const config = {
   repowerTimeout:
     8 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
   repowerState: ['0_userdata.0', 'repower-washing-machine'],
+  callbacks: [
+    {
+      text: '⚡️ Repower Now',
+      callback_data: 'repower-washing-machine',
+      callbackReceived: () => {
+        setState(config.powerState, true);
+      },
+    },
+  ],
 };
 
 await ObjectCreator.create(
@@ -97,10 +106,28 @@ const repower = new Stream<string>(config.repowerState.join('.')).stream
   )
   .subscribe();
 
+const callbacks = Notify.subscribeToCallbacks()
+  .pipe(
+    tap(x => log(`Callback: ${JSON.stringify(x)}`)),
+    map(x => config.callbacks.find(ex => ex.callback_data == x.value)),
+    filter(x => x !== undefined),
+    tap(x => log(`Callback match: ${JSON.stringify(x)}`)),
+    tap(x => x.callbackReceived()),
+  )
+  .subscribe();
+
 const done = running
   .pipe(
     switchMap(_ => notRunning.pipe(first())),
-    tap(_ => Notify.mobile(`Washing machine has finished`)),
+    tap(_ =>
+      Notify.mobile(`Washing machine has finished`, {
+        telegram: {
+          reply_markup: {
+            inline_keyboard: [config.callbacks],
+          },
+        },
+      }),
+    ),
     tap(_ => setState(config.powerState, false)),
     tap(_ => {
       const dueDate = new Date(Date.now() + config.repowerTimeout);
