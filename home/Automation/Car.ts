@@ -553,7 +553,7 @@ const alarms = cars.map(car => {
         Notify.mobile(
           `${x.acknowledged ? 'Acknowledged ' : ''}${
             car.name
-          } alarm from ${x.timestamp.toLocaleString()}: ${x.reason} (ID: ${
+          } alarm from ${x.timestamp.formatDatTime()}: ${x.reason} (ID: ${
             x.id
           })`,
         ),

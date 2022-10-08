@@ -278,7 +278,7 @@ class ActivityIndicator {
       log(
         `Found latest activity from ${new Date(
           latest.state.lc,
-        ).toLocaleString()}: ${JSON.stringify(latest)}`,
+        ).formatDatTime()}: ${JSON.stringify(latest)}`,
       );
       return of(latest);
     } else {

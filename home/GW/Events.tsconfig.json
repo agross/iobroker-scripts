@@ -7,6 +7,7 @@
     "../global/PresenceConfig.ts",
     "../global/Shared/AdapterId.ts",
     "../global/Shared/Device.ts",
+    "../global/Shared/Format.ts",
     "../global/Shared/Lovelace.ts",
     "../global/Shared/Notify.ts",
     "../global/Shared/Object_Creator.ts",
