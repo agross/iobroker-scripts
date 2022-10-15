@@ -109,7 +109,7 @@ const repower = new Stream<string>(config.repowerState.join('.')).stream
 const callbacks = Notify.subscribeToCallbacks()
   .pipe(
     tap(x => log(`Callback: ${JSON.stringify(x)}`)),
-    map(x => config.callbacks.find(ex => ex.callback_data == x.value)),
+    map(x => config.callbacks.find(c => c.callback_data === x.value)),
     filter(x => x !== undefined),
     tap(x => log(`Callback match: ${JSON.stringify(x)}`)),
     tap(x => x.callbackReceived()),

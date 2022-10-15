@@ -4,7 +4,7 @@ const config = {
   counter: ['0_userdata.0', 'coffee-counter'],
   resetCounter: () => config.counter.join('.') + '.reset',
   indicator: 'zigbee.0.00158d000483b44d.vibration',
-  counterCallbacks: [
+  callbacks: [
     {
       text: '0️⃣ Reset Counter',
       callback_data: 'coffee-counter-reset',
@@ -70,7 +70,7 @@ await ObjectCreator.create(
 const callbacks = Notify.subscribeToCallbacks()
   .pipe(
     tap(x => log(`Callback: ${JSON.stringify(x)}`)),
-    map(x => config.counterCallbacks.find(ex => ex.callback_data == x.value)),
+    map(x => config.callbacks.find(c => c.callback_data === x.value)),
     filter(x => x !== undefined),
     tap(x => log(`Callback match: ${JSON.stringify(x)}`)),
     tap(x => x.callbackReceived()),
@@ -93,7 +93,7 @@ const coffeeBrewed = new Stream<boolean>({
       Notify.mobile(`Coffee count: ${count}`, {
         telegram: {
           reply_markup: {
-            inline_keyboard: [config.counterCallbacks],
+            inline_keyboard: [config.callbacks],
           },
         },
       });

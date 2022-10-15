@@ -119,7 +119,7 @@ async function activateScene(scene: string, extra?: () => void) {
 const sunnyDayExceptions = Notify.subscribeToCallbacks()
   .pipe(
     tap(x => log(`Callback: ${JSON.stringify(x)}`)),
-    map(x => config.sunnyDayExceptions.find(ex => ex.callback_data == x.value)),
+    map(x => config.sunnyDayExceptions.find(c => c.callback_data === x.value)),
     filter(x => x !== undefined),
     tap(x => log(`Callback match: ${JSON.stringify(x)}`)),
     tap(x => x.callbackReceived()),
