@@ -147,6 +147,9 @@
       "path": "ogd/Lights/Hall_Lights.tsconfig.json"
     },
     {
+      "path": "ogd/Lights/House_Lights_After_Absence.tsconfig.json"
+    },
+    {
       "path": "ogd/Lights/Nighttime_Bathroom_Visit.tsconfig.json"
     },
     {
