@@ -122,7 +122,10 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       nested: stateObjects('Next Journey from Home'),
       script: {
         filter: (event: Event) => {
-          return event.event.startsWith('Journey from Leipzig');
+          return (
+            event.event.startsWith('Journey from Leipzig') ||
+            event.event.startsWith('Fahrt von Leipzig')
+          );
         },
       },
     },
@@ -133,7 +136,10 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       nested: stateObjects('Next Journey To Home'),
       script: {
         filter: (event: Event) => {
-          return /^Journey\s.*to Leipzig/.test(event.event);
+          return (
+            /^Journey\s.*to Leipzig/.test(event.event) ||
+            /^Fahrt von\s.*nach Leipzig/.test(event.event)
+          );
         },
       },
     },
