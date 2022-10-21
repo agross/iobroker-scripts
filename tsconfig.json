@@ -12,9 +12,6 @@
       "path": "home/Automation/Car.tsconfig.json"
     },
     {
-      "path": "home/Automation/Coffee_Counter.tsconfig.json"
-    },
-    {
       "path": "home/Automation/Ecovacs_Deebot.tsconfig.json"
     },
     {
@@ -106,6 +103,9 @@
     },
     {
       "path": "ogd/Automation/Alarm.tsconfig.json"
+    },
+    {
+      "path": "ogd/Automation/Coffee_Counter.tsconfig.json"
     },
     {
       "path": "ogd/Automation/Leaving_And_Returning.tsconfig.json"
