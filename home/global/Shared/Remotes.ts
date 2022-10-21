@@ -21,6 +21,11 @@ declare global {
       on: string[] | (() => string[]);
     }
 
+    interface CycleConfigWithDynamicOff {
+      off: string | (() => string);
+      on: string[] | (() => string[]);
+    }
+
     interface ToggleConfig {
       off?: States;
       states: States;
@@ -47,6 +52,10 @@ declare global {
       cycle?: CycleConfig;
     }
 
+    interface CycleDeviceConfigWithDynamicOff {
+      cycle?: CycleConfigWithDynamicOff;
+    }
+
     abstract class Remote {
       setUp(): Subscription;
     }
@@ -68,7 +77,7 @@ declare global {
         config: DeviceConfig &
           DimmerDeviceConfig &
           ToggleDeviceConfig &
-          CycleDeviceConfig,
+          CycleDeviceConfigWithDynamicOff,
       );
     }
 
@@ -77,7 +86,7 @@ declare global {
         config: DeviceConfig &
           DimmerDeviceConfig &
           ToggleDeviceConfig &
-          CycleDeviceConfig,
+          CycleDeviceConfigWithDynamicOff,
       );
     }
 
@@ -117,6 +126,7 @@ export namespace Remotes {
     setUp(): Subscription;
   }
 
+  type State = string | (() => string);
   type States = string[] | (() => string[]) | ObjectsWithStateQuery;
 
   interface CycleConfig {
@@ -124,8 +134,13 @@ export namespace Remotes {
     on: string[] | (() => string[]);
   }
 
+  interface CycleConfigWithDynamicOff {
+    off: string | (() => string);
+    on: string[] | (() => string[]);
+  }
+
   interface CycleStreams {
-    off: Observable<{ device: string; state: string }>;
+    off: Observable<{ device: string; state: State }>;
     next: Observable<{ device: string; states: States }>;
   }
 
@@ -141,6 +156,10 @@ export namespace Remotes {
     public setUp(): Subscription {
       const off = this.config.off.pipe(
         tap(({ device, state }) => {
+          if (typeof state === 'function') {
+            state = state();
+          }
+
           log(`${device}: Turned off`);
 
           setState(state, false);
@@ -494,6 +513,10 @@ export namespace Remotes {
     cycle?: CycleConfig;
   }
 
+  interface CycleDeviceConfigWithDynamicOff {
+    cycle?: CycleConfigWithDynamicOff;
+  }
+
   abstract class Remote {
     private readonly features: IFeature[] = [];
 
@@ -736,7 +759,7 @@ export namespace Remotes {
       config: DeviceConfig &
         DimmerDeviceConfig &
         ToggleDeviceConfig &
-        CycleDeviceConfig,
+        CycleDeviceConfigWithDynamicOff,
     ) {
       super();
 
@@ -791,7 +814,7 @@ export namespace Remotes {
     }
 
     private cycleStreams(
-      config: DeviceConfig & CycleDeviceConfig,
+      config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
     ): CycleStreams {
       const stateChanges = new Observable<iobJS.ChangedStateObject>(
         observer => {
@@ -851,7 +874,7 @@ export namespace Remotes {
       config: DeviceConfig &
         DimmerDeviceConfig &
         ToggleDeviceConfig &
-        CycleDeviceConfig,
+        CycleDeviceConfigWithDynamicOff,
     ) {
       super();
 
@@ -903,7 +926,7 @@ export namespace Remotes {
     }
 
     private cycleStreams(
-      config: DeviceConfig & CycleDeviceConfig,
+      config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
     ): CycleStreams {
       return {
         off: new Observable<iobJS.ChangedStateObject>(observer => {

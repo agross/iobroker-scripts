@@ -40,7 +40,20 @@ const remotes = [
       ),
     },
     cycle: {
-      off: 'scene.0.Lights.In_Bed',
+      off: () => {
+        log('Bedroom: Triggered off');
+
+        const inBed = 'scene.0.Lights.In_Bed';
+        if (getState(inBed).val !== true) {
+          log(
+            'Bedroom: Turn off everything except bathroom lights (if occupied)',
+          );
+          return inBed;
+        }
+
+        log('Bedroom: Turn off everything');
+        return 'scene.0.Lights.All_Lights_Off_Including_Smart';
+      },
       on: [
         'scene.0.Bedroom.Lights_Cozy',
         'scene.0.Bedroom.Lights_Dim',
