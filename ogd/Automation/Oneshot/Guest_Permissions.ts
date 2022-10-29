@@ -184,6 +184,12 @@ function translate(str: string) {
     'All Lights Off': 'Alle Lichter aus',
     'Global Brightness Override': 'Globale Helligkeit',
 
+    'Reset Coffee Counter': 'Kaffeebezüge zurücksetzen',
+    'Coffee Counter': 'Kaffeebezüge',
+
+    'Next Shutter State Due Date': 'Zeitpunkt geplante Behanghöhe',
+    'Next Shutter State': 'Geplante Behanghöhe',
+
     'Kitchen Table': 'Küchentisch',
     'Living Room Table Top': 'Wohnzimmertisch nach oben',
     'Living Room Table Bottom': 'Wohnzimmertisch nach unten',
