@@ -23,14 +23,14 @@ const subscription = arrivingAtHome
 
       if (dueDate < new Date()) {
         Notify.mobile(
-          `Scheduled presence ${dueDate.formatDatTime()} is in the past, skipping`,
+          `Scheduled presence ${dueDate.formatDateTime()} is in the past, skipping`,
         );
 
         return EMPTY;
       }
 
       Notify.mobile(
-        `Scheduling presence for ${dueDate.formatDatTime()} (arrival at ${arrival.formatDatTime()})`,
+        `Scheduling presence for ${dueDate.formatDateTime()} (arrival at ${arrival.formatDateTime()})`,
       );
 
       return timer(dueDate).pipe(
@@ -40,7 +40,7 @@ const subscription = arrivingAtHome
     }),
     tap(([arrival, _dueDate]) => {
       Notify.mobile(
-        `Pretending to be at home for arrival at ${arrival.formatDatTime()}`,
+        `Pretending to be at home for arrival at ${arrival.formatDateTime()}`,
       );
 
       setState(config.presence, true);

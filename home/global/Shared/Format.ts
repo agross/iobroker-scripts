@@ -1,10 +1,10 @@
 declare global {
   interface Date {
-    formatDatTime(): string;
+    formatDateTime(): string;
   }
 }
 
-Date.prototype.formatDatTime = function (): string {
+Date.prototype.formatDateTime = function (): string {
   const format = Intl.DateTimeFormat('de', {
     dateStyle: 'medium',
     timeStyle: 'medium',

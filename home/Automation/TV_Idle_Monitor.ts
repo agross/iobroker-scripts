@@ -14,7 +14,9 @@ const reenableTvIdle = new Stream<boolean>(config.scriptStatus).stream
       return new Date(now.setHours(now.getHours() + config.reenableAfter));
     }),
   )
-  .pipe(tap(on => Notify.tv(`TV Idle turns back on at: ${on.formatDatTime()}`)))
+  .pipe(
+    tap(on => Notify.tv(`TV Idle turns back on at: ${on.formatDateTime()}`)),
+  )
   .pipe(switchMap(on => timer(on)))
   .pipe(tap(async _ => await startScriptAsync(config.script, true)))
   .subscribe();

@@ -188,7 +188,7 @@ const nextState = next.stream
 
                 activateScene(config.scenes.sunnyDay, () => {
                   Notify.mobile(
-                    `Sunny day shutters until ${afternoon.formatDatTime()}`,
+                    `Sunny day shutters until ${afternoon.formatDateTime()}`,
                     {
                       telegram: {
                         reply_markup: {
