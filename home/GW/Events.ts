@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
@@ -193,46 +193,50 @@ const streams = Object.entries(objects).map(([channel, def]) => {
     }),
   );
 
-  const setEventData = channelEvents.pipe(
-    mergeMap(x => x),
-    scan((closestEvent, candidate) => {
-      if (closestEvent._end < new Date()) {
-        // Closest event has passed.
-        return candidate;
-      }
-
-      if (closestEvent._date < candidate._date) {
-        // Candidate starts later than closest event.
-        return closestEvent;
-      }
-
-      return candidate;
-    }),
-    distinctUntilKeyChanged('_IDID'),
-    tap(event => {
-      log(`Next event for ${channel}: ${event.event} (ID ${event._IDID})`);
-    }),
-    tap(event => {
-      Object.entries(def.nested).forEach(([state, def]) => {
-        if (!def.script?.source) {
-          return;
+  const setEventData = function (events: Observable<Event[]>) {
+    return events.pipe(
+      mergeMap(x => x),
+      scan((closestEvent, candidate) => {
+        if (closestEvent._end < new Date()) {
+          // Closest event has passed.
+          return candidate;
         }
 
-        const stateId = `${channelId(channel)}.${state}`;
-        const value = def.script.source(event);
+        if (closestEvent._date < candidate._date) {
+          // Candidate starts later than closest event.
+          return closestEvent;
+        }
 
-        setState(stateId, value, true, err => {
-          if (err) {
-            log(`Could not set ${stateId} to ${value}: ${err}`, 'error');
+        return candidate;
+      }),
+      distinctUntilKeyChanged('_IDID'),
+      tap(event => {
+        log(
+          `Next event for ${channel}: ${event.event} on ${event._date} (ID ${event._IDID})`,
+        );
+      }),
+      tap(event => {
+        Object.entries(def.nested).forEach(([state, def]) => {
+          if (!def.script?.source) {
+            return;
           }
+
+          const stateId = `${channelId(channel)}.${state}`;
+          const value = def.script.source(event);
+
+          setState(stateId, value, true, err => {
+            if (err) {
+              log(`Could not set ${stateId} to ${value}: ${err}`, 'error');
+            }
+          });
         });
-      });
-    }),
-  );
+      }),
+    );
+  };
 
   return channelEvents.pipe(
     switchMap(events => {
-      return events.length === 0 ? removeEventData : setEventData;
+      return events.length === 0 ? removeEventData : setEventData(of(events));
     }),
   );
 });
