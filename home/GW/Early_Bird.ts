@@ -1,5 +1,5 @@
 import { combineLatest, EMPTY, timer } from 'rxjs';
-import { filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { first, map, switchMap, tap } from 'rxjs/operators';
 
 const config = {
   heatingPeriod: 'hm-rega.0.2322',
