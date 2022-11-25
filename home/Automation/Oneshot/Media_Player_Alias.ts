@@ -116,7 +116,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
         alias: {
           id: {
             read: 'kodi.0.state',
-            write: 'kodi.0.stop',
+            write: 'kodi.0.pause',
           },
           read: 'val === "play" ? 1 : val === "stop" ? 2 : 0',
           write: 'true',
@@ -124,7 +124,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
         role: 'media.state',
         type: 'number',
         read: true,
-        write: false,
+        write: true,
         name: 'State',
       },
       cover: {
