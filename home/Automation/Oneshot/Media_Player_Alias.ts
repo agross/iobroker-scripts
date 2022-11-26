@@ -1,5 +1,16 @@
+import got from 'got';
+import path from 'path';
+import { combineLatest } from 'rxjs';
+import { map, sampleTime, tap } from 'rxjs/operators';
+
+const config = {
+  tv: 'lgtv.0',
+  kodi: 'kodi.0',
+  lovelace: 'lovelace.0',
+};
+
 function lgtvObjectDefinition(): ObjectDefinitionRoot {
-  return ['lgtv.0'].reduce((acc, device) => {
+  return [config.tv].reduce((acc, device) => {
     const states: {
       [id: string]: iobJS.StateCommon;
     } = {
@@ -87,8 +98,37 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
   }, {} as ObjectDefinitionRoot);
 }
 
+function kodiUserData(): ObjectDefinitionRoot {
+  return [config.kodi].reduce((acc, device) => {
+    const states: {
+      [id: string]: iobJS.StateCommon;
+    } = {
+      cover: {
+        name: 'Track cover or fanart cover as a fallback',
+        role: 'media.cover',
+        type: 'string',
+        read: true,
+        write: false,
+        def: JSON.stringify(null),
+      },
+    };
+
+    acc[device] = {
+      type: 'device',
+      native: {},
+      common: { name: 'Kodi', role: 'device' },
+      nested: Object.entries(states).reduce((acc, [id, common]) => {
+        acc[id] = { type: 'state', native: {}, common: common };
+        return acc;
+      }, {} as ObjectDefinitionRoot),
+    };
+
+    return acc;
+  }, {} as ObjectDefinitionRoot);
+}
+
 function kodiObjectDefinition(): ObjectDefinitionRoot {
-  return ['kodi.0'].reduce((acc, device) => {
+  return [config.kodi].reduce((acc, device) => {
     const states: {
       [id: string]: iobJS.StateCommon;
     } = {
@@ -109,10 +149,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       cover: {
         alias: {
-          id: `${device}.info.fanart`,
-          read: "decodeURIComponent(val.replace(/^image:\\/\\//, '')) \
-                   .replace(/\\/$/, '') \
-                   .replace(/^http:\\/\\//, 'https://')",
+          id: `0_userdata.0.${device}.cover`,
           // No write function makes this read-only.
         },
         role: 'media.cover',
@@ -123,10 +160,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       'cover-big': {
         alias: {
-          id: `${device}.info.fanart`,
-          read: "decodeURIComponent(val.replace(/^image:\\/\\//, '')) \
-                   .replace(/\\/$/, '') \
-                   .replace(/^http:\\/\\//, 'https://')",
+          id: `0_userdata.0.${device}.cover`,
           // No write function makes this read-only.
           // http://firetv:8080/image/image%3A%2F%2Fsmb%253a%252f%252frouter%252fagross%252fnextcloud%252fMusic%252fMassive%2520Attack%2520-%2520100th%2520Window%252fcover.jpg%2F
         },
@@ -325,6 +359,82 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
 
 export {};
 await ObjectCreator.create(lgtvObjectDefinition(), 'alias.0');
+await ObjectCreator.create(kodiUserData(), '0_userdata.0');
 await ObjectCreator.create(kodiObjectDefinition(), 'alias.0');
 
-stopScript(undefined);
+const fanart = new Stream<string>(`${config.kodi}.info.fanart`).stream;
+const track = new Stream<string>(`${config.kodi}.info.thumbnail`).stream;
+
+const cover = combineLatest([fanart, track])
+  .pipe(
+    sampleTime(2000),
+    map(async ([fanart, track]) => {
+      const kodiImageService = async uri => {
+        try {
+          const current = (
+            await getStateAsync(`0_userdata.0.${config.kodi}.cover`)
+          ).val;
+
+          // Without this check we would delete all files from config.lovelace.
+          if (current && current.length) {
+            const file = `cards/${path.basename(current)}`;
+            await delFileAsync(config.lovelace, file);
+            log(`Deleted current cover ${file}`);
+          }
+        } catch (error) {}
+
+        if (!uri || !uri.length) {
+          return undefined;
+        }
+
+        const kodiConfig = await getObjectAsync(
+          `system.adapter.${config.kodi}`,
+        );
+        const native = kodiConfig.native;
+        const imageUri = `http://${native.ip}:${
+          native.portweb || 8081
+        }/image/${encodeURIComponent(uri)}`;
+
+        let buffer: Buffer;
+        try {
+          buffer = await got(imageUri, {
+            username: native.login,
+            password: native.password,
+          }).buffer();
+        } catch (error) {
+          log(`Could get cover from Kodi ${imageUri}: ${error}`, 'error');
+          return undefined;
+        }
+
+        const next = `cards/kodi-cover-binary-${Date.now()}.jpg`;
+        try {
+          log(`Writing next cover: ${next}`);
+          writeFileAsync(config.lovelace, next, buffer);
+
+          return `/local/custom_ui/${path.basename(next)}`;
+        } catch (error) {
+          log(`Could not write file ${next}: ${error}`, 'error');
+        }
+
+        return undefined;
+      };
+
+      const directLink = uri => {
+        return decodeURIComponent(uri.replace(/^image:\/\//, ''))
+          .replace(/\/$/, '')
+          .replace(/^http:\/\//, 'https://');
+      };
+
+      log(`New cover data for track ${track} and fanart ${fanart}`);
+
+      return (await kodiImageService(track)) || directLink(fanart);
+    }),
+    tap(async art => {
+      setState(`0_userdata.0.${config.kodi}.cover`, await art, true);
+    }),
+  )
+  .subscribe();
+
+onStop(() => {
+  [cover].forEach(x => x.unsubscribe());
+});
