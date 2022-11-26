@@ -21,6 +21,9 @@
       "path": "home/Automation/HomeMatic_Shutters.tsconfig.json"
     },
     {
+      "path": "home/Automation/Media_Player.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Oneshot/Get_Zigbee_Light_Color_Temperature_Range.tsconfig.json"
     },
     {
@@ -28,9 +31,6 @@
     },
     {
       "path": "home/Automation/Oneshot/Lovelace_Config.tsconfig.json"
-    },
-    {
-      "path": "home/Automation/Oneshot/Media_Player_Alias.tsconfig.json"
     },
     {
       "path": "home/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"

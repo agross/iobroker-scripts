@@ -402,7 +402,7 @@ const cover = combineLatest([fanart, track])
             password: native.password,
           }).buffer();
         } catch (error) {
-          log(`Could get cover from Kodi ${imageUri}: ${error}`, 'error');
+          log(`Could not get cover from Kodi ${imageUri}: ${error}`, 'error');
           return undefined;
         }
 
