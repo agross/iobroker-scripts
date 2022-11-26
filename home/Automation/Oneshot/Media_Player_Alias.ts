@@ -1,27 +1,25 @@
 function lgtvObjectDefinition(): ObjectDefinitionRoot {
-  function deviceId(id: string): string {
-    return id.replace(/\.[^.]*$/, '').replace(/\.(cmnd|tele|stat)\./, '.');
-  }
-
-  return ['lgtv.0'].reduce((acc, stateId) => {
-    const device = deviceId(stateId);
-
-    const deviceStates: {
+  return ['lgtv.0'].reduce((acc, device) => {
+    const states: {
       [id: string]: iobJS.StateCommon;
     } = {
       state: {
         alias: {
-          id: 'lgtv.0.info.connection',
+          id: {
+            read: `${device}.info.connection`,
+            write: `${device}.states.power`,
+          },
         },
         role: 'media.state',
         type: 'boolean',
         read: true,
-        write: false,
+        write: true,
         name: 'State',
       },
+      // Needs a cover to be detected as a media player by the type detector.
       cover: {
         alias: {
-          id: 'lgtv.0.info.connection',
+          id: `${device}.info.connection`,
           read: '""',
           // No write function makes this read-only.
         },
@@ -31,21 +29,9 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
         write: false,
         name: 'Cover',
       },
-      'cover-big': {
-        alias: {
-          id: 'lgtv.0.info.connection',
-          read: '""',
-          // No write function makes this read-only.
-        },
-        role: 'media.cover.big',
-        type: 'string',
-        read: true,
-        write: false,
-        name: 'Big cover',
-      },
       mute: {
         alias: {
-          id: 'lgtv.0.states.mute',
+          id: `${device}.states.mute`,
         },
         role: 'media.mute',
         type: 'boolean',
@@ -55,7 +41,7 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
       },
       power: {
         alias: {
-          id: { read: 'lgtv.0.states.on', write: 'lgtv.0.states.power' },
+          id: { read: `${device}.states.on`, write: `${device}.states.power` },
         },
         role: 'switch',
         type: 'boolean',
@@ -75,7 +61,7 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
       },
       volume: {
         alias: {
-          id: 'lgtv.0.states.volume',
+          id: `${device}.states.volume`,
         },
         role: 'level.volume',
         type: 'number',
@@ -91,7 +77,7 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
       type: 'device',
       native: {},
       common: { name: 'Living Room TV', role: 'device' },
-      nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
+      nested: Object.entries(states).reduce((acc, [id, common]) => {
         acc[id] = { type: 'state', native: {}, common: common };
         return acc;
       }, {} as ObjectDefinitionRoot),
@@ -102,21 +88,15 @@ function lgtvObjectDefinition(): ObjectDefinitionRoot {
 }
 
 function kodiObjectDefinition(): ObjectDefinitionRoot {
-  function deviceId(id: string): string {
-    return id.replace(/\.[^.]*$/, '').replace(/\.(cmnd|tele|stat)\./, '.');
-  }
-
-  return ['kodi.0'].reduce((acc, stateId) => {
-    const device = deviceId(stateId);
-
-    const deviceStates: {
+  return ['kodi.0'].reduce((acc, device) => {
+    const states: {
       [id: string]: iobJS.StateCommon;
     } = {
       state: {
         alias: {
           id: {
-            read: 'kodi.0.state',
-            write: 'kodi.0.pause',
+            read: `${device}.state`,
+            write: `${device}.pause`,
           },
           read: 'val === "play" ? 1 : val === "stop" ? 2 : 0',
           write: 'true',
@@ -129,10 +109,10 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       cover: {
         alias: {
-          id: 'kodi.0.info.fanart',
+          id: `${device}.info.fanart`,
           read: "decodeURIComponent(val.replace(/^image:\\/\\//, '')) \
-                                       .replace(/\\/$/, '') \
-                                       .replace(/^http:\\/\\//, 'https://')",
+                   .replace(/\\/$/, '') \
+                   .replace(/^http:\\/\\//, 'https://')",
           // No write function makes this read-only.
         },
         role: 'media.cover',
@@ -143,10 +123,10 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       'cover-big': {
         alias: {
-          id: 'kodi.0.info.fanart',
+          id: `${device}.info.fanart`,
           read: "decodeURIComponent(val.replace(/^image:\\/\\//, '')) \
-                                       .replace(/\\/$/, '') \
-                                       .replace(/^http:\\/\\//, 'https://')",
+                   .replace(/\\/$/, '') \
+                   .replace(/^http:\\/\\//, 'https://')",
           // No write function makes this read-only.
           // http://firetv:8080/image/image%3A%2F%2Fsmb%253a%252f%252frouter%252fagross%252fnextcloud%252fMusic%252fMassive%2520Attack%2520-%2520100th%2520Window%252fcover.jpg%2F
         },
@@ -158,7 +138,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       mute: {
         alias: {
-          id: 'kodi.0.mute',
+          id: `${device}.mute`,
         },
         role: 'media.mute',
         type: 'boolean',
@@ -168,7 +148,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       play: {
         alias: {
-          id: 'kodi.0.play',
+          id: `${device}.play`,
         },
         role: 'button.play',
         type: 'boolean',
@@ -178,7 +158,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       pause: {
         alias: {
-          id: 'kodi.0.pause',
+          id: `${device}.pause`,
         },
         role: 'button.pause',
         type: 'boolean',
@@ -188,7 +168,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       stop: {
         alias: {
-          id: 'kodi.0.stop',
+          id: `${device}.stop`,
         },
         role: 'button.stop',
         type: 'boolean',
@@ -198,7 +178,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       next: {
         alias: {
-          id: 'kodi.0.next',
+          id: `${device}.next`,
         },
         role: 'button.next',
         type: 'boolean',
@@ -208,7 +188,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       previous: {
         alias: {
-          id: 'kodi.0.previous',
+          id: `${device}.previous`,
         },
         role: 'button.prev',
         type: 'boolean',
@@ -218,7 +198,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       shuffle: {
         alias: {
-          id: 'kodi.0.shuffle',
+          id: `${device}.shuffle`,
         },
         role: 'media.mode.shuffle',
         type: 'boolean',
@@ -228,17 +208,19 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       repeat: {
         alias: {
-          id: 'kodi.0.repeat',
+          id: `${device}.repeat`,
+          read: 'val === "off" ? 0 : val === "one" ? 1 : 2',
+          write: 'val === 0 ? "off" : val === 1 ? "one" : "all"',
         },
         role: 'media.mode.repeat',
         type: 'number',
         read: true,
         write: true,
-        name: 'Shuffle',
+        name: 'Repeat',
       },
       artist: {
         alias: {
-          id: 'kodi.0.info.artist',
+          id: `${device}.info.artist`,
         },
         role: 'media.artist',
         type: 'string',
@@ -248,7 +230,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       album: {
         alias: {
-          id: 'kodi.0.info.album',
+          id: `${device}.info.album`,
         },
         role: 'media.album',
         type: 'string',
@@ -258,7 +240,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       title: {
         alias: {
-          id: 'kodi.0.info.title',
+          id: `${device}.info.title`,
         },
         role: 'media.title',
         type: 'string',
@@ -268,7 +250,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       duration: {
         alias: {
-          id: 'kodi.0.info.playing_time_total',
+          id: `${device}.info.playing_time_total`,
           read: 'val.split(":").reduce((acc, time, index) => (60 * acc) + +time, 0)',
         },
         role: 'media.duration',
@@ -280,7 +262,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       elapsed: {
         alias: {
-          id: 'kodi.0.info.playing_time',
+          id: `${device}.info.playing_time`,
           read: 'val.split(":").reduce((acc, time) => (60 * acc) + +time, 0)',
         },
         role: 'media.elapsed',
@@ -292,7 +274,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       seek: {
         alias: {
-          id: 'kodi.0.seek',
+          id: `${device}.seek`,
           read: 'Math.round(val)',
           write: 'val',
         },
@@ -305,7 +287,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       track: {
         alias: {
-          id: 'kodi.0.position',
+          id: `${device}.position`,
         },
         role: 'media.track',
         type: 'string',
@@ -315,7 +297,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       },
       volume: {
         alias: {
-          id: 'kodi.0.volume',
+          id: `${device}.volume`,
         },
         role: 'level.volume',
         type: 'number',
@@ -331,7 +313,7 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       type: 'device',
       native: {},
       common: { name: 'Kodi', role: 'device' },
-      nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
+      nested: Object.entries(states).reduce((acc, [id, common]) => {
         acc[id] = { type: 'state', native: {}, common: common };
         return acc;
       }, {} as ObjectDefinitionRoot),
