@@ -10,7 +10,7 @@ import {
 
 const config = {
   workingThreshold: 10,
-  finishedThreshold: 20,
+  finishedThreshold: 15,
   powerMonitor: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power',
   powerState: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.state',
   repowerTimeout:
