@@ -1,5 +1,12 @@
 import { combineLatest, Observable } from 'rxjs';
-import { share, tap, filter, map, withLatestFrom } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  share,
+  tap,
+  filter,
+  map,
+  withLatestFrom,
+} from 'rxjs/operators';
 
 const config = {
   alarmEnabled: ['0_userdata.0', 'alarm-enabled'],
@@ -143,6 +150,7 @@ const smokeAlarm = combineLatest(
     filter(x => x.length > 0),
     map(x => x.map(detector => detector.deviceName)),
     map(devices => devices.sort().join(', ')),
+    distinctUntilChanged(),
     tap(x => {
       Notify.mobile(`Smoke detected for ${x}`);
     }),
