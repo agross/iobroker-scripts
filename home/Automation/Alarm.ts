@@ -107,7 +107,7 @@ const alarmEnabledNotifications = alarmEnabled
   .subscribe();
 
 const alarmTriggers = new Observable<string>(observer => {
-  log(`Monitoring alarm trigger: ${config.triggerAlarmOn}`);
+  log(`Monitoring alarm trigger: ${config.triggerAlarmOn.join(', ')}`);
 
   on({ id: config.triggerAlarmOn, val: true, change: 'ne' }, event => {
     const deviceName = Device.deviceName(event.id);
