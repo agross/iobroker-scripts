@@ -229,7 +229,7 @@ function getAliasDefinition(
             mileage: state({
               alias: {
                 id: `${car.root}.status.data_0x0101010002.field_0x0101010002.value`,
-                read: 'val == 4294967295 ? null : val',
+                read: 'val >= 2147483647 ? null : val',
               },
               role: 'indicator',
               type: 'number',

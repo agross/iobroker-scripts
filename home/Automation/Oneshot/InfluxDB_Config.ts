@@ -372,6 +372,8 @@ function car(enabledDataPoints: {}) {
   $('state[id=alias.0.vw-connect.0.*.mileage]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Mileage`,
+      ignoreAboveNumber: 2147483646,
+      ignoreZero: true,
     });
 
     check(enabledDataPoints, id, expect);
