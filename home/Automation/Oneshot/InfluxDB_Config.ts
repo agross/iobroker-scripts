@@ -11,7 +11,7 @@ const config = {
     changesOnly: true,
     changesRelogInterval: 600,
     changesMinDelta: 0,
-    storageType: '', // Automatic.
+    storageType: false, // Automatic.
     ignoreBelowNumber: '',
     disableSkippedValueLogging: false,
     enableDebugLogs: false,
@@ -45,7 +45,7 @@ function check(enabledDataPoints: {}, id: string, expected: {}) {
       expected,
       null,
       2,
-    )} but got ${JSON.stringify(actual, null, 2)}`,
+    )} but got ${JSON.stringify(actualShrunkDownToExpected, null, 2)}`,
     'warn',
   );
 
