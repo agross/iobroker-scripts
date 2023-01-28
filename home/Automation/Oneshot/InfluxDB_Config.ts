@@ -278,6 +278,22 @@ function homeMaticCommon(enabledDataPoints: {}) {
 
     check(enabledDataPoints, id, expect);
   });
+
+  $('state[id=hm-rpc.*.0.DUTY_CYCLE_LEVEL]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `HomeMatic Duty Cycle`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=hm-rpc.*.0.CARRIER_SENSE_LEVEL]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `HomeMatic Carrier Sense`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
 }
 
 function homeMaticThermostats(enabledDataPoints: {}) {
