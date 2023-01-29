@@ -15,7 +15,7 @@ import {
 function getObjectDefinition(): ObjectDefinitionRoot {
   // HomeMatic shutters.
   return [
-    ...$('state[id=*.6.LEVEL]{CONTROL=BLIND_VIRTUAL_RECEIVER.LEVEL}'),
+    ...$('state[id=*.3.LEVEL]{CONTROL=BLIND_TRANSMITTER.LEVEL}'),
   ].reduce<ObjectDefinitionRoot>((acc, stateId) => {
     const device = Device.id(stateId);
 
