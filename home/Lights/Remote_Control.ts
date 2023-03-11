@@ -75,12 +75,23 @@ const remotes = [
     },
     cycle: {
       off: 'scene.0.Living Room.Lights',
-      on: [
-        'scene.0.Living Room.Lights_Cozy',
-        'scene.0.Living Room.Lights_TV',
-        'scene.0.Living Room.Lights_Reading',
-        'scene.0.Living Room.Lights_Bright',
-      ],
+      on: () => {
+        const standard = [
+          'scene.0.Living Room.Lights_Cozy',
+          'scene.0.Living Room.Lights_TV',
+          'scene.0.Living Room.Lights_Reading',
+          'scene.0.Living Room.Lights_Bright',
+        ];
+
+        if (
+          compareTime('23:00', '6:00', 'between') &&
+          getState('scene.0.Lights.All_Lights_Off').val === true
+        ) {
+          standard.unshift('scene.0.Living Room.Lights_Night');
+        }
+
+        return standard;
+      },
     },
   }),
   new Remotes.Shelly({
