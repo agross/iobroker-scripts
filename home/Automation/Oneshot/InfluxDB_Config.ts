@@ -168,6 +168,13 @@ function zigbeeDoorAndWindowContacts(enabledDataPoints: {}) {
 
 function zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.temperature]').each(id => {
+    const device = Device.id(id);
+    if (device && getObject(device).common.type === 'RTCGQ11LM') {
+      // Aqara Motion Sensor does not report temperature despite
+      // iobroker.zigbee thinking it does.
+      return;
+    }
+
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Temperature`,
     });

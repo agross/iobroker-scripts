@@ -170,6 +170,13 @@ function zigbeeTemperatureHumidityAndPressureSensors() {
   });
 
   $('state[id=zigbee.*.temperature]').each(async id => {
+    const device = Device.id(id);
+    if (device && (await getObjectAsync(device)).common.type === 'RTCGQ11LM') {
+      // Aqara Motion Sensor does not report temperature despite
+      // iobroker.zigbee thinking it does.
+      return;
+    }
+
     const name = Device.deviceName(id);
 
     const expect: Partial<iobJS.StateCommon> = {
