@@ -235,6 +235,13 @@ function zigbeeSmokeDetectors(enabledDataPoints: {}) {
   });
 
   $('state[id=zigbee.*.device_temperature]').each(id => {
+    const device = Device.id(id);
+    if (device && getObject(device).common.type === 'JY-GZ-01AQ') {
+      // Aqara Smart Smoke Detector does not report temperature despite
+      // iobroker.zigbee thinking it does.
+      return;
+    }
+
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Temperature`,
     });
