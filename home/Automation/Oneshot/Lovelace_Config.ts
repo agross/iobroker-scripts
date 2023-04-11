@@ -112,25 +112,11 @@ function zigbeeDoorContacts() {
 
 function zigbeeMotionSensors() {
   $('state[id=zigbee.*.illuminance]').each(async id => {
-    const name = Device.deviceName(id);
+    const rawIlluminance = `${id}_raw`;
+    if (existsState(rawIlluminance)) {
+      id = rawIlluminance;
+    }
 
-    const expect: Partial<iobJS.StateCommon> = {
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'sensor',
-          name: Lovelace.id(`${name} Illuminance`),
-          attr_device_class: 'illuminance',
-          attr_unit_of_measurement: 'lux',
-          attr_friendly_name: name.replace('Motion Sensor', 'Illuminance'),
-        },
-      },
-    };
-
-    await check(id, expect);
-  });
-
-  $('state[id=zigbee.*.illuminance_raw]').each(async id => {
     const name = Device.deviceName(id);
 
     const expect: Partial<iobJS.StateCommon> = {

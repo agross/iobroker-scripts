@@ -140,15 +140,11 @@ function zigbeeCommon(enabledDataPoints: {}) {
 
 function zigbeeMotionSensors(enabledDataPoints: {}) {
   $('state[id=zigbee.*.illuminance]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Illumination`,
-    });
+    const rawIlluminance = `${id}_raw`;
+    if (existsState(rawIlluminance)) {
+      id = rawIlluminance;
+    }
 
-    check(enabledDataPoints, id, expect);
-  });
-
-  // Takes precedence over "*.illuminance".
-  $('state[id=zigbee.*.illuminance_raw]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Illumination`,
     });
