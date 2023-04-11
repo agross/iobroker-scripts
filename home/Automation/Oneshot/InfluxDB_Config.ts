@@ -147,6 +147,15 @@ function zigbeeMotionSensors(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
+  // Takes precedence over "*.illuminance".
+  $('state[id=zigbee.*.illuminance_raw]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Illumination`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+
   $('state[id=zigbee.*.occupancy]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Presence`,
