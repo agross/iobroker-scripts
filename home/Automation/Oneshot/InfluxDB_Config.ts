@@ -248,7 +248,7 @@ function zigbeeSmokeDetectors(enabledDataPoints: {}) {
     }
 
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Temperature`,
+      aliasId: `${Device.deviceName(id)} Device Temperature`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -396,7 +396,7 @@ function powerPlugs(enabledDataPoints: {}) {
 function mqttDevicesWithTemperature(enabledDataPoints: {}) {
   $('state[id=alias.0.mqtt.*.device_temperature]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Temperature`,
+      aliasId: `${Device.deviceName(id)} Device Temperature`,
     });
 
     check(enabledDataPoints, id, expect);
