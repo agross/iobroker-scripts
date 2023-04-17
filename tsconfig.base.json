@@ -1,11 +1,13 @@
 {
-  // https://github.com/ioBroker/ioBroker.javascript/blob/master/main.js#L101
+  // https://github.com/ioBroker/ioBroker.javascript/blob/d6396dd33754152994585e982c68c8432cba96c1/lib/typescriptSettings.js#L9
   "compilerOptions": {
     "noEmitOnError": true,
     "declaration": true,
     "esModuleInterop": true,
-    "target": "es2017",
-    "lib": ["es2017"],
+    "useUnknownInCatchVariables": false,
+    "downlevelIteration": true,
+    "target": "es2018",
+    "lib": ["es2018"],
     "module": "esnext",
     "moduleResolution": "node",
     "sourceMap": false,
