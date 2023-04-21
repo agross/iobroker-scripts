@@ -376,7 +376,10 @@ function homeMaticPresenceDetectors(enabledDataPoints: {}) {
 }
 
 function powerPlugs(enabledDataPoints: {}) {
-  $('state[id=alias.0.mqtt.*.gosund-sp111-*.state]').each(id => {
+  [
+    ...$('state[id=alias.0.mqtt.*.gosund-sp111-*.state]'),
+    ...$('state[id=alias.0.mqtt.*.nous-a1t-*.state]'),
+  ].forEach(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Power`,
     });
@@ -384,7 +387,10 @@ function powerPlugs(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=alias.0.mqtt.*.gosund-sp111-*.power]').each(id => {
+  [
+    ...$('state[id=alias.0.mqtt.*.gosund-sp111-*.power]'),
+    ...$('state[id=alias.0.mqtt.*.nous-a1t-*.power]'),
+  ].forEach(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Power Watts`,
     });
