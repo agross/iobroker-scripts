@@ -1,0 +1,1 @@
+../../../home/Automation/Oneshot/Transform_Tasmota_Data.ts
