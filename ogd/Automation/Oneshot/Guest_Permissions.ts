@@ -110,14 +110,9 @@ function powerPlugs() {
 
 function shutters() {
   return [
-    ...$('state[id=mqtt.*.*.*.shutter.cmnd.shelly25-*.ShutterPosition1]'),
+    ...$('state[id=mqtt.*.*.*.shutter.cmnd.*.ShutterPosition1]'),
     ...$('state[id=alias.*.mqtt.*.*.*.shutter.shelly25-*.*]'),
-  ]
-    .filter(x => !x.endsWith('.device_temperature'))
-    .map(x => {
-      log(x, 'warn');
-      return x;
-    });
+  ].filter(x => !x.endsWith('.device_temperature'));
 }
 
 function custom() {
@@ -200,7 +195,7 @@ function translate(str: string) {
     'Power Usage': 'Leistung',
     ' Power': '',
 
-    'Next Shutter State Due Date': 'Zeitpunkt geplante Behanghöhe',
+    'Next Shutter State Due Date': 'Geplante Behanghöhe',
     'Next Shutter State': 'Geplante Behanghöhe',
 
     'Kitchen Table': 'Küchentisch',
