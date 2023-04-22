@@ -8,6 +8,7 @@ const permissions = [
   ...zigbeeLights(),
   ...scenes(),
   ...shutters(),
+  ...powerPlugs(),
   ...custom(),
 ].map(async stateId => {
   const expect: Partial<iobJS.StateACL> = { state: 0x666 };
@@ -100,6 +101,13 @@ function scenes() {
   );
 }
 
+function powerPlugs() {
+  return [
+    ...$('state[id=mqtt.*.*.*.power.cmnd.*.POWER]'),
+    ...$('state[id=alias.*.mqtt.*.*.*.*.nous-a1t-*.*][role=switch]'),
+  ];
+}
+
 function shutters() {
   return [
     ...$('state[id=mqtt.*.*.*.shutter.cmnd.shelly25-*.ShutterPosition1]'),
@@ -186,6 +194,11 @@ function translate(str: string) {
 
     'Reset Coffee Counter': 'Kaffeebezüge zurücksetzen',
     'Coffee Counter': 'Kaffeebezüge',
+
+    'Water Heater': 'Boiler',
+    Heater: 'Heizung',
+    'Power Usage': 'Leistung',
+    ' Power': '',
 
     'Next Shutter State Due Date': 'Zeitpunkt geplante Behanghöhe',
     'Next Shutter State': 'Geplante Behanghöhe',
