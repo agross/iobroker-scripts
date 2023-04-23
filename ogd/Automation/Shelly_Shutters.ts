@@ -85,7 +85,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
         alias: {
           id: config.command('ShutterPosition1'),
           read: undefined, // Read-only.
-          write: '"CLOSE"',
+          write: '0',
         },
         role: 'button.close.blind',
         type: 'boolean',
@@ -105,7 +105,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
         alias: {
           id: config.command('ShutterPosition1'),
           read: undefined, // Read-only.
-          write: '"OPEN"',
+          write: '100',
         },
         role: 'button.open.blind',
         type: 'boolean',
