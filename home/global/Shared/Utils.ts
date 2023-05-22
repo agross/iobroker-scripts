@@ -16,7 +16,7 @@ class Utils {
       if (referencePropertyNames.includes(prop)) {
         if (typeof dup[prop] === 'object' && !Array.isArray(dup[prop])) {
           log(`Recurse ${prop}`, 'debug');
-          dup[prop] = this.shrink(dup[prop], reference[prop]);
+          dup[prop] = Utils.shrink(dup[prop], reference[prop]);
         } else {
           log(`Keep ${prop}`, 'debug');
         }

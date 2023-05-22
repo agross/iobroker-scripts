@@ -7,21 +7,21 @@ class Device {
 
     if (!existsObject(deviceId)) {
       // Search parent.
-      return this.id(deviceId, initialId ? initialId : id);
+      return Device.id(deviceId, initialId ? initialId : id);
     }
 
     const device = getObject(deviceId);
 
     if (device.type !== 'device' && device.common.role !== 'device') {
       // Search parent.
-      return this.id(deviceId, initialId ? initialId : id);
+      return Device.id(deviceId, initialId ? initialId : id);
     }
 
     return deviceId;
   }
 
   public static deviceName(id: string): string {
-    const deviceId = this.id(id);
+    const deviceId = Device.id(id);
 
     const device = getObject(deviceId);
 
