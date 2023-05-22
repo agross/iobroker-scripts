@@ -553,7 +553,7 @@ const alarms = cars.map(car => {
         Notify.mobile(
           `${x.acknowledged ? 'Acknowledged ' : ''}${
             car.name
-          } alarm from ${x.timestamp.formatDateTime()}: ${x.reason} (ID: ${
+          } alarm from ${Format.dateTime(x.timestamp)}: ${x.reason} (ID: ${
             x.id
           })`,
         ),

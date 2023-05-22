@@ -60,9 +60,9 @@ const returned = new Stream<{ present: boolean; timestamp: Date }>(
       log(
         `Returned at night after being absent for ${
           config.absentForAtLeastMinutes
-        } min (from ${left.timestamp.formatDateTime()} to ${returned.timestamp.formatDateTime()}) with no lights on, activating ${
-          config.activate
-        }`,
+        } min (from ${Format.dateTime(left.timestamp)} to ${Format.dateTime(
+          returned.timestamp,
+        )}) with no lights on, activating ${config.activate}`,
       );
 
       setState(config.activate, true, err => {

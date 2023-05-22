@@ -276,9 +276,9 @@ class ActivityIndicator {
 
     if (latest) {
       log(
-        `Found latest activity from ${new Date(
-          latest.state.lc,
-        ).formatDateTime()}: ${JSON.stringify(latest)}`,
+        `Found latest activity from ${Format.dateTime(
+          new Date(latest.state.lc),
+        )}: ${JSON.stringify(latest)}`,
       );
       return of(latest);
     } else {

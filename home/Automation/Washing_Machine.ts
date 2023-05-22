@@ -139,12 +139,16 @@ const done = running
         err => {
           if (err) {
             log(
-              `Could not set timestamp to repower washing machine to ${dueDate.formatDateTime()}: ${err}`,
+              `Could not set timestamp to repower washing machine to ${Format.dateTime(
+                dueDate,
+              )}: ${err}`,
               'error',
             );
           } else {
             log(
-              `Set timestamp to repower washing machine to ${dueDate.formatDateTime()}`,
+              `Set timestamp to repower washing machine to ${Format.dateTime(
+                dueDate,
+              )}`,
             );
           }
         },

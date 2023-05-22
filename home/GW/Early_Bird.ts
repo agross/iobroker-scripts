@@ -34,14 +34,18 @@ const subscription = combineLatest([departures, heatingPeriod])
 
       if (dueDate < new Date()) {
         Notify.mobile(
-          `Scheduled heating for ${dueDate.formatDateTime()} is in the past, skipping`,
+          `Scheduled heating for ${Format.dateTime(
+            dueDate,
+          )} is in the past, skipping`,
         );
 
         return EMPTY;
       }
 
       Notify.mobile(
-        `Scheduling bathroom heating for ${dueDate.formatDateTime()} (departure at ${departure.formatDateTime()})`,
+        `Scheduling bathroom heating for ${Format.dateTime(
+          dueDate,
+        )} (departure at ${Format.dateTime(departure)})`,
       );
 
       return timer(dueDate).pipe(
@@ -51,7 +55,7 @@ const subscription = combineLatest([departures, heatingPeriod])
     }),
     tap(([departure, _dueDate]) => {
       Notify.mobile(
-        `Heating bathroom for departure at ${departure.formatDateTime()}`,
+        `Heating bathroom for departure at ${Format.dateTime(departure)}`,
       );
 
       setState(`${config.bathroomHeating}.SET_POINT_TEMPERATURE`, 22);
