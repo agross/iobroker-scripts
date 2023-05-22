@@ -144,16 +144,13 @@
       "path": "ogd/Automation/Update_Notification.tsconfig.json"
     },
     {
-      "path": "ogd/Lights/Bathroom_Lights.tsconfig.json"
+      "path": "ogd/Lights/Automatic_Lights.tsconfig.json"
     },
     {
       "path": "ogd/Lights/Global_Brightness_Override.tsconfig.json"
     },
     {
       "path": "ogd/Lights/Good_Night.tsconfig.json"
-    },
-    {
-      "path": "ogd/Lights/Hall_Lights.tsconfig.json"
     },
     {
       "path": "ogd/Lights/House_Lights_After_Absence.tsconfig.json"

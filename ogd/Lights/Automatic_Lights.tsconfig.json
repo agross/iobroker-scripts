@@ -16,7 +16,7 @@
     "../global/Shared/Utils.ts",
     "../global/ShutterConfig.ts",
     "../global/Site.ts",
-    "Hall_Lights.ts"
+    "Automatic_Lights.ts"
   ],
   "compilerOptions": {
     "composite": true,
