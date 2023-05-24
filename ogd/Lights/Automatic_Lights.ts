@@ -178,7 +178,6 @@ class OccupiedMonitoring implements State {
 
       case IlluminationBelowThreshold.name:
         this.subscription.unsubscribe();
-        log('unsubscribed');
 
         const illumination = (notification as IlluminationBelowThreshold)
           .illumination;
