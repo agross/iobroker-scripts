@@ -18,9 +18,9 @@ const config = {
 
 function atNight() {
   return compareTime(
-    getAstroDate('sunrise', undefined, 0),
     getAstroDate('sunsetStart', undefined, 0),
-    'not between',
+    '23:59',
+    'between',
   );
 }
 
