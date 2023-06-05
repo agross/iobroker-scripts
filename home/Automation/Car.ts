@@ -497,11 +497,11 @@ const alarms = cars.map(car => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  // This is the last datapoint written, so other datapoints related to the
+  // This is the last data point written, so other data points related to the
   // timestamp should be available to read.
   const timestamps = `^${escape(
     car.root,
-  )}\\.history\\.dwaPushHistory\\..*\\.vehicleUtcTimestamp$`;
+  )}\\.history\\.dwaPushHistory\\..*\\.localUtcTimestamp$`;
 
   log(`Subscribing to alarms ${timestamps}`);
 
