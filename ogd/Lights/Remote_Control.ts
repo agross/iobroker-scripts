@@ -164,7 +164,7 @@ const remotes = [
     },
   }),
   new Remotes.AqaraWRS_R02({
-    device: AdapterId.build(AdapterIds.zigbee, '001788010c66ea0c'),
+    device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c7332'),
     dim: {
       brightnessChange: config.brightnessChange,
       lights: Remotes.DimmableLights.for(
