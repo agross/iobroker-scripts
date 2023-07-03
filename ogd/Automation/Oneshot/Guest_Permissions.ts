@@ -92,6 +92,7 @@ function zigbeeLights() {
     ...$('state[id=zigbee.*.brightness](functions=light)'),
     ...$('state[id=zigbee.*.color](functions=light)'),
     ...$('state[id=zigbee.*.colortemp](functions=light)'),
+    ...$('state[id=zigbee.*.gradient_scene](functions=light)'),
   ];
 }
 
@@ -189,6 +190,8 @@ function translate(str: string) {
 
     'Reset Coffee Counter': 'Kaffeebezüge zurücksetzen',
     'Coffee Counter': 'Kaffeebezüge',
+
+    'Gradient Scene': 'Gradient',
 
     'Water Heater': 'Boiler',
     Heater: 'Heizung',

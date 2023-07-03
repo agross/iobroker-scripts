@@ -37,6 +37,7 @@ async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   });
 }
 
+gradientCapableZigbeeLights();
 zigbeeIcons();
 zigbeeDoorContacts();
 zigbeeMotionSensors();
@@ -62,6 +63,25 @@ maxDayTemperature();
 ecovacsDeebot();
 
 fuelPrices();
+
+function gradientCapableZigbeeLights() {
+  $('state[id=zigbee.*.gradient_scene]').each(async id => {
+    const name = Device.deviceName(id);
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'input_select',
+          name: Lovelace.id(name),
+          attr_friendly_name: `${name} Gradient Scene`,
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+}
 
 function zigbeeIcons() {
   [...$('state[id=zigbee.*.available]')]
