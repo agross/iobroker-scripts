@@ -216,6 +216,7 @@ function translate(str: string) {
     Hall: 'Flur',
     'House Entrance': 'Hauseingang',
     House: 'Haus',
+    Porch: 'Vordach',
 
     East: 'Ost',
     North: 'Nord',
