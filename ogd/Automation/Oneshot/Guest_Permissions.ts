@@ -93,6 +93,7 @@ function zigbeeLights() {
     ...$('state[id=zigbee.*.color](functions=light)'),
     ...$('state[id=zigbee.*.colortemp](functions=light)'),
     ...$('state[id=zigbee.*.gradient_scene](functions=light)'),
+    ...$('state[id=alias.*.zigbee.*.*.random_gradient_scene]'),
   ];
 }
 
@@ -191,6 +192,7 @@ function translate(str: string) {
     'Reset Coffee Counter': 'Kaffeebezüge zurücksetzen',
     'Coffee Counter': 'Kaffeebezüge',
 
+    Random: 'zufälliger',
     'Gradient Scene': 'Gradient',
 
     'Water Heater': 'Boiler',
@@ -230,7 +232,7 @@ function translate(str: string) {
     Pressure: 'Luftdruck',
     'Smoke Detected': 'Rauchmelder',
     'Alarm Enabled': 'Alarm aktiv',
-    'Table Light': 'Tischlampe',
+    'Table Light': 'Tisch',
     'Ceiling Light': 'Deckenlicht',
     Lights: 'Licht',
     'Light Strips Cozy': 'Light Strips gemütlich',

@@ -126,6 +126,9 @@
       "path": "ogd/Automation/Oneshot/Lovelace_Config.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Oneshot/Random_Gradient_Scene.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"
     },
     {
