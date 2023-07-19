@@ -40,7 +40,7 @@ const remotes = [
         'scene.0.House.Lights_Light_Strips_Only',
         'scene.0.House.Lights_Cozy',
         'scene.0.House.Lights_Porch_Only',
-        'scene.0.House.Lights_Porch_Bight',
+        'scene.0.House.Lights_Porch_Bright',
         'scene.0.House.Lights_Bright',
       ],
     },
