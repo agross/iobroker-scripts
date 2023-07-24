@@ -1,16 +1,65 @@
 const config = {
   override: ['0_userdata.0', 'global-brightness-override'],
   state: () => config.override.join('.'),
-  remote: 'hm-rpc.1.000B5A49A07F8D',
-  change: 5,
+  excludedScenes: [
+    'artic_aurora',
+    'autumn_gold',
+    'beginnings',
+    'blood_moon',
+    'blossom',
+    'blue_lagoon',
+    'blue_planet',
+    'city_of_love',
+    'crocus',
+    'crystalline',
+    'emerald_flutter',
+    'emerald_isle',
+    'first_light',
+    'frosty_dawn',
+    'forest_adventure',
+    'hal',
+    'honolulu',
+    'horizon',
+    'lake_mist',
+    'lake_placid',
+    'magneto',
+    'memento',
+    'midsummer_sun',
+    'midwinter',
+    'moonlight',
+    'motown',
+    'mountain_breeze',
+    'narcissa',
+    'nebula',
+    'ocean_dawn',
+    'palm_beach',
+    'precious',
+    'promise',
+    'runy_glow',
+    'silent_night',
+    'soho',
+    'spring_blossom',
+    'spring_lake',
+    'starlight',
+    'sunday_morning',
+    'sundown',
+    'sunflare',
+    'under_the_tree',
+    'valley_dawn',
+    'vapor_wave',
+    'winter_beauty',
+    'winter_mountain',
+  ],
 };
 
 function getObjectDefinition() {
   return [...$('state[id=zigbee.*.gradient_scene]')].reduce((acc, stateId) => {
     const device = Device.id(stateId);
 
-    const sceneStates: string = getObject(stateId).common.states || [];
-    const scenes = sceneStates.split(';').map(x => x.replace(/:.*/, ''));
+    const sceneStates: {} = getObject(stateId).common.states || [];
+    const scenes = Object.keys(sceneStates).filter(
+      x => !config.excludedScenes.includes(x),
+    );
 
     const deviceStates: {
       [id: string]: iobJS.StateCommon;
