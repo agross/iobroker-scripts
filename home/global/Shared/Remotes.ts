@@ -56,6 +56,10 @@ declare global {
       cycle?: CycleConfigWithDynamicOff;
     }
 
+    interface MaximumBrightnessSceneDeviceConfig {
+      max_brightness_scenes?: string[];
+    }
+
     abstract class Remote {
       setUp(): Subscription;
     }
@@ -68,7 +72,10 @@ declare global {
 
     class AqaraWRS_R02 extends Remote {
       constructor(
-        config: DeviceConfig & CycleDeviceConfig & DimmerDeviceConfig,
+        config: DeviceConfig &
+          CycleDeviceConfig &
+          DimmerDeviceConfig &
+          MaximumBrightnessSceneDeviceConfig,
       );
     }
 
@@ -362,6 +369,34 @@ export namespace Remotes {
     }
   }
 
+  interface MaximumBrightnessSceneStreams {
+    turnedOn: Observable<{ device: string; states: States }>;
+  }
+
+  class MaximumBrightnessScene implements IFeature {
+    private readonly config: MaximumBrightnessSceneStreams;
+
+    constructor(config: MaximumBrightnessSceneStreams) {
+      this.config = config;
+    }
+
+    public setUp(): Subscription {
+      return this.config.turnedOn
+        .pipe(
+          tap(({ device, states }) => {
+            if (typeof states === 'function') {
+              states = states();
+            }
+
+            log(`${device}: Setting true for ${JSON.stringify(states)}`);
+
+            states.forEach(state => setState(state, true));
+          }),
+        )
+        .subscribe();
+    }
+  }
+
   interface DimmerConfig {
     brightnessChange: number;
     lights: Observable<string[]>;
@@ -517,6 +552,10 @@ export namespace Remotes {
     cycle?: CycleConfigWithDynamicOff;
   }
 
+  interface MaximumBrightnessSceneDeviceConfig {
+    max_brightness_scenes?: string[];
+  }
+
   abstract class Remote {
     private readonly features: IFeature[] = [];
 
@@ -535,7 +574,12 @@ export namespace Remotes {
   }
 
   export class AqaraWS_EUK03 extends Remote {
-    constructor(config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig) {
+    constructor(
+      config: DeviceConfig &
+        ToggleDeviceConfig &
+        CycleDeviceConfig &
+        MaximumBrightnessSceneDeviceConfig,
+    ) {
       super();
 
       const features: IFeature[] = [];
@@ -638,7 +682,12 @@ export namespace Remotes {
   }
 
   export class AqaraWRS_R02 extends Remote {
-    constructor(config: DeviceConfig & CycleDeviceConfig & DimmerDeviceConfig) {
+    constructor(
+      config: DeviceConfig &
+        CycleDeviceConfig &
+        DimmerDeviceConfig &
+        MaximumBrightnessSceneDeviceConfig,
+    ) {
       super();
 
       const features: IFeature[] = [];
@@ -649,6 +698,14 @@ export namespace Remotes {
 
       if (config.dim) {
         features.push(new Dimmer(this.dimmerStreams(config)));
+      }
+
+      if (config.max_brightness_scenes) {
+        features.push(
+          new MaximumBrightnessScene(
+            this.maximumBrightnessSceneStreams(config),
+          ),
+        );
       }
 
       this.addFeature(...features);
@@ -750,6 +807,30 @@ export namespace Remotes {
         darker: darker.pipe(map(_event => config.device)),
         brighter: brighter.pipe(map(_event => config.device)),
         stop: stop.pipe(map(_event => config.device)),
+      };
+    }
+
+    private maximumBrightnessSceneStreams(
+      config: DeviceConfig & MaximumBrightnessSceneDeviceConfig,
+    ): MaximumBrightnessSceneStreams {
+      const both = new Observable<string>(observer => {
+        on(
+          { id: `${config.device}.single_both`, val: true, ack: true },
+          event => {
+            observer.next(event.id);
+          },
+        );
+      }).pipe(share());
+
+      return {
+        turnedOn: both.pipe(
+          map(_ => {
+            return {
+              device: config.device,
+              states: config.max_brightness_scenes,
+            };
+          }),
+        ),
       };
     }
   }

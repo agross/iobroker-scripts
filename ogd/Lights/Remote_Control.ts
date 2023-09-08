@@ -44,6 +44,7 @@ const remotes = [
         'scene.0.House.Lights_Bright',
       ],
     },
+    max_brightness_scenes: ['scene.0.House.Lights_Bright'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6638'),
@@ -60,6 +61,7 @@ const remotes = [
       off: 'scene.0.Kitchen.Lights',
       on: ['scene.0.Kitchen.Lights_Cozy', 'scene.0.Kitchen.Lights_Bright'],
     },
+    max_brightness_scenes: ['scene.0.Kitchen.Lights_Bright'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6983'),
@@ -67,6 +69,7 @@ const remotes = [
       off: 'scene.0.Staircase.Lights',
       on: ['scene.0.Staircase.Lights_Cozy', 'scene.0.Staircase.Lights_Bright'],
     },
+    max_brightness_scenes: ['scene.0.Staircase.Lights_Bright'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af12f'),
@@ -87,6 +90,7 @@ const remotes = [
         'scene.0.Bedroom East.Lights_Bright',
       ],
     },
+    max_brightness_scenes: ['scene.0.Bedroom East.Lights_Bright'],
   }),
   new Remotes.Philips({
     // Hue Remote RWL021
@@ -128,6 +132,7 @@ const remotes = [
         'scene.0.Bedroom West.Lights_Bright',
       ],
     },
+    max_brightness_scenes: ['scene.0.Bedroom West.Lights_Bright'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af4b3'),
@@ -144,6 +149,7 @@ const remotes = [
       off: 'scene.0.Staircase.Lights',
       on: ['scene.0.Staircase.Lights_Cozy', 'scene.0.Staircase.Lights_Bright'],
     },
+    max_brightness_scenes: ['scene.0.Staircase.Lights_Bright'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c66c6'),
@@ -164,6 +170,7 @@ const remotes = [
         'scene.0.Living Room.Lights_Bright',
       ],
     },
+    max_brightness_scenes: ['scene.0.Living Room.Lights_Bright'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c7332'),
@@ -184,6 +191,7 @@ const remotes = [
         'scene.0.Living Room.Lights_Bright',
       ],
     },
+    max_brightness_scenes: ['scene.0.Living Room.Lights_Bright'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c84c8'),
@@ -204,6 +212,7 @@ const remotes = [
         'scene.0.Living Room.Lights_Bright',
       ],
     },
+    max_brightness_scenes: ['scene.0.Living Room.Lights_Bright'],
   }),
   new Remotes.Philips({
     // Hue Remote RWL021
@@ -244,6 +253,7 @@ const remotes = [
         'scene.0.Equipment Room.Lights_Cozy',
       ],
     },
+    max_brightness_scenes: ['scene.0.Equipment Room.Lights_Cozy'],
   }),
   new Remotes.AqaraWRS_R02({
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af501'),
@@ -288,6 +298,7 @@ const remotes = [
         }
       },
     },
+    max_brightness_scenes: ['scene.0.Bathroom.Lights_Bright'],
   }),
 ];
 
