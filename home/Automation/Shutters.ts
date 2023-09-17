@@ -14,7 +14,7 @@ const config = {
   disable: ShutterConfig.disable,
   next: {
     root: ['0_userdata.0', 'Shutters'],
-    combined: 'combined', // Stores the values blow in an object.
+    combined: 'combined', // Stores the values below in an object.
     state: 'next-state', // These are for display purposes only.
     dueDate: 'next-due-date',
   },
