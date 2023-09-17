@@ -1,5 +1,15 @@
 class ShutterConfig {
+  private static readonly MAY = 4;
+  private static readonly AUGUST = 7;
+
   public static sunnyDay = async () => {
+    const month = new Date().getMonth();
+
+    if (month < ShutterConfig.MAY || month > ShutterConfig.AUGUST) {
+      log('Outside of warm months');
+      return false;
+    }
+
     const maxDayTemperature =
       'daswetter.0.NextDays.Location_1.Day_1.Maximale_Temperatur_value';
 
