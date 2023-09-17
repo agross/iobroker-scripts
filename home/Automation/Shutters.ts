@@ -232,7 +232,6 @@ const nextState = next.stream
           return dueAt.pipe(
             tap(async _ => {
               await activateScene(config.scenes.night);
-              await setStateAsync(config.scenes.night, true);
 
               const tomorrow = new Date();
               tomorrow.setDate(tomorrow.getDate() + 1);
