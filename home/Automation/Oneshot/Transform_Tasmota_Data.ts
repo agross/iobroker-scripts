@@ -4,35 +4,51 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   }
 
   function stateIdToPurpose(stateId: string) {
-    log(`Getting purpose of ${stateId} from ${stateId.split('.').at(-2)}`);
+    const deviceName = stateId.split('.').at(-2);
+    log(`Getting purpose of ${stateId} from ${deviceName} at ${Site.location}`);
 
-    switch (stateId.split('.').at(-2)) {
-      case 'gosund-sp111-1':
-        return 'Living Room Media';
+    if (Site.location === 'Home') {
+      switch (deviceName) {
+        case 'gosund-sp111-1':
+          return 'Living Room Media';
 
-      case 'gosund-sp111-2':
-        return 'Kitchen Down Light';
+        case 'gosund-sp111-2':
+          return 'Kitchen Down Light';
 
-      case 'gosund-sp111-3':
-        return 'Bathroom Washing Machine';
+        case 'gosund-sp111-3':
+          return 'Bathroom Washing Machine';
 
-      case 'gosund-sp111-4':
-        return 'Office Desk';
+        case 'gosund-sp111-4':
+          return 'Office Desk';
 
-      case 'nous-a1t-1':
-        return 'Bathroom Water Heater';
-
-      case 'nous-a1t-2':
-        return 'Living Room Heater';
-
-      default:
-        throw new Error(`No mapping from ${stateId} to purpose`);
+        case 'nous-a1t-1':
+          return 'NAS';
+      }
     }
+
+    if (Site.location === 'OGD') {
+      switch (deviceName) {
+        case 'nous-a1t-1':
+          return 'Bathroom Water Heater';
+
+        case 'nous-a1t-2':
+          return 'Living Room Heater';
+
+        case 'nous-a1t-3':
+          return 'Kitchen Refrigerator';
+      }
+    }
+
+    throw new Error(
+      `No mapping from ${stateId} to purpose from ${deviceName} at ${Site.location}`,
+    );
   }
 
   function lovelaceConfig(stateId: string, type: 'Power' | 'Power Usage'): {} {
+    const deviceName = stateId.split('.').at(-2);
+
     log(
-      `Getting Lovelace config of ${stateId} from ${stateId.split('.').at(-2)}`,
+      `Getting Lovelace config of ${stateId} from ${deviceName} at ${Site.location}`,
     );
 
     let entityType = ObjectCreator.getEnumIds(stateId, 'functions').includes(
@@ -45,60 +61,83 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       entityType = 'sensor';
     }
 
-    switch (stateId.split('.').at(-2)) {
-      case 'gosund-sp111-1':
-        return {
-          entity: entityType,
-          name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-          attr_device_class: 'outlet',
-          attr_icon: 'mdi:music-box-outline',
-          attr_friendly_name: 'NAD C350',
-        };
+    if (Site.location === 'Home') {
+      switch (deviceName) {
+        case 'gosund-sp111-1':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:music-box-outline',
+            attr_friendly_name: 'NAD C350',
+          };
 
-      case 'gosund-sp111-2':
-        return {
-          entity: entityType,
-          name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-          attr_device_class: 'outlet',
-          attr_icon: 'mdi:lightbulb',
-          attr_friendly_name: stateIdToPurpose(stateId),
-        };
+        case 'gosund-sp111-2':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:lightbulb',
+            attr_friendly_name: stateIdToPurpose(stateId),
+          };
 
-      case 'gosund-sp111-3':
-        return {
-          entity: entityType,
-          name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-          attr_device_class: 'outlet',
-          attr_icon: 'mdi:washing-machine',
-        };
+        case 'gosund-sp111-3':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:washing-machine',
+          };
 
-      case 'gosund-sp111-4':
-        return {
-          entity: entityType,
-          name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-          attr_device_class: 'outlet',
-          attr_icon: 'mdi:desktop-tower-monitor',
-        };
+        case 'gosund-sp111-4':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:desktop-tower-monitor',
+          };
 
-      case 'nous-a1t-1':
-        return {
-          entity: entityType,
-          name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-          attr_device_class: 'outlet',
-          attr_icon: 'mdi:water-boiler',
-        };
-
-      case 'nous-a1t-2':
-        return {
-          entity: entityType,
-          name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-          attr_device_class: 'outlet',
-          attr_icon: 'mdi:radiator',
-        };
-
-      default:
-        throw new Error(`No mapping from ${stateId} to Lovelace config`);
+        case 'nous-a1t-1':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:nas',
+          };
+      }
     }
+
+    if (Site.location === 'OGD') {
+      switch (deviceName) {
+        case 'nous-a1t-1':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:water-boiler',
+          };
+
+        case 'nous-a1t-2':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:radiator',
+          };
+
+        case 'nous-a1t-3':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:fridge',
+          };
+      }
+    }
+
+    throw new Error(
+      `No mapping from ${stateId} to Lovelace config from ${deviceName} at ${Site.location}`,
+    );
   }
 
   return [
