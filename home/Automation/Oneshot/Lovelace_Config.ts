@@ -385,7 +385,7 @@ function scripts() {
 }
 
 function pingedMachines() {
-  $('state[id=ping.*.iobroker.*]').each(async id => {
+  $('state[id=ping.*.iobroker.*][role=indicator.reachable]').each(async id => {
     const aliveMachine = (await getObjectAsync(id)).common.name;
     const machine = aliveMachine.replace(/^Alive\s+/, '');
     const name = `${machine} On`;
