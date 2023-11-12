@@ -195,6 +195,7 @@ function translate(str: string) {
     Random: 'zufälliger',
     'Gradient Scene': 'Gradient',
 
+    Refrigerator: 'Kühlschrank',
     'Water Heater': 'Boiler',
     Heater: 'Heizung',
     'Power Usage': 'Leistung',
