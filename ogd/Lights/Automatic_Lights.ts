@@ -2,6 +2,7 @@ import {
   Observable,
   Subject,
   Subscription,
+  combineLatest,
   merge,
   queueScheduler,
   timer,
@@ -23,7 +24,7 @@ type Config = {
   presence: string;
   minimumTimeOn: () => Observable<number>;
   stateInput: Subject<Notification>;
-  overriddenBy: string;
+  overriddenBy: string[];
   illumination: string;
   illuminationThreshold: number;
   turnOff: string;
@@ -36,7 +37,10 @@ const configs: Config[] = [
     presence: 'zigbee.0.54ef4410006bca59.occupancy',
     minimumTimeOn: () => timer(2 * 60 * 1000),
     stateInput: new Subject<Notification>(),
-    overriddenBy: 'scene.0.Bathroom.Lights_Bright',
+    overriddenBy: [
+      'scene.0.Bathroom.Lights_Bright',
+      '0_userdata.0.long-term-absence',
+    ],
     illumination: 'zigbee.0.54ef4410006bca59.illuminance_raw',
     illuminationThreshold: 80,
     turnOff: 'scene.0.Bathroom.Lights',
@@ -61,7 +65,10 @@ const configs: Config[] = [
     presence: 'zigbee.0.00158d0004ab6e83.occupancy',
     minimumTimeOn: () => timer(0.5 * 60 * 1000),
     stateInput: new Subject<Notification>(),
-    overriddenBy: 'scene.0.Hall.Lights_Bright',
+    overriddenBy: [
+      'scene.0.Hall.Lights_Bright',
+      '0_userdata.0.long-term-absence',
+    ],
     illumination: 'zigbee.0.00158d0004ab6e83.illuminance',
     illuminationThreshold: 40,
     turnOff: 'scene.0.Hall.Lights',
@@ -277,7 +284,10 @@ const subscriptions = configs.map(config => {
     map(_ => new Movement(config.presence)),
   );
 
-  const override = new Stream<boolean>(config.overriddenBy).stream;
+  var overrides = config.overriddenBy.map(x => new Stream<boolean>(x).stream);
+  const override = combineLatest(overrides).pipe(
+    map(x => x.some(val => val === true)),
+  );
 
   const overrideEnabled = override.pipe(
     distinctUntilChanged(),
