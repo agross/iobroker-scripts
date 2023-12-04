@@ -37,8 +37,7 @@ function getAliasDefinition(
           nested: {
             ['oil-distance']: state({
               alias: {
-                id: `${car.root}.status.data_0x0203FFFFFF.field_0x0203010001.value`,
-                read: 'val * -1',
+                id: `${car.root}.status.maintenanceStatus.oilServiceDue_km`,
               },
               role: 'indicator',
               type: 'number',
@@ -57,8 +56,7 @@ function getAliasDefinition(
             }),
             ['oil-time']: state({
               alias: {
-                id: `${car.root}.status.data_0x0203FFFFFF.field_0x0203010002.value`,
-                read: 'val * -1',
+                id: `${car.root}.status.maintenanceStatus.oilServiceDue_days`,
               },
               role: 'indicator',
               type: 'number',
@@ -77,8 +75,7 @@ function getAliasDefinition(
             }),
             ['inspection-distance']: state({
               alias: {
-                id: `${car.root}.status.data_0x0203FFFFFF.field_0x0203010003.value`,
-                read: 'val * -1',
+                id: `${car.root}.status.maintenanceStatus.inspectionDue_km`,
               },
               role: 'indicator',
               type: 'number',
@@ -97,8 +94,7 @@ function getAliasDefinition(
             }),
             ['inspection-time']: state({
               alias: {
-                id: `${car.root}.status.data_0x0203FFFFFF.field_0x0203010004.value`,
-                read: 'val * -1',
+                id: `${car.root}.status.maintenanceStatus.inspectionDue_days`,
               },
               role: 'indicator',
               type: 'number',
@@ -124,7 +120,7 @@ function getAliasDefinition(
           nested: {
             latitude: state({
               alias: {
-                id: `${car.root}.position.latitudeConv`,
+                id: `${car.root}.parkingposition.lat`,
               },
               role: 'value.gps.latitude',
               type: 'number',
@@ -134,7 +130,7 @@ function getAliasDefinition(
             }),
             longitude: state({
               alias: {
-                id: `${car.root}.position.longitudeConv`,
+                id: `${car.root}.parkingposition.lon`,
               },
               role: 'value.gps.longitude',
               type: 'number',
@@ -151,7 +147,8 @@ function getAliasDefinition(
           nested: {
             locked: state({
               alias: {
-                id: `${car.root}.status.isCarLocked`,
+                id: `${car.root}.status.accessStatus.doorLockStatus`,
+                read: "val === 'locked'",
               },
               role: 'indicator',
               type: 'boolean',
@@ -171,7 +168,7 @@ function getAliasDefinition(
               alias: {
                 id: {
                   read: `${car.root}.status.isCarLocked`,
-                  write: `${car.root}.remote.lockv2`,
+                  write: `${car.root}.remote.access`,
                 },
               },
               role: 'switch',
@@ -190,7 +187,8 @@ function getAliasDefinition(
             }),
             temperature: state({
               alias: {
-                id: `${car.root}.status.outsideTemperature`,
+                // TODO: Currently no data point.
+                id: `${car.root}.status.temperatureOutsideStatus`,
               },
               role: 'value.temperature',
               type: 'number',
@@ -210,7 +208,9 @@ function getAliasDefinition(
             }),
             ['parking-brake-engaged']: state({
               alias: {
-                id: `${car.root}.status.data_0x0301FFFFFF.field_0x0301030001.value`,
+                // TODO: Currently no data point.
+                id: `${car.root}.status.accessStatus.overallStatus`,
+                read: "val === 'safe'",
               },
               role: 'indicator',
               type: 'boolean',
@@ -228,7 +228,7 @@ function getAliasDefinition(
             }),
             mileage: state({
               alias: {
-                id: `${car.root}.status.data_0x0101010002.field_0x0101010002.value`,
+                id: `${car.root}.status.maintenanceStatus.mileage_km`,
                 read: 'val >= 2147483647 ? null : val',
               },
               role: 'indicator',
@@ -255,7 +255,7 @@ function getAliasDefinition(
           nested: {
             ['adblue-range']: state({
               alias: {
-                id: `${car.root}.status.data_0x02040C0001.field_0x02040C0001.value`,
+                id: `${car.root}.status.measurements_rangeStatus.adBlueRange`,
               },
               role: 'indicator',
               type: 'number',
@@ -274,7 +274,7 @@ function getAliasDefinition(
             }),
             ['fuel-range']: state({
               alias: {
-                id: `${car.root}.status.data_0x0301FFFFFF.field_0x0301030006.value`,
+                id: `${car.root}.status.rangeStatus.totalRange_km`,
               },
               role: 'indicator',
               type: 'number',
@@ -293,7 +293,7 @@ function getAliasDefinition(
             }),
             ['fuel-level']: state({
               alias: {
-                id: `${car.root}.status.data_0x0301FFFFFF.field_0x030103000A.value`,
+                id: `${car.root}.status.rangeStatus.primaryEngine.currentFuelLevel_pct`,
               },
               role: 'indicator',
               type: 'number',
@@ -313,7 +313,8 @@ function getAliasDefinition(
             }),
             ['oil-level']: state({
               alias: {
-                id: `${car.root}.status.data_0x0204040003.field_0x0204040003.value`,
+                // TODO: Currently no data point.
+                id: `${car.root}.status.oilLevelStatus`,
               },
               role: 'indicator',
               type: 'number',
@@ -478,116 +479,37 @@ function getUserDataDefinition(
 const cars = [
   ...new Set(
     [...$(`channel[id=${adapter}*][role=indicator]`)].map(
-      x => adapter + x.substr(adapter.length).replace(/\..*/, ''),
+      x => adapter + x.substring(adapter.length).replace(/\..*/, ''),
     ),
   ),
 ].map(root => {
   return {
     root: root,
-    name: getState(`${root}.general.carportData.modelName`).val,
+    name: getState(`${root}.general.model`).val,
   };
 });
 
 await ObjectCreator.create(getAliasDefinition(cars), 'alias.0');
 await ObjectCreator.create(getUserDataDefinition(cars), '0_userdata.0');
 
-const alarms = cars.map(car => {
-  function escape(string: string) {
-    // $& means the whole matched string.
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  // This is the last data point written, so other data points related to the
-  // timestamp should be available to read.
-  const timestamps = `^${escape(
-    car.root,
-  )}\\.history\\.dwaPushHistory\\..*\\.localUtcTimestamp$`;
-
-  log(`Subscribing to alarms ${timestamps}`);
-
-  return new Stream<{
-    id: string;
-    reason: string;
-    acknowledged: boolean;
-    timestamp: Date;
-  }>(
-    {
-      id: new RegExp(timestamps),
-    },
-    {
-      map: event => {
-        const entry = event.id.replace(/\.\w+$/, '');
-        const id = getState(entry + '.id').val;
-        const reason = getState(entry + '.dwaAlarmReasonClustered').val;
-        const ack = getState(entry + '.fnsAcknowledged').val === true;
-        const ts = new Date(event.state.val);
-
-        return {
-          id: id,
-          reason: reason,
-          acknowledged: ack,
-          timestamp: ts,
-        };
-      },
-    },
-  ).stream
-    .pipe(
-      scan(
-        (acc, current) => {
-          if (current.timestamp > acc.timestamp) {
-            acc = current;
-            return current;
-          }
-
-          return acc;
-        },
-        {
-          id: undefined,
-          reason: undefined,
-          acknowledged: undefined,
-          timestamp: new Date(0),
-        },
-      ),
-      distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
-      tap(x =>
-        Notify.mobile(
-          `${x.acknowledged ? 'Acknowledged ' : ''}${
-            car.name
-          } alarm from ${Format.dateTime(x.timestamp)}: ${x.reason} (ID: ${
-            x.id
-          })`,
-        ),
-      ),
-      tap(x => {
-        const reason = x.acknowledged ? '' : x.reason;
-        const ts = x.acknowledged ? null : x.timestamp.toISOString();
-
-        setState('0_userdata.0.' + car.root + '.Alarm.reason', reason, true);
-        setState('0_userdata.0.' + car.root + '.Alarm.timestamp', ts, true);
-      }),
-    )
-    .subscribe();
-});
-
 const parkedWithWindowOpen = cars.map(car => {
   const windowMap = {
-    'front-left': 'field_0x0301050001',
-    'rear-left': 'field_0x0301050003',
-    'front-right': 'field_0x0301050005',
-    'rear-right': 'field_0x0301050007',
+    'front-left': 'frontLeft',
+    'rear-left': 'rearLeft',
+    'front-right': 'frontRight',
+    'rear-right': 'rearRight',
   };
 
   const windowStates = Object.entries(windowMap).map(([k, v]) => {
-    const state = `${car.root}.status.data_0x0301FFFFFF.${v}.value`;
+    const state = `${car.root}.status.accessStatus.windows.${v}.status.closed`;
 
     log(`Subscribing to ${k} window: ${state}`);
 
-    return new Stream<number>(state).stream.pipe(
-      filter(e => e == 2 || e == 3),
+    return new Stream<string>(state).stream.pipe(
       map(e => {
         return {
           window: k,
-          open: e == 2,
+          open: e !== 'closed',
         };
       }),
       distinctUntilKeyChanged('open'),
@@ -703,11 +625,6 @@ const tightenTyres = cars.map(car => {
 
 onStop(() =>
   []
-    .concat(
-      alarms,
-      ...parkedWithWindowOpen,
-      ...parkedAtHomeUnlocked,
-      ...tightenTyres,
-    )
+    .concat(...parkedWithWindowOpen, ...parkedAtHomeUnlocked, ...tightenTyres)
     .forEach(s => s.unsubscribe()),
 );
