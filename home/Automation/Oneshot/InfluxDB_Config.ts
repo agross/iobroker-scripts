@@ -475,6 +475,38 @@ function car(enabledDataPoints: {}) {
 
     check(enabledDataPoints, id, expect);
   });
+
+  $('state[id=alias.0.vw-connect.0.*.latitude]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Latitude`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=alias.0.vw-connect.0.*.longitude]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Longitude`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=alias.0.vw-connect.0.*.geohash]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Geohash`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=alias.0.vw-connect.0.*.is-moving]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Moving`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
 }
 
 function fuelPrices(enabledDataPoints: {}) {

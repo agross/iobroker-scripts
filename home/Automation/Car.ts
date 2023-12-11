@@ -138,6 +138,26 @@ function getAliasDefinition(
               write: false,
               name: 'GPS longitude',
             }),
+            geohash: state({
+              alias: {
+                id: `${car.root}.position.geohash`,
+              },
+              role: 'indicator',
+              type: 'string',
+              read: true,
+              write: false,
+              name: 'Geohash',
+            }),
+            'is-moving': state({
+              alias: {
+                id: `${car.root}.position.isMoving`,
+              },
+              role: 'indicator',
+              type: 'boolean',
+              read: true,
+              write: false,
+              name: 'Is the vehicle moving',
+            }),
           },
         },
         States: {
