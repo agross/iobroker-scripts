@@ -35,7 +35,7 @@ function getAliasDefinition(
           common: { name: 'Maintenance' },
           native: {},
           nested: {
-            ['oil-distance']: state({
+            'oil-distance': state({
               alias: {
                 id: `${car.root}.status.maintenanceStatus.oilServiceDue_km`,
               },
@@ -54,7 +54,7 @@ function getAliasDefinition(
                 },
               },
             }),
-            ['oil-time']: state({
+            'oil-time': state({
               alias: {
                 id: `${car.root}.status.maintenanceStatus.oilServiceDue_days`,
               },
@@ -73,7 +73,7 @@ function getAliasDefinition(
                 },
               },
             }),
-            ['inspection-distance']: state({
+            'inspection-distance': state({
               alias: {
                 id: `${car.root}.status.maintenanceStatus.inspectionDue_km`,
               },
@@ -92,7 +92,7 @@ function getAliasDefinition(
                 },
               },
             }),
-            ['inspection-time']: state({
+            'inspection-time': state({
               alias: {
                 id: `${car.root}.status.maintenanceStatus.inspectionDue_days`,
               },
@@ -206,7 +206,7 @@ function getAliasDefinition(
                 },
               },
             }),
-            ['parking-brake-engaged']: state({
+            'parking-brake-engaged': state({
               alias: {
                 // TODO: Currently no data point.
                 id: `${car.root}.status.accessStatus.overallStatus`,
@@ -253,7 +253,7 @@ function getAliasDefinition(
           common: { name: 'Levels' },
           native: {},
           nested: {
-            ['adblue-range']: state({
+            'adblue-range': state({
               alias: {
                 id: `${car.root}.status.measurements_rangeStatus.adBlueRange`,
               },
@@ -272,7 +272,7 @@ function getAliasDefinition(
                 },
               },
             }),
-            ['fuel-range']: state({
+            'fuel-range': state({
               alias: {
                 id: `${car.root}.status.rangeStatus.totalRange_km`,
               },
@@ -291,7 +291,7 @@ function getAliasDefinition(
                 },
               },
             }),
-            ['fuel-level']: state({
+            'fuel-level': state({
               alias: {
                 id: `${car.root}.status.rangeStatus.primaryEngine.currentFuelLevel_pct`,
               },
@@ -311,7 +311,7 @@ function getAliasDefinition(
                 },
               },
             }),
-            ['oil-level']: state({
+            'oil-level': state({
               alias: {
                 // TODO: Currently no data point.
                 id: `${car.root}.status.oilLevelStatus`,
