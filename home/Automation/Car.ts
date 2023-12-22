@@ -4,7 +4,6 @@ import {
   distinctUntilKeyChanged,
   filter,
   map,
-  scan,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
