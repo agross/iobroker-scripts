@@ -23,6 +23,9 @@ function getObjectDefinition(): ObjectDefinitionRoot {
 
         case 'nous-a1t-1':
           return 'NAS';
+
+        case 'nous-a1t-2':
+          return 'Server';
       }
     }
 
@@ -103,6 +106,14 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
             attr_device_class: 'outlet',
             attr_icon: 'mdi:nas',
+          };
+
+        case 'nous-a1t-2':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:server-network',
           };
       }
     }
