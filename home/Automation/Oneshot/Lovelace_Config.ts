@@ -330,7 +330,7 @@ function homeMaticVariables() {
     let icon: string;
 
     switch (name) {
-      case '${sysVarPresence}':
+      case 'Presence':
         name = 'HomeMatic Presence';
         icon = 'mdi:location-enter';
         break;
