@@ -118,7 +118,7 @@ function shutters() {
 }
 
 function custom() {
-  return ['0_userdata.0.global-brightness-override'];
+  return [...$('state[id=0_userdata.0.Brightness.*]')];
 }
 
 function autodetectedDevices() {
@@ -187,7 +187,8 @@ function translate(str: string) {
   const translations = {
     'All Lights On': 'Alle Lichter an',
     'All Lights Off': 'Alle Lichter aus',
-    'Global Brightness Override': 'Globale Helligkeit',
+    Brightness: 'Helligkeit',
+    Global: 'Globale',
 
     'Reset Coffee Counter': 'Kaffeebezüge zurücksetzen',
     'Coffee Counter': 'Kaffeebezüge',
