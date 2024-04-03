@@ -251,7 +251,10 @@ const subscriptions = [
         );
 
         setStateDelayed(setShutterLevel, level.shutter, 200, true, err => {
-          log(`${device} level reset to ${level.shutter}: ${err}`);
+          if (err)
+            log(
+              `${device} failed to reset shutter to ${level.shutter}: ${err}`,
+            );
         });
       }),
     )
