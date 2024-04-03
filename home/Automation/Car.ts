@@ -513,14 +513,14 @@ await ObjectCreator.create(getUserDataDefinition(cars), '0_userdata.0');
 
 const parkedWithWindowOpen = cars.map(car => {
   const windowMap = {
-    'front-left': 'frontLeft',
-    'rear-left': 'rearLeft',
-    'front-right': 'frontRight',
-    'rear-right': 'rearRight',
+    'front-left': 'windows01',
+    'rear-left': 'windows03',
+    'front-right': 'windows02',
+    'rear-right': 'windows04',
   };
 
   const windowStates = Object.entries(windowMap).map(([k, v]) => {
-    const state = `${car.root}.status.accessStatus.windows.${v}.status.closed`;
+    const state = `${car.root}.status.accessStatus.${v}.status.closed`;
 
     log(`Subscribing to ${k} window: ${state}`);
 
