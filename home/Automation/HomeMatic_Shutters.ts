@@ -139,7 +139,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             write: `${device}.4.LEVEL_2`,
           },
           read: `val === 2`,
-          write: 'val = 0',
+          write: 'val = 1',
         },
         role: 'button.close',
         type: 'boolean',
