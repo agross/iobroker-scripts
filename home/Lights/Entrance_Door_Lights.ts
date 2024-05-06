@@ -5,6 +5,8 @@ const config = {
   allLightsOff: 'scene.0.Lights.All_Lights_Off',
   // Bathroom Presence Detector
   brightness: 'hm-rpc.1.000C1A49A87471.1.ILLUMINATION',
+  presence: '0_userdata.0.presence',
+  ignoreIfPresentLongerThan: 5 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
 };
 
 function atNight() {
@@ -19,7 +21,7 @@ function darkOutside() {
   return getState(config.brightness).val < 50;
 }
 
-on({ id: config.sensor, val: true, ack: true }, event => {
+on({ id: config.sensor, val: true, ack: true }, _event => {
   if (!atNight()) {
     if (darkOutside()) {
       log('Daytime, but dark outside');
@@ -31,6 +33,15 @@ on({ id: config.sensor, val: true, ack: true }, event => {
 
   if (getState(config.allLightsOff).val !== true) {
     log('Some lights are on, skipping');
+    return;
+  }
+
+  const presence = getState(config.presence);
+  if (
+    presence.val === true &&
+    presence.lc <= new Date().valueOf() - config.ignoreIfPresentLongerThan
+  ) {
+    log('Present for longer, skipping');
     return;
   }
 
