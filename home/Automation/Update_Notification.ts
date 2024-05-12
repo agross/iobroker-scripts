@@ -20,39 +20,79 @@ const config = {
   ],
 };
 
-function truncateString(string: string, maxLength: number) {
+function truncateString(string: string, maxLength: number = 1000) {
   return string.length > maxLength
     ? `${string.substring(0, maxLength)}…`
-    : string;
+    : `${string}`;
 }
 
-function update(adapter: string = 'all') {
-  // --yes needs to be the last argument, otherwise all adapters are updated.
-  exec(`iobroker upgrade ${adapter} --yes`, function (error, stdout, stderr) {
-    let message = `Update of \`${adapter}\` successful`;
+import util from 'util';
+import { exec } from 'child_process';
+const execAsync = util.promisify(exec);
 
-    if (error) {
-      message = `Update of \`${adapter}\` failed:\n\`\`\`\n${error}\n\`\`\``;
+async function update(adapter: string = 'all') {
+  let message: string;
+  try {
+    // --yes needs to be the last argument, otherwise all adapters are updated.
+    const { stdout, stderr } = await execAsync(
+      `iobroker upgrade ${adapter} --yes`,
+    );
+
+    message = `Update of \`${adapter}\` successful`;
+
+    if (stdout) {
+      message += `\n\nStandard output:\n\`\`\`\n${truncateString(
+        stdout,
+      )}\n\`\`\``;
     }
+
+    if (stderr) {
+      message += `\n\nStandard error:\n\`\`\`\n${truncateString(
+        stderr,
+      )}\n\`\`\``;
+    }
+
+    try {
+      await execAsync(`iobroker upload ${adapter}`);
+    } catch (error) {
+      message += `\nBut \`upload\` failed:\n\`\`\`\n${truncateString(
+        JSON.stringify(error),
+      )}\n\`\`\``;
+    }
+  } catch (error) {
+    message = `Update of \`${adapter}\` failed:\n\`\`\`\n${truncateString(
+      JSON.stringify(error),
+    )}\n\`\`\``;
+  }
+
+  Notify.mobile(message, {
+    telegram: {
+      parse_mode: 'Markdown',
+    },
+  });
+
+  try {
+    // --yes needs to be the last argument, otherwise all adapters are updated.
+    const { stdout, stderr } = await execAsync(
+      `iobroker upgrade ${adapter}x --yes`,
+    );
+
     if (stdout) {
       message += `\n\nStandard output:\n\`\`\`\n${truncateString(
         stdout,
         1500,
       )}\n\`\`\``;
     }
+
     if (stderr) {
       message += `\n\nStandard error:\n\`\`\`\n${truncateString(
         stderr,
         1500,
       )}\n\`\`\``;
     }
-
-    Notify.mobile(message, {
-      telegram: {
-        parse_mode: 'Markdown',
-      },
-    });
-  });
+  } catch (error) {
+    message = `Update of \`${adapter}\` failed:\n\`\`\`\n${error}\n\`\`\``;
+  }
 }
 
 const replies = Notify.subscribeToCallbacks()
