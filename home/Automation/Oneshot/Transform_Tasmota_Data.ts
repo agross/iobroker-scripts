@@ -7,44 +7,34 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     const deviceName = stateId.split('.').at(-2);
     log(`Getting purpose of ${stateId} from ${deviceName} at ${Site.location}`);
 
+    let devices: Map<string, string>;
+
     if (Site.location === 'Home') {
-      switch (deviceName) {
-        case 'gosund-sp111-1':
-          return 'Living Room Media';
-
-        case 'gosund-sp111-2':
-          return 'Kitchen Down Light';
-
-        case 'gosund-sp111-3':
-          return 'Bathroom Washing Machine';
-
-        case 'gosund-sp111-4':
-          return 'Office Desk';
-
-        case 'nous-a1t-1':
-          return 'NAS';
-
-        case 'nous-a1t-2':
-          return 'Server';
-      }
+      devices = new Map([
+        ['gosund-sp111-1', 'Living Room Media'],
+        ['gosund-sp111-2', 'Kitchen Down Light'],
+        ['gosund-sp111-3', 'Bathroom Washing Machine'],
+        ['gosund-sp111-4', 'Office Desk'],
+        ['nous-a1t-1', 'NAS'],
+        ['nous-a1t-2', 'Server'],
+      ]);
     }
 
     if (Site.location === 'OGD') {
-      switch (deviceName) {
-        case 'nous-a1t-1':
-          return 'Bathroom Water Heater';
-
-        case 'nous-a1t-2':
-          return 'Living Room Heater';
-
-        case 'nous-a1t-3':
-          return 'Kitchen Refrigerator';
-      }
+      devices = new Map([
+        ['nous-a1t-1', 'Bathroom Water Heater'],
+        ['nous-a1t-2', 'Living Room Heater'],
+        ['nous-a1t-3', 'Kitchen Refrigerator'],
+        ['nous-a1t-4', 'Equipment Room Freezer'],
+      ]);
     }
 
-    throw new Error(
-      `No mapping from ${stateId} to purpose from ${deviceName} at ${Site.location}`,
-    );
+    if (!devices.has(deviceName)) {
+      throw new Error(
+        `No mapping from ${stateId} to purpose from ${deviceName} at ${Site.location}`,
+      );
+    }
+    return devices.get(deviceName);
   }
 
   function lovelaceConfig(stateId: string, type: 'Power' | 'Power Usage'): {} {
@@ -142,6 +132,14 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
             attr_device_class: 'outlet',
             attr_icon: 'mdi:fridge',
+          };
+
+        case 'nous-a1t-4':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:ice-pop',
           };
       }
     }
