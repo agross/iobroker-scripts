@@ -19,10 +19,10 @@ const permissions = [
 const translateCommonNames = [
   ...autodetectedDevices(),
   ...statesWithLovelaceConfig(),
-].map(async deviceOrStateId => {
-  log(`Translating common.name for ${deviceOrStateId}`);
-  await copyCommonNameToSmartNameWithGermanTranslation(deviceOrStateId);
-});
+].map(
+  async deviceOrStateId =>
+    await copyCommonNameToSmartNameWithGermanTranslation(deviceOrStateId),
+);
 
 const translateCustomLovelaceConfig = [...statesWithLovelaceConfig()].map(
   async stateId => {
@@ -150,6 +150,8 @@ function statesWithLovelaceConfig() {
 async function copyCommonNameToSmartNameWithGermanTranslation(
   deviceOrObjectId: string,
 ) {
+  log(`Translating common.name for ${deviceOrObjectId}`);
+
   if (!(await existsObjectAsync(deviceOrObjectId))) {
     log(`Object ${deviceOrObjectId} does not exist`, 'warn');
     return;
@@ -179,7 +181,7 @@ async function copyCommonNameToSmartNameWithGermanTranslation(
     de: german,
   };
 
-  await setObjectAsync(deviceOrObjectId, object as any);
+  await extendObjectAsync(deviceOrObjectId, object as any);
 }
 
 function translate(str: string) {
@@ -188,88 +190,89 @@ function translate(str: string) {
   }
 
   // Translations are checked in order.
-  const translations = {
-    'All Lights On': 'Alle Lichter an',
-    'All Lights Off': 'Alle Lichter aus',
-    Brightness: 'Helligkeit',
-    Global: 'Globale',
+  const translations = new Map<string, string>([
+    ['All Lights On', 'Alle Lichter an'],
+    ['All Lights Off', 'Alle Lichter aus'],
+    ['Brightness', 'Helligkeit'],
+    ['Global', 'Globale'],
 
-    'Reset Coffee Counter': 'Kaffeebezüge zurücksetzen',
-    'Coffee Counter': 'Kaffeebezüge',
+    ['Reset Coffee Counter', 'Kaffeebezüge zurücksetzen'],
+    ['Coffee Counter', 'Kaffeebezüge'],
 
-    Random: 'zufälliger',
-    'Gradient Scene': 'Gradient',
+    ['Random', 'zufälliger'],
+    ['Gradient Scene', 'Gradient'],
 
-    Refrigerator: 'Kühlschrank',
-    'Water Heater': 'Boiler',
-    Heater: 'Heizung',
-    'Power Usage': 'Leistung',
-    ' Power': '',
+    ['Refrigerator', 'Kühlschrank'],
+    ['Freezer', 'Gefrierschrank'],
+    ['Water Heater', 'Boiler'],
+    ['Heater', 'Heizung'],
+    ['Power Usage', 'Leistung'],
+    ['Power', ''],
 
-    'Next Shutter State Due Date': 'Geplante Behanghöhe',
-    'Next Shutter State': 'Geplante Behanghöhe',
+    ['Next Shutter State Due Date', 'Geplante Behanghöhe'],
+    ['Next Shutter State', 'Geplante Behanghöhe'],
 
-    'Kitchen Table': 'Küchentisch',
-    'Living Room Table Top': 'Wohnzimmertisch nach oben',
-    'Living Room Table Bottom': 'Wohnzimmertisch nach unten',
-    'Living Room': 'Wohnzimmer',
-    Bathroom: 'Bad',
-    Kitchen: 'Küche',
-    Staircase: 'Treppenaufgang',
-    Bedroom: 'Schlafzimmer',
-    Workshop: 'Werkstatt',
-    'Equipment Room': 'Lager',
-    Outside: 'Außen',
-    Patio: 'Terrasse',
-    Hall: 'Flur',
-    'House Entrance': 'Hauseingang',
-    House: 'Haus',
-    Porch: 'Vordach',
+    ['Kitchen Table', 'Küchentisch'],
+    ['Living Room Table Top', 'Wohnzimmertisch nach oben'],
+    ['Living Room Table Bottom', 'Wohnzimmertisch nach unten'],
+    ['Living Room', 'Wohnzimmer'],
+    ['Bathroom', 'Bad'],
+    ['Kitchen', 'Küche'],
+    ['Staircase', 'Treppenaufgang'],
+    ['Bedroom', 'Schlafzimmer'],
+    ['Workshop', 'Werkstatt'],
+    ['Equipment Room', 'Lager'],
+    ['Outside', 'Außen'],
+    ['Patio', 'Terrasse'],
+    ['Hall', 'Flur'],
+    ['House Entrance', 'Hauseingang'],
+    ['House', 'Haus'],
+    ['Porch', 'Vordach'],
 
-    East: 'Ost',
-    North: 'Nord',
-    South: 'Süd',
+    ['East', 'Ost'],
+    ['North', 'Nord'],
+    ['South', 'Süd'],
 
-    Illuminance: 'Lichtstärke',
-    Temperature: 'Temperatur',
-    Humidity: 'Luftfeuchtigkeit',
-    Motion: 'Bewegung',
-    Occupancy: 'Anwesenheit',
-    Pressure: 'Luftdruck',
-    'Smoke Detected': 'Rauchmelder',
-    'Alarm Enabled': 'Alarm aktiv',
-    'Table Light': 'Tisch',
-    'Ceiling Light': 'Deckenlicht',
-    Lights: 'Licht',
-    'Light Strips Cozy': 'Light Strips gemütlich',
-    'Light Strip': 'Light Strip',
-    Light: 'Licht',
-    Door: 'Tür',
-    Shutters: 'Rollladen',
-    'Level of Shutters': 'Behanghöhe',
-    Roof: 'Dachschräge',
+    ['Illuminance', 'Lichtstärke'],
+    ['Temperature', 'Temperatur'],
+    ['Humidity', 'Luftfeuchtigkeit'],
+    ['Motion', 'Bewegung'],
+    ['Occupancy', 'Anwesenheit'],
+    ['Pressure', 'Luftdruck'],
+    ['Smoke Detected', 'Rauchmelder'],
+    ['Alarm Enabled', 'Alarm aktiv'],
+    ['Table Light', 'Tisch'],
+    ['Ceiling Light', 'Deckenlicht'],
+    ['Lights', 'Licht'],
+    ['Light Strips Cozy', 'Light Strips gemütlich'],
+    ['Light Strip', 'Light Strip'],
+    ['Light', 'Licht'],
+    ['Door', 'Tür'],
+    ['Shutters', 'Rollladen'],
+    ['Level of Shutters', 'Behanghöhe'],
+    ['Roof', 'Dachschräge'],
 
-    Only: '',
-    Off: 'aus',
-    All: 'Alle',
-    No: 'Ohne',
+    ['Only', ''],
+    ['Off', 'aus'],
+    ['All', 'Alle'],
+    ['No', 'Ohne'],
 
-    Bright: 'Hell',
-    Colorful: 'Farbig',
-    Cozy: 'Gemütlich',
-    Default: 'Normal',
-    Dim: 'Abgedunkelt',
-    Night: 'Sehr abgedunkelt',
-    Presence: 'Anwesenheit',
+    ['Bright', 'Hell'],
+    ['Colorful', 'Farbig'],
+    ['Cozy', 'Gemütlich'],
+    ['Default', 'Normal'],
+    ['Dim', 'Abgedunkelt'],
+    ['Night', 'Sehr abgedunkelt'],
+    ['Presence', 'Anwesenheit'],
 
-    'Short-Term': 'Kurzzeit',
-    'Long-Term Absence': 'Langzeit-Abwesenheit',
-    'Long-Term': 'Langzeit',
-    Returning: 'Rückkehr',
-    'Highest Day Temperature': 'Tageshöchsttemperatur',
-    Day: 'Tag',
-    'Sunny Day': 'Sonniger Tag',
-  };
+    ['Short-Term', 'Kurzzeit'],
+    ['Long-Term Absence', 'Langzeit-Abwesenheit'],
+    ['Long-Term', 'Langzeit'],
+    ['Returning', 'Rückkehr'],
+    ['Highest Day Temperature', 'Tageshöchsttemperatur'],
+    ['Day', 'Tag'],
+    ['Sunny Day', 'Sonniger Tag'],
+  ]);
 
   let loop = 0;
   let index = 0;
@@ -281,13 +284,13 @@ function translate(str: string) {
       return str;
     }
 
-    const found = Object.keys(translations).find(k =>
+    const found = [...translations.keys()].find(k =>
       result.startsWith(k, index),
     );
 
     if (found) {
       const processed = result.substring(0, index);
-      const replacement = translations[found];
+      const replacement = translations.get(found);
       const rest = result.substring(processed.length + found.length);
 
       result = `${processed}${replacement}${rest}`;
