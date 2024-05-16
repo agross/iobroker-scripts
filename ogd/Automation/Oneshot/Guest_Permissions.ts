@@ -104,10 +104,14 @@ function scenes() {
 }
 
 function powerPlugs() {
-  return [
+  const allowed = [
     ...$('state[id=mqtt.*.*.*.power.cmnd.*.POWER]'),
     ...$('state[id=alias.*.mqtt.*.*.*.*.nous-a1t-*.*][role=switch]'),
-  ];
+  ].filter(x => !/nous-a1t-(1|3|4)/.test(x));
+
+  log(`Allowed power plugs: ${JSON.stringify(allowed)}`);
+
+  return allowed;
 }
 
 function shutters() {
