@@ -21,78 +21,68 @@ const config = {
 };
 
 function truncateString(string: string, maxLength: number = 1000) {
-  return string.length > maxLength
-    ? `${string.substring(0, maxLength)}…`
-    : `${string}`;
+  const truncated =
+    string.length > maxLength
+      ? `${string.substring(0, maxLength)}…`
+      : `${string}`;
+
+  return truncated.trim();
 }
 
 import util from 'util';
 import { exec } from 'child_process';
 const execAsync = util.promisify(exec);
 
-async function update(adapter: string = 'all') {
-  let message: string;
-  try {
-    // --yes needs to be the last argument, otherwise all adapters are updated.
-    const { stdout, stderr } = await execAsync(
-      `iobroker upgrade ${adapter} --yes`,
-    );
+type ProcessResult = { error: boolean; message: string };
 
-    message = `Update of \`${adapter}\` successful`;
+async function runProcess(command: string): Promise<ProcessResult> {
+  try {
+    const message: string[] = [];
+
+    const { stdout, stderr } = await execAsync(command);
 
     if (stdout) {
-      message += `\n\nStandard output:\n\`\`\`\n${truncateString(
-        stdout,
-      )}\n\`\`\``;
+      message.push(
+        `\`${command}\` standard output:\n\`\`\`\n${truncateString(
+          stdout,
+        )}\n\`\`\``,
+      );
     }
 
     if (stderr) {
-      message += `\n\nStandard error:\n\`\`\`\n${truncateString(
-        stderr,
-      )}\n\`\`\``;
+      message.push(
+        `\`${command}\` standard error:\n\`\`\`\n${truncateString(
+          stderr,
+        )}\n\`\`\``,
+      );
     }
 
-    try {
-      await execAsync(`iobroker upload ${adapter}`);
-    } catch (error) {
-      message += `\nBut \`upload\` failed:\n\`\`\`\n${truncateString(
-        JSON.stringify(error),
-      )}\n\`\`\``;
-    }
+    return { error: undefined, message: message.join(`\n`) };
   } catch (error) {
-    message = `Update of \`${adapter}\` failed:\n\`\`\`\n${truncateString(
+    const message = `\`${command}\` failed:\n\`\`\`\n${truncateString(
       JSON.stringify(error),
     )}\n\`\`\``;
+
+    return { error: error, message: message };
+  }
+}
+
+async function update(adapter: string = 'all') {
+  const messages: ProcessResult[] = [];
+
+  const upgrade = await runProcess(`iobroker upgrade ${adapter} --yes`);
+  messages.push(upgrade);
+
+  if (!upgrade.error) {
+    const upload = await runProcess(`iobroker upload ${adapter}`);
+    messages.push(upload);
   }
 
-  Notify.mobile(message, {
+  Notify.mobile(messages.map(x => x.message).join('\n'), {
     telegram: {
       parse_mode: 'Markdown',
     },
   });
-
-  try {
-    // --yes needs to be the last argument, otherwise all adapters are updated.
-    const { stdout, stderr } = await execAsync(
-      `iobroker upgrade ${adapter}x --yes`,
-    );
-
-    if (stdout) {
-      message += `\n\nStandard output:\n\`\`\`\n${truncateString(
-        stdout,
-        1500,
-      )}\n\`\`\``;
-    }
-
-    if (stderr) {
-      message += `\n\nStandard error:\n\`\`\`\n${truncateString(
-        stderr,
-        1500,
-      )}\n\`\`\``;
-    }
-  } catch (error) {
-    message = `Update of \`${adapter}\` failed:\n\`\`\`\n${error}\n\`\`\``;
-  }
 }
 
 const replies = Notify.subscribeToCallbacks()
