@@ -56,7 +56,7 @@ function getObjectDefinition() {
   return [...$('state[id=zigbee.*.gradient_scene]')].reduce((acc, stateId) => {
     const device = Device.id(stateId);
 
-    const sceneStates: {} = getObject(stateId).common.states || [];
+    const sceneStates: {} = getObject(stateId).common.states || {};
     const scenes = Object.keys(sceneStates).filter(
       x => !config.excludedScenes.includes(x),
     );
