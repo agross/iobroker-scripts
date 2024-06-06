@@ -5,7 +5,7 @@ const config = {
     'artic_aurora',
     'autumn_gold',
     'beginnings',
-    'blood_moon',
+    'blood moon',
     'blossom',
     'blue_lagoon',
     'blue_planet',
