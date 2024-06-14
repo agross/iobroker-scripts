@@ -889,9 +889,6 @@ declare global {
 		type GetStateCallback<T extends StateValue = any> = (err?: string | null, state?: State<T> | AbsentState) => void | Promise<void>;
 		type ExistsStateCallback = (err?: string | null, exists?: Boolean) => void | Promise<void>;
 
-		type GetBinaryStateCallback = (err?: string | null, state?: Buffer) => void | Promise<void>;
-		type GetBinaryStatePromise = Promise<NonNullCallbackReturnTypeOf<GetBinaryStateCallback>>;
-
 		type SetStateCallback = (err?: string | null, id?: string) => void | Promise<void>;
 		type SetStatePromise = Promise<NonNullCallbackReturnTypeOf<SetStateCallback>>;
 
@@ -1047,6 +1044,11 @@ declare global {
 			error?: string;
 
 			/**
+			 * Return the result as an array of state ids
+			 */
+			toArray(): Array<string>;
+
+			/**
 			 * Executes a function for each state id in the result array
 			 * The execution is canceled if a callback returns false
 			 */
@@ -1063,16 +1065,6 @@ declare global {
 			getStateAsync<T extends StateValue = any>(): Promise<State<T> | null | undefined>;
 
 			/**
-			 * Returns the first state found by this query.
-			 * If the adapter is configured to subscribe to all states on start,
-			 * this can be called synchronously and immediately returns the state.
-			 * Otherwise, you need to provide a callback.
-			 */
-			getBinaryState(callback: GetBinaryStateCallback): void;
-			getBinaryState(): Buffer | null | undefined;
-			getBinaryStateAsync(): Promise<Buffer | null | undefined>;
-
-			/**
 			 * Sets all queried states to the given value.
 			 */
 			setState(state: State | StateValue | SettableState, ack?: boolean, callback?: SetStateCallback): this;
@@ -1080,10 +1072,10 @@ declare global {
 			setStateDelayed(state: any, isAck?: boolean, delay?: number, clearRunning?: boolean, callback?: SetStateCallback): this;
 
 			/**
-			 * Sets all queried binary states to the given value.
+			 * Sets all queried states to the given value only if the value really changed.
 			 */
-			setBinaryState(state: Buffer, ack?: boolean, callback?: SetStateCallback): this;
-			setBinaryStateAsync(state: Buffer, ack?: boolean): Promise<void>;
+			setStateChanged(state: State | StateValue | SettableState, ack?: boolean, callback?: SetStateCallback): this;
+			setStateChangedAsync(state: State | StateValue | SettableState, ack?: boolean): Promise<void>;
 
 			/**
 			 * Subscribes the given callback to changes of the matched states.
@@ -1236,28 +1228,28 @@ declare global {
 
 		interface HttpRequestOptions {
 			timeout?: number;
+			responseType?: "text" | "arraybuffer";
 			basicAuth?: {
 				user: string;
 				password: string;
 			},
 			bearerAuth?: string;
 			headers?: Record<string, string>;
+			validateCertificate?: boolean;
 		}
 
 		type HttpResponseCallback = (err?: string | null, response?: iobJS.httpResponse) => void | Promise<void>;
 		interface httpResponse {
-			responseCode: number;
+			statusCode: number;
 			data: string;
 			headers: Record<string, string>;
+			responseTime?: number;
 		}
 	} // end namespace iobJS
 
 	// =======================================================
 	// available functions in the sandbox
 	// =======================================================
-
-	// The already preloaded request module
-	const request: typeof import("request");
 
 	/**
 	 * The instance number of the JavaScript adapter this script runs in
@@ -1272,6 +1264,16 @@ declare global {
 	 * The name of the current script
 	 */
 	const scriptName: string;
+
+	/**
+	 * Absolute path to iobroker-data directory in file system
+	 */
+	const defaultDataDir: string;
+
+	/**
+	 * Status of verbose mode
+	 */
+	const verbose: boolean;
 
 	/**
 	 * Queries all states with the given selector
@@ -1310,7 +1312,7 @@ declare global {
 	/**
 	 * Sends an email using the email adapter.
 	 * See the adapter documentation for a description of the msg parameter.
-	 * 
+	 *
 	 * @deprecated Use @see sendTo
 	 */
 	function email(msg: any): void;
@@ -1318,7 +1320,7 @@ declare global {
 	/**
 	 * Sends a pushover message using the pushover adapter.
 	 * See the adapter documentation for a description of the msg parameter.
-	 * 
+	 *
 	 * @deprecated Use @see sendTo
 	 */
 	function pushover(msg: any): void;
@@ -1334,6 +1336,11 @@ declare global {
 
 	function httpPostAsync(url: string, data: object | string): Promise<iobJS.httpResponse>;
 	function httpPostAsync(url: string, data: object | string, options: iobJS.HttpRequestOptions): Promise<iobJS.httpResponse>;
+
+	/**
+	 * Creates a temp directory for the current script and saves a new file with given content
+	 */
+	function createTempFile(fileName: string, data: string | ArrayBuffer) : string;
 
 	/**
 	 * Subscribe to the changes of the matched states.
@@ -1435,7 +1442,7 @@ declare global {
 
 	/**
 	 * [{"type":"cron","pattern":"0 15 13 * * *","scriptName":"script.js.scheduleById","id":"cron_1704187467197_22756"}]
-	 * 
+	 *
 	 * @param allScripts Return all registered schedules of all running scripts
 	 */
 	function getSchedules(allScripts?: boolean): Array<iobJS.ScheduleStatus>;
@@ -1476,6 +1483,16 @@ declare global {
 	function setStateAsync(id: string, state: iobJS.State | iobJS.StateValue | iobJS.SettableState, ack?: boolean): iobJS.SetStatePromise;
 
 	/**
+	 * Sets a state to the given value only if the value really changed.
+	 * @param id The ID of the state to be set
+	 */
+	function setStateChanged(id: string, state: iobJS.State | iobJS.StateValue | iobJS.SettableState, callback?: iobJS.SetStateCallback): void;
+	function setStateChanged(id: string, state: iobJS.State | iobJS.StateValue | iobJS.SettableState, ack: boolean, callback?: iobJS.SetStateCallback): void;
+
+	function setStateChangedAsync(id: string, state: iobJS.State | iobJS.StateValue | iobJS.SettableState, ack?: boolean): iobJS.SetStatePromise;
+
+
+	/**
 	 * Sets a state to the given value after a timeout has passed.
 	 * Returns the timer, so it can be manually cleared with clearStateDelayed
 	 * @param id The ID of the state to be set
@@ -1509,17 +1526,6 @@ declare global {
 	function getStateDelayed(id?: string): iobJS.StateTimer[];
 
 	/**
-	 * Sets a binary state to the given value
-	 * @param id The ID of the state to be set
-	 * @param state binary data as buffer
-	 * @param callback called when the operation finished
-	 * 
-	 * @deprecated Use @see writeFile
-	 */
-	function setBinaryState(id: string, state: Buffer, callback?: iobJS.SetStateCallback): void;
-	function setBinaryStateAsync(id: string, state: Buffer): iobJS.SetStatePromise;
-
-	/**
 	 * Returns the state with the given ID.
 	 * If the adapter is configured to subscribe to all states on start,
 	 * this can be called synchronously and immediately returns the state.
@@ -1528,18 +1534,6 @@ declare global {
 	function getState<T extends iobJS.StateValue = any>(id: string, callback: iobJS.GetStateCallback<T>): void;
 	function getState<T extends iobJS.StateValue = any>(id: string): iobJS.State<T> | iobJS.AbsentState;
 	function getStateAsync<T extends iobJS.StateValue = any>(id: string): Promise<iobJS.State<T>>;
-
-	/**
-	 * Returns the binary state with the given ID.
-	 * If the adapter is configured to subscribe to all states on start,
-	 * this can be called synchronously and immediately returns the state.
-	 * Otherwise, you need to provide a callback.
-	 * 
-	 * @deprecated Use @see readFile
-	 */
-	function getBinaryState(id: string, callback: iobJS.GetStateCallback): void;
-	function getBinaryState(id: string): Buffer;
-	function getBinaryStateAsync(id: string): iobJS.GetBinaryStatePromise;
 
 	/**
 	 * Checks if the state with the given ID exists
@@ -1684,7 +1678,7 @@ declare global {
 	function formatTimeDiff(diff: number): string;
 	function formatTimeDiff(diff: number, format: string): string;
 
-	function getDateObject(date: number | string | Date): Date;
+	function getDateObject(date?: number | string | Date): Date;
 
 	/**
 	 * Writes a file.
