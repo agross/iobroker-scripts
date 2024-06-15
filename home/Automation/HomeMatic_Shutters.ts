@@ -212,7 +212,6 @@ const subscriptions = [
 
   const desiredSlats = new Stream<number>({
     id: slatsState,
-    change: 'ne',
     ack: false,
   }).stream.pipe(
     tap(slats => log(`${device} desired slats ${slats}`)),
