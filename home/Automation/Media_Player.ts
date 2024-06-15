@@ -1,7 +1,8 @@
 import got from 'got';
 import path from 'path';
 import { combineLatest } from 'rxjs';
-import { map, sampleTime, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map, tap } from 'rxjs/operators';
+import util from 'util';
 
 const config = {
   tv: 'lgtv.0',
@@ -150,7 +151,6 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       cover: {
         alias: {
           id: `0_userdata.0.${device}.cover`,
-          // No write function makes this read-only.
         },
         role: 'media.cover',
         type: 'string',
@@ -161,8 +161,6 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
       'cover-big': {
         alias: {
           id: `0_userdata.0.${device}.cover`,
-          // No write function makes this read-only.
-          // http://firetv:8080/image/image%3A%2F%2Fsmb%253a%252f%252frouter%252fagross%252fnextcloud%252fMusic%252fMassive%2520Attack%2520-%2520100th%2520Window%252fcover.jpg%2F
         },
         role: 'media.cover.big',
         type: 'string',
@@ -367,22 +365,12 @@ const track = new Stream<string>(`${config.kodi}.info.thumbnail`).stream;
 
 const cover = combineLatest([fanart, track])
   .pipe(
-    sampleTime(2000),
+    // Every new track causes fanart and track to reset to empty strings before
+    // another notification arrives with the actual data.
+    debounceTime(2000),
+    distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
     map(async ([fanart, track]) => {
       const kodiImageService = async uri => {
-        try {
-          const current = (
-            await getStateAsync(`0_userdata.0.${config.kodi}.cover`)
-          ).val;
-
-          // Without this check we would delete all files from config.lovelace.
-          if (current && current.length) {
-            const file = `cards/${path.basename(current)}`;
-            await delFileAsync(config.lovelace, file);
-            log(`Deleted current cover ${file}`);
-          }
-        } catch (error) {}
-
         if (!uri || !uri.length) {
           return undefined;
         }
@@ -406,14 +394,15 @@ const cover = combineLatest([fanart, track])
           return undefined;
         }
 
-        const next = `cards/kodi-cover-binary-${Date.now()}.jpg`;
+        const cover = 'cards/_kodi-cover-binary.jpg';
         try {
-          log(`Writing next cover: ${next}`);
-          writeFileAsync(config.lovelace, next, buffer);
+          log(`Writing cover: ${cover}`);
+          await writeFileAsync(config.lovelace, cover, buffer);
 
-          return `/local/custom_ui/${path.basename(next)}`;
+          // Add timestamp to prevent caching on the client.
+          return `/${config.lovelace}/${cover}?${Date.now()}`;
         } catch (error) {
-          log(`Could not write file ${next}: ${error}`, 'error');
+          log(`Could not write file ${cover}: ${error}`, 'error');
         }
 
         return undefined;
@@ -427,7 +416,7 @@ const cover = combineLatest([fanart, track])
 
       log(`New cover data for track ${track} and fanart ${fanart}`);
 
-      return (await kodiImageService(track)) || directLink(fanart);
+      return (await kodiImageService(track)) || directLink(fanart) || null;
     }),
     tap(async art => {
       setState(`0_userdata.0.${config.kodi}.cover`, await art, true);
