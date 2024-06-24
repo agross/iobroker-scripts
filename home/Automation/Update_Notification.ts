@@ -18,7 +18,26 @@ const config = {
       },
     },
   ],
+  uploadJavaScriptAdapterState: ['0_userdata.0', 'upload-javascript-adapter'],
 };
+
+await ObjectCreator.create(
+  {
+    [config.uploadJavaScriptAdapterState[1]]: {
+      type: 'state',
+      common: {
+        name: 'The JavaScript adapter needs to upload after updating here',
+        type: 'boolean',
+        def: false,
+        read: true,
+        write: true,
+        role: 'indicator',
+      } as iobJS.StateCommon,
+      native: {},
+    },
+  },
+  config.uploadJavaScriptAdapterState[0],
+);
 
 function truncateString(string: string, maxLength: number = 1000) {
   const truncated =
@@ -69,6 +88,13 @@ async function runProcess(command: string): Promise<ProcessResult> {
 
 async function update(adapter: string = 'all') {
   const messages: ProcessResult[] = [];
+
+  if (adapter === 'javascript')
+    await setStateAsync(
+      config.uploadJavaScriptAdapterState.join('.'),
+      true,
+      false,
+    );
 
   const upgrade = await runProcess(`iobroker upgrade ${adapter} --yes`);
   messages.push(upgrade);
@@ -143,5 +169,23 @@ const updates = new Stream<string>(config.indicator).stream
     }),
   )
   .subscribe();
+
+// If during startup we see that config.uploadJavaScriptAdapterState is set,
+// upload the adapter's files. If this is the case, we were restarted due to an
+// update of the JavaScript adapter.
+const upload = await getStateAsync<boolean>(
+  config.uploadJavaScriptAdapterState.join('.'),
+);
+if (!upload.ack && upload.val === true) {
+  Notify.mobile(`Uploading JavaScript adapter after update`);
+
+  await update('javascript');
+
+  await setStateAsync(
+    config.uploadJavaScriptAdapterState.join('.'),
+    false,
+    true,
+  );
+}
 
 onStop(() => [replies, updates].forEach(x => x.unsubscribe()));
