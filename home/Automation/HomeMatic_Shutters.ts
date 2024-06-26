@@ -48,7 +48,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       close: {
         alias: {
           id: {
-            read: `${device}.4.ACTIVITY_STATE`,
+            read: `${device}.3.ACTIVITY_STATE`,
             write: `${device}.4.LEVEL`,
           },
           read: `val === 2`,
@@ -72,7 +72,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       open: {
         alias: {
           id: {
-            read: `${device}.4.ACTIVITY_STATE`,
+            read: `${device}.3.ACTIVITY_STATE`,
             write: `${device}.4.LEVEL`,
           },
           read: `val === 1`,
@@ -140,11 +140,11 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       tilt_close: {
         alias: {
           id: {
-            read: `${device}.4.ACTIVITY_STATE`,
+            read: `${device}.3.ACTIVITY_STATE`,
             write: `${device}.4.LEVEL_2`,
           },
           read: `val === 2`,
-          write: 'val = 1',
+          write: 'val = 0',
         },
         role: 'button.close',
         type: 'boolean',
@@ -164,7 +164,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       tilt_open: {
         alias: {
           id: {
-            read: `${device}.4.ACTIVITY_STATE`,
+            read: `${device}.3.ACTIVITY_STATE`,
             write: `${device}.4.LEVEL_2`,
           },
           read: `val === 1`,
@@ -232,16 +232,22 @@ const subscriptions = [
     share(),
   );
 
-  const open = stable.pipe(filter(b => b));
-  const closed = stable.pipe(filter(b => !b));
+  const isStable = stable.pipe(
+    filter(b => b),
+    share(),
+  );
+  const isUnstable = stable.pipe(
+    filter(b => !b),
+    share(),
+  );
 
   const allowedSlatChanges = desiredSlats.pipe(
-    windowToggle(open, _ => closed.pipe(take(1))),
+    windowToggle(isStable, _ => isUnstable.pipe(take(1))),
     switchAll(),
   );
 
   const bufferedSlatChangesWhileUnstable = desiredSlats.pipe(
-    bufferToggle(closed, _ => open.pipe(take(1))),
+    bufferToggle(isUnstable, _ => isStable.pipe(take(1))),
     map(buffered => buffered.pop()),
     filter(slats => Number.isInteger(slats)),
   );
@@ -256,7 +262,7 @@ const subscriptions = [
           `${device} is stable, setting slats to ${level.slats} by resetting shutter to ${level.shutter}`,
         );
 
-        setStateDelayed(setShutterLevel, level.shutter, 200, true, err => {
+        setState(setShutterLevel, level.shutter, false, err => {
           if (err)
             log(
               `${device} failed to reset shutter to ${level.shutter}: ${err}`,
