@@ -97,7 +97,6 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   } as ObjectDefinitionRoot;
 }
 
-export {};
 await ObjectCreator.create(getObjectDefinition(), config.override[0]);
 
 interface LightStateAndBrightness {

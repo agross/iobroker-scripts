@@ -206,7 +206,6 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
   return acc;
 }, {} as ObjectDefinitionRoot);
 
-export {};
 await ObjectCreator.create(deebotUserStates, '0_userdata.0');
 
 const acknowledge = [

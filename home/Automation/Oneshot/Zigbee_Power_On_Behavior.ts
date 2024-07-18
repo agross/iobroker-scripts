@@ -37,6 +37,7 @@ const setPowerOnBehavior = [
   };
 });
 
+// https://github.com/ioBroker/ioBroker.javascript/issues/694#issuecomment-721675742
 export {};
 await setPowerOnBehavior.reduce(async (_, set) => {
   await _;

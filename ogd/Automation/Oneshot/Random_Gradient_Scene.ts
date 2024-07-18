@@ -108,6 +108,7 @@ function getObjectDefinition() {
   }, {} as ObjectDefinitionRoot);
 }
 
+// https://github.com/ioBroker/ioBroker.javascript/issues/694#issuecomment-721675742
 export {};
 await ObjectCreator.create(getObjectDefinition(), 'alias.0');
 

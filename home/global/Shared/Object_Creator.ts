@@ -18,9 +18,6 @@ declare global {
   }
 }
 
-// https://github.com/ioBroker/ioBroker.javascript/issues/694#issuecomment-721675742
-export {};
-
 type EnumIdsToObjects = { [id: string]: string[] };
 
 export class ObjectCreator {

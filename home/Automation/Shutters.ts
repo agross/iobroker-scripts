@@ -83,7 +83,6 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   };
 }
 
-export {};
 await ObjectCreator.create(getObjectDefinition(), config.next.root[0]);
 
 async function scheduleNextState(state: NextState) {

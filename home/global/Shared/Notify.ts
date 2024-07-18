@@ -17,9 +17,6 @@ declare global {
   }
 }
 
-// https://github.com/ioBroker/ioBroker.javascript/issues/694#issuecomment-721675742
-export {};
-
 export class Notify {
   public static async tv(
     message: string,

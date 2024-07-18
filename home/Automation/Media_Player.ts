@@ -1,5 +1,4 @@
 import got from 'got';
-import path from 'path';
 import { combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, tap } from 'rxjs/operators';
 import util from 'util';
@@ -355,7 +354,6 @@ function kodiObjectDefinition(): ObjectDefinitionRoot {
   }, {} as ObjectDefinitionRoot);
 }
 
-export {};
 await ObjectCreator.create(lgtvObjectDefinition(), 'alias.0');
 await ObjectCreator.create(kodiUserData(), '0_userdata.0');
 await ObjectCreator.create(kodiObjectDefinition(), 'alias.0');
