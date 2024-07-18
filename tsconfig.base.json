@@ -6,10 +6,10 @@
     "esModuleInterop": true,
     "useUnknownInCatchVariables": false,
     "downlevelIteration": true,
-    "target": "es2021",
-    "lib": ["es2021"],
-    "module": "esnext",
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
     "sourceMap": false,
     "outDir": "dist"
   }

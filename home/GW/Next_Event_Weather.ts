@@ -179,7 +179,7 @@ async function searchLocation(
     const result = (await got
       .get('http://dataservice.accuweather.com/locations/v1/search', {
         cache: httpRequestCache,
-        retry: 0,
+        retry: { limit: 0 },
         searchParams: { apikey: apiKey, q: location, language: 'de' },
       })
       .json<any[]>()) as unknown as any[];
