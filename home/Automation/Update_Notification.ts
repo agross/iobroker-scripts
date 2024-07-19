@@ -89,7 +89,7 @@ async function runProcess(command: string): Promise<ProcessResult> {
 async function update(adapter: string = 'all') {
   const messages: ProcessResult[] = [];
 
-  if (adapter === 'javascript')
+  if (adapter === 'javascript' || adapter === 'all')
     await setStateAsync(
       config.uploadJavaScriptAdapterState.join('.'),
       true,
