@@ -51,13 +51,12 @@ const configs: Config[] = [
 
       if (isAstroDay()) {
         return day;
-      } else {
-        if (compareTime('23:00', '6:00', 'between')) {
-          return night;
-        }
-
-        return dim;
       }
+      if (compareTime('23:00', '6:00', 'between')) {
+        return night;
+      }
+
+      return dim;
     },
   },
   {
@@ -73,18 +72,23 @@ const configs: Config[] = [
     illuminationThreshold: 40,
     turnOff: 'scene.0.Hall.Lights',
     determineScene: () => {
-      let scene = 'scene.0.Hall.Lights_Default';
+      const day = 'scene.0.Hall.Lights_Default';
+      const dim = 'scene.0.Hall.Lights_Dim';
+      const night = 'scene.0.Hall.Lights_Night';
 
+      if (isAstroDay()) {
+        return day;
+      }
       if (compareTime('23:00', '6:00', 'between')) {
-        scene = 'scene.0.Hall.Lights_Night';
-
         // If any light is on, use a brighter scene.
         if (getState('scene.0.Lights.All_Lights_Off').val !== true) {
-          scene = 'scene.0.Hall.Lights_Dim';
+          return dim;
         }
+
+        return night;
       }
 
-      return scene;
+      return dim;
     },
   },
 ];
