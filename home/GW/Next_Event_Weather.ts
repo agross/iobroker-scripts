@@ -182,7 +182,7 @@ async function searchLocation(
         retry: { limit: 0 },
         searchParams: { apikey: apiKey, q: location, language: 'de' },
       })
-      .json<any[]>()) as unknown as any[];
+      .json()) as any[];
 
     if (!result.length) {
       log(`No location ID for ${location}`, 'error');
