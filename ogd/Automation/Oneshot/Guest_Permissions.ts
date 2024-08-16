@@ -15,6 +15,7 @@ const permissions = [
 
   await setPermissions(stateId, expect);
 });
+await Promise.all(permissions);
 
 const translateCommonNames = [
   ...autodetectedDevices(),
@@ -23,6 +24,7 @@ const translateCommonNames = [
   async deviceOrStateId =>
     await copyCommonNameToSmartNameWithGermanTranslation(deviceOrStateId),
 );
+await Promise.all(translateCommonNames);
 
 const translateCustomLovelaceConfig = [...statesWithLovelaceConfig()].map(
   async stateId => {
@@ -33,15 +35,9 @@ const translateCustomLovelaceConfig = [...statesWithLovelaceConfig()].map(
     );
   },
 );
+await Promise.all(translateCustomLovelaceConfig);
 
-const lovelaceLayout = copyLovelaceLayout();
-
-await Promise.all([
-  permissions,
-  translateCommonNames,
-  translateCustomLovelaceConfig,
-  lovelaceLayout,
-]);
+await copyLovelaceLayout();
 
 async function setPermissions(
   objectId: string,
@@ -398,12 +394,14 @@ async function copyLovelaceLayout() {
     return;
   }
 
-  return targetInstances.map(async instance => {
-    const configuration = `${instance}.configuration`;
+  return Promise.all(
+    targetInstances.map(async instance => {
+      const configuration = `${instance}.configuration`;
 
-    await extendObjectAsync(configuration, { native: { views: null } });
-    await extendObjectAsync(configuration, { native: { views: views } });
-  });
+      await extendObjectAsync(configuration, { native: { views: null } });
+      await extendObjectAsync(configuration, { native: { views: views } });
+    }),
+  );
 }
 
 stopScript(undefined);
