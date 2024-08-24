@@ -5,7 +5,7 @@ import { filter, map, tap } from 'rxjs/operators';
 const config = {
   stateId: ['0_userdata.0', 'crunch-fit-popular-times'],
   intervalInMs: 3600000 / 3, // 20 min
-  query: 'http://127.0.0.1:50000/',
+  query: 'http://crunchfit:5000/',
 };
 
 await ObjectCreator.create(
