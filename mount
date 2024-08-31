@@ -5,7 +5,7 @@ set -e
 script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 
 if scutil --dns | grep --quiet --fixed-strings 'search domain[0] : home.therightstuff.de'; then
-  host="${MOUNT:-pi}"
+  host="${MOUNT:-nest}"
 else
   host="${MOUNT:-finn}"
 fi
