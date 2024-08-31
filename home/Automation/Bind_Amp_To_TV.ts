@@ -1,4 +1,5 @@
-import { tap } from 'rxjs/operators';
+import { iif, of } from 'rxjs';
+import { delay, switchMap, tap } from 'rxjs/operators';
 
 const config = {
   tvDevice: 'lgtv.0',
@@ -6,7 +7,13 @@ const config = {
 };
 
 const tv = new Stream<boolean>(`${config.tvDevice}.states.on`).stream
-  .pipe(tap(tvOn => setState(config.ampDevice, tvOn ? 'ON' : 'OFF')))
+  .pipe(
+    switchMap(tvOn =>
+      iif(() => tvOn === true, of(true), of(false).pipe(delay(10000))),
+    ),
+    tap(tvOn => log(`TV is ${tvOn ? 'on' : 'off'}`)),
+    tap(tvOn => setState(config.ampDevice, tvOn ? 'ON' : 'OFF')),
+  )
   .subscribe();
 
 onStop(() => {
