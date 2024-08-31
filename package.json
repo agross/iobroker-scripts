@@ -11,10 +11,12 @@
   },
   "devDependencies": {
     "@types/request": "^2.48.12",
+    "@types/wake_on_lan": "^0.0.33",
     "axios": "^1.7.2",
     "prettier": "^3.3.3",
     "request": "^2.88.2",
-    "typescript": "~5.5.3"
+    "typescript": "~5.5.3",
+    "wake_on_lan": "^1.0.0"
   },
   "author": "Alexander Groß <agross@therightstuff.de>",
   "license": "ISC",
