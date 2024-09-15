@@ -27,4 +27,12 @@ class Device {
 
     return device.common.name;
   }
+
+  public static type(id: string): string {
+    const deviceId = Device.id(id);
+
+    const device = getObject(deviceId);
+
+    return device.common.type;
+  }
 }

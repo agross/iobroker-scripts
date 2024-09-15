@@ -106,16 +106,27 @@ const alarmEnabledNotifications = alarmEnabled
   )
   .subscribe();
 
-const alarmTriggers = new Observable<string>(observer => {
+const alarmTriggers = new Observable<string[]>(observer => {
   log(`Monitoring alarm trigger: ${config.triggerAlarmOn.join(', ')}`);
 
   on({ id: config.triggerAlarmOn, val: true, change: 'ne' }, event => {
     const deviceName = Device.deviceName(event.id);
 
     log(`Potential alarm triggered by ${deviceName}`);
-    observer.next(deviceName);
+    observer.next([deviceName, event.id]);
   });
-}).pipe(share());
+}).pipe(
+  filter(([deviceName, id]) => {
+    const allowed = AlarmConfig.allowDeviceAlarm(id);
+    if (!allowed) {
+      log(`Disallowing alarm trigger by ${deviceName}`, 'warn');
+    }
+
+    return allowed;
+  }),
+  map(([deviceName, _]) => deviceName),
+  share(),
+);
 
 const alarmNotifications = alarmTriggers
   .pipe(

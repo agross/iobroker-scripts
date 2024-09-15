@@ -4,4 +4,8 @@ class AlarmConfig {
   public static get triggerAlarmOn() {
     return [...$('state[id=zigbee.*.opened]')];
   }
+
+  public static allowDeviceAlarm(_stateId: string): boolean {
+    return true;
+  }
 }
