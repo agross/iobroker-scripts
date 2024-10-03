@@ -42,6 +42,9 @@
       "path": "home/Automation/Oneshot/WOL_AXL.tsconfig.json"
     },
     {
+      "path": "home/Automation/Oneshot/WOL_NAS.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
     },
     {
@@ -55,6 +58,9 @@
     },
     {
       "path": "home/Automation/TV_Idle_Monitor.tsconfig.json"
+    },
+    {
+      "path": "home/Automation/TV_Power_On.tsconfig.json"
     },
     {
       "path": "home/Automation/Update_Notification.tsconfig.json"
