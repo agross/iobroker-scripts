@@ -59,7 +59,11 @@ const remotes = [
     },
     cycle: {
       off: 'scene.0.Kitchen.Lights',
-      on: ['scene.0.Kitchen.Lights_Cozy', 'scene.0.Kitchen.Lights_Bright'],
+      on: [
+        'scene.0.Kitchen.Lights_Cozy',
+        'scene.0.Kitchen.Lights_Warm_White',
+        'scene.0.Kitchen.Lights_Bright',
+      ],
     },
     max_brightness_scenes: ['scene.0.Kitchen.Lights_Bright'],
   }),
@@ -167,6 +171,7 @@ const remotes = [
       on: [
         'scene.0.Living Room.Lights_Cozy',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Warm_White',
         'scene.0.Living Room.Lights_Bright',
       ],
     },
@@ -188,6 +193,7 @@ const remotes = [
       on: [
         'scene.0.Living Room.Lights_Cozy',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Warm_White',
         'scene.0.Living Room.Lights_Bright',
       ],
     },
@@ -209,6 +215,7 @@ const remotes = [
       on: [
         'scene.0.Living Room.Lights_Cozy',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Warm_White',
         'scene.0.Living Room.Lights_Bright',
       ],
     },
@@ -231,6 +238,7 @@ const remotes = [
       on: [
         'scene.0.Living Room.Lights_Cozy',
         'scene.0.Living Room.Lights_Colorful',
+        'scene.0.Living Room.Lights_Warm_White',
         'scene.0.Living Room.Lights_Bright',
       ],
     },

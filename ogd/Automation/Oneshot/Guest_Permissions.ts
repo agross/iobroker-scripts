@@ -253,6 +253,7 @@ function translate(str: string) {
     ['All', 'Alle'],
     ['No', 'Ohne'],
 
+    ['Warm White', 'Warmweiß'],
     ['Bright', 'Hell'],
     ['Colorful', 'Farbig'],
     ['Cozy', 'Gemütlich'],
