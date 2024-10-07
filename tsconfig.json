@@ -21,6 +21,9 @@
       "path": "home/Automation/Heating_Period.tsconfig.json"
     },
     {
+      "path": "home/Automation/Heating_Profile.tsconfig.json"
+    },
+    {
       "path": "home/Automation/HomeMatic_Shutters.tsconfig.json"
     },
     {

@@ -46,6 +46,7 @@ zigbeeSmokeDetectors();
 
 scenes();
 
+homeMaticThermostats();
 homeMaticPresenceDetectors();
 
 homeMaticVariables();
@@ -277,6 +278,45 @@ function scenes() {
           entity: 'scene',
           name: Lovelace.id(name),
           attr_friendly_name: friendlyName,
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+}
+
+function homeMaticThermostats() {
+  $('state[id=hm-rpc.1.*.1.ACTIVE_PROFILE]').each(async id => {
+    const name = `${Device.deviceName(id)} Active Profile`;
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'input_number',
+          name: Lovelace.id(name),
+          attr_mode: 'slider',
+          attr_friendly_name: 'Profile',
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+
+  $('state[id=hm-rpc.1.*.1.HUMIDITY]').each(async id => {
+    const name = `${Device.deviceName(id)} Humidity`;
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'humidity',
+          attr_unit_of_measurement: '%',
+          attr_friendly_name: 'Humidity',
         },
       },
     };
