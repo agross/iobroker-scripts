@@ -323,6 +323,43 @@ function homeMaticThermostats() {
 
     await check(id, expect);
   });
+
+  $('state[id=hm-rpc.1.*.10.STATE]').each(async id => {
+    const name = `${Device.deviceName(id)} Valve Open`;
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'binary_sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'heat',
+          attr_friendly_name: 'Valve Open',
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+
+  $('state[id=hm-rpc.1.*.1.LEVEL]').each(async id => {
+    const name = `${Device.deviceName(id)} Valve Open`;
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(name),
+          attr_device_class: 'energy',
+          attr_unit_of_measurement: '%',
+          attr_friendly_name: 'Valve Open',
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
 }
 
 function homeMaticPresenceDetectors() {
