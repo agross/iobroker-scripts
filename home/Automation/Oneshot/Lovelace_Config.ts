@@ -65,6 +65,8 @@ ecovacsDeebot();
 
 fuelPrices();
 
+synology();
+
 function gradientCapableZigbeeLights() {
   $('state[id=zigbee.*.gradient_scene]').each(async id => {
     const name = Device.deviceName(id);
@@ -686,6 +688,44 @@ function fuelPrices() {
           attr_friendly_name: stationName,
           attr_unit_of_measurement: '€',
           attr_icon: 'mdi:currency-eur',
+        },
+      },
+    };
+
+    check(id, expect);
+  });
+}
+
+function synology() {
+  $('state[id=synology.*.commands.*][role=button]').each(id => {
+    const hostnameState = `${id.split('.').slice(0, 2).join('.')}.FileStation.info.hostname`;
+    const hostname = getState(hostnameState).val;
+
+    const command = id.split('.').slice(-1)[0];
+    const commandTitleCase = `${command[0].toUpperCase()}${command.substring(1)}`;
+    const name = `${commandTitleCase} Synology ${hostname}`;
+
+    var icon = '';
+    switch (command) {
+      case 'shutdown':
+        icon = 'stop';
+        break;
+      case 'reboot':
+        icon = 'restart';
+        break;
+      case 'wake':
+        icon = 'play-network';
+        break;
+    }
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'scene',
+          name: Lovelace.id(name),
+          attr_friendly_name: commandTitleCase,
+          attr_icon: `mdi:${icon}`,
         },
       },
     };
