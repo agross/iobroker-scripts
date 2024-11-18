@@ -19,11 +19,11 @@ const remotes = [
       off: 'scene.0.Kitchen.Lights',
       on: [
         'scene.0.Kitchen.Lights_Dim',
+        'scene.0.Kitchen.Lights_Cozy',
         'scene.0.Kitchen.Lights_Downlight',
         'scene.0.Kitchen.Lights_Downlight_+_Dining',
         'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
         'scene.0.Kitchen.Lights_Bright',
-        'scene.0.Kitchen.Lights_Cozy',
       ],
     },
   }),
