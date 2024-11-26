@@ -1,5 +1,18 @@
 const config = {
   brightnessChange: 5,
+  scenes: {
+    kitchen: {
+      off: 'scene.0.Kitchen.Lights',
+      on: [
+        'scene.0.Kitchen.Lights_Dim',
+        'scene.0.Kitchen.Lights_Cozy',
+        'scene.0.Kitchen.Lights_Downlight',
+        'scene.0.Kitchen.Lights_Downlight_+_Dining',
+        'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
+        'scene.0.Kitchen.Lights_Bright',
+      ],
+    }
+  }
 };
 
 const remotes = [
@@ -15,17 +28,21 @@ const remotes = [
         }).values(),
       ),
     },
-    cycle: {
-      off: 'scene.0.Kitchen.Lights',
-      on: [
-        'scene.0.Kitchen.Lights_Dim',
-        'scene.0.Kitchen.Lights_Cozy',
-        'scene.0.Kitchen.Lights_Downlight',
-        'scene.0.Kitchen.Lights_Downlight_+_Dining',
-        'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
-        'scene.0.Kitchen.Lights_Bright',
-      ],
+    cycle: config.scenes.kitchen,
+  }),
+  new Remotes.TradfriDimmer({
+    // Dining TRADFRI on/off switch
+    device: AdapterId.build(AdapterIds.zigbee, '588e81fffe2a6948'),
+    dim: {
+      brightnessChange: config.brightnessChange,
+      lights: Remotes.DimmableLights.for(
+        ...new Remotes.ObjectsWithStateQuery({
+          rooms: 'kitchen',
+          functions: 'light',
+        }).values(),
+      ),
     },
+    cycle: config.scenes.kitchen,
   }),
   new Remotes.TradfriDimmer({
     // Bedroom TRADFRI on/off switch
