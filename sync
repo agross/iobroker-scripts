@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+hosts=(nest finn)
+
+for host in "${hosts[@]}"; do
+  printf 'Updating local from %b%s%b:\n' "\e[1;34m" "$host" "\e[0m"
+
+  git fetch "$host":/data/iobroker/scripts/.git
+  git merge --ff-only FETCH_HEAD
+done
+
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
+git daemon --export-all \
+           --listen=localhost \
+           --reuseaddr \
+           --base-path="$PWD/.git" \
+           &
+
+for host in "${hosts[@]}"; do
+  printf 'Updating to %b%s%b:\n' "\e[1;34m" "$host" "\e[0m"
+
+  ssh -R 9418:localhost:9418 \
+      "$host" \
+      git -C /data/iobroker/scripts/ fetch git://localhost:9418/
+
+  ssh "$host" \
+      git -C /data/iobroker/scripts/ \
+          -c color.ui=always \
+          log --oneline ..FETCH_HEAD
+done
