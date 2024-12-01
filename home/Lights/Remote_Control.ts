@@ -5,6 +5,7 @@ const config = {
       off: 'scene.0.Kitchen.Lights',
       on: [
         'scene.0.Kitchen.Lights_Dim',
+        'scene.0.Kitchen.Lights_Warm_White',
         'scene.0.Kitchen.Lights_Cozy',
         'scene.0.Kitchen.Lights_Downlight',
         'scene.0.Kitchen.Lights_Downlight_+_Dining',
