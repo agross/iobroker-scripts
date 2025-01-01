@@ -70,6 +70,7 @@ const config = {
     'ard.mediathek',
     'de.zdf.app.zdfm3',
     'netflix',
+    'spotify-beehive',
     'tagesschau',
     'youtube.leanback.v4',
   ],
