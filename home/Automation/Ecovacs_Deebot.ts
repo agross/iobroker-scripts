@@ -115,6 +115,30 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
         coordinates: '2875,1600,5700,-550',
       },
     },
+    Entrance: {
+      type: 'state',
+      common: {
+        name: 'Entrance',
+        role: 'state',
+        type: 'boolean',
+        read: true,
+        write: true,
+        def: false,
+        custom: {
+          [AdapterIds.lovelace]: {
+            enabled: true,
+            entity: 'input_boolean',
+            name: Lovelace.id('Schedule Clean Entrance'),
+            attr_icon: 'mdi:broom',
+            attr_friendly_name: 'Entrance',
+          },
+        },
+      },
+      native: {
+        schedulerId: customAreaScheduler,
+        coordinates: '4200,-110,6800,-2400',
+      },
+    },
     'Living Room Table': {
       type: 'state',
       common: {
