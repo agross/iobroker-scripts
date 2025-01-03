@@ -23,41 +23,24 @@ import {
 const config = {
   activityIndicators: [
     function (): Observable<StateWithId> {
-      // Kodi's playing time with TV input is HDMI 1.
+      // Kodi's playing time while TV input is HDMI 1.
 
-      function input(): Observable<string> {
-        const stateId = 'lgtv.0.states.input';
+      const input = new Stream<string>('lgtv.0.states.input').stream;
 
-        const state = getState(stateId);
-        const initialInput = state.notExist ? EMPTY : of(state.val as string);
-
-        const inputChanges = new Observable<string>(observer => {
-          on({ id: stateId, ack: true }, event => {
-            observer.next(event.state.val);
-          });
-        }).pipe(share());
-
-        return concat(initialInput, inputChanges);
-      }
-
-      const playingTime = new Observable<StateWithId>(observer => {
-        on({ id: 'kodi.0.info.playing_time', ack: true }, event => {
-          const state = {
+      const playingTime = new Stream<StateWithId>(
+        { id: 'kodi.0.info.playing_time', ack: true },
+        {
+          map: event => ({
             id: event.id,
             state: event.state,
-          };
+          }),
+        },
+      ).stream;
 
-          observer.next(state);
-        });
-      }).pipe(share());
-
-      const stream = combineLatest([input(), playingTime]).pipe(
-        filter(([input, _time]) => input === 'HDMI_1' || input === '1'),
+      return combineLatest([input, playingTime]).pipe(
+        filter(([input, _time]) => input === 'HDMI_1'),
         map(([_input, time]) => time),
-        share(),
       );
-
-      return stream;
     },
     'lgtv.0.states.channelId',
     'lgtv.0.states.currentApp',
@@ -102,9 +85,9 @@ class WhitelistedApp {
     this.device = device;
     this.apps = apps;
 
-    this._stream = concat(this.initialValue, this.changes).pipe(
-      distinctUntilKeyChanged('disabled'),
-    );
+    this._stream = new Stream<DisabledReason>(this.stateId, {
+      map: event => this.isWhitelisted(event.state.val),
+    }).stream.pipe(distinctUntilKeyChanged('disabled'));
   }
 
   private isWhitelisted(app: string): DisabledReason {
@@ -122,25 +105,6 @@ class WhitelistedApp {
 
   private get stateId(): string {
     return `${this.device}.states.currentApp`;
-  }
-
-  private get initialValue(): Observable<DisabledReason> {
-    const current = getState(this.stateId);
-    if (current.notExist) {
-      return EMPTY;
-    }
-
-    return of(this.isWhitelisted(current.val));
-  }
-
-  private get changes(): Observable<DisabledReason> {
-    return new Observable<DisabledReason>(observer => {
-      on({ id: this.stateId, change: 'ne', ack: true }, event => {
-        const whitelisted = this.isWhitelisted(event.state.val);
-
-        observer.next(whitelisted);
-      });
-    }).pipe(share());
   }
 
   public get stream(): Observable<DisabledReason> {
@@ -188,30 +152,11 @@ class TV {
   constructor(device: string) {
     this.device = device;
 
-    this._stream = concat(this.initialValue, this.changes).pipe(
-      distinctUntilChanged(),
-    );
+    this._stream = new Stream<boolean>(`${this.device}.states.on`).stream;
   }
 
   public get stream(): Observable<boolean> {
     return this._stream;
-  }
-
-  private get initialValue(): Observable<boolean> {
-    const current = getState(`${this.device}.states.on`);
-    if (current.notExist) {
-      return EMPTY;
-    }
-
-    return of(current.val);
-  }
-
-  private get changes(): Observable<boolean> {
-    return new Observable<boolean>(observer => {
-      on({ id: `${this.device}.states.on`, change: 'ne', ack: true }, event => {
-        observer.next(event.state.val);
-      });
-    }).pipe(share());
   }
 
   public message(message: string): void {
@@ -338,7 +283,6 @@ const timerDisabled: Observable<DisabledReason> = combineLatest([
 
 const timerDisabledNotifications = timerDisabled
   .pipe(
-    tap(x => log(`Timer disabled: ${JSON.stringify(x)}`)),
     tap(x => {
       if (x.disabled) {
         tv.message(`TV Idle disabled b/c ${x.reason}`);
