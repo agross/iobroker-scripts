@@ -152,7 +152,10 @@ class TV {
   constructor(device: string) {
     this.device = device;
 
-    this._stream = new Stream<boolean>(`${this.device}.states.on`).stream;
+    this._stream = new Stream<boolean>(`${this.device}.states.on`).stream.pipe(
+      debounceTime(10000),
+      distinctUntilChanged(),
+    );
   }
 
   public get stream(): Observable<boolean> {
