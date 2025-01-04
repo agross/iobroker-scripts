@@ -6,19 +6,18 @@ const config = {
   scriptStatus: 'javascript.0.scriptEnabled.Automation.TV_Idle',
   reenableAfter: 5,
 };
+
 const reenableTvIdle = new Stream<boolean>(config.scriptStatus).stream
-  .pipe(filter(state => state === false))
   .pipe(
+    filter(state => state === false),
     map(_ => {
       const now = new Date();
       return new Date(now.setHours(now.getHours() + config.reenableAfter));
     }),
-  )
-  .pipe(
     tap(on => Notify.tv(`TV Idle turns back on at: ${Format.dateTime(on)}`)),
+    switchMap(on => timer(on)),
+    tap(async _ => await startScriptAsync(config.script, true)),
   )
-  .pipe(switchMap(on => timer(on)))
-  .pipe(tap(async _ => await startScriptAsync(config.script, true)))
   .subscribe();
 
 onStop(() => reenableTvIdle.unsubscribe());
