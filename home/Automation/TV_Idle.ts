@@ -1,14 +1,5 @@
+import { interval, Observable, of, concat, combineLatest, merge } from 'rxjs';
 import {
-  interval,
-  Observable,
-  of,
-  EMPTY,
-  concat,
-  combineLatest,
-  merge,
-} from 'rxjs';
-import {
-  share,
   distinctUntilChanged,
   tap,
   map,
@@ -28,7 +19,10 @@ const config = {
       const input = new Stream<string>('lgtv.0.states.input').stream;
 
       const playingTime = new Stream<StateWithId>(
-        { id: 'kodi.0.info.playing_time', ack: true },
+        {
+          id: 'kodi.0.info.playing_time',
+          ack: true,
+        },
         {
           map: event => ({
             id: event.id,
@@ -66,10 +60,7 @@ function minutesToMs(val: number): number {
   return (val * 60 * 1000) / config.debugSpeedUp;
 }
 
-interface StateWithId {
-  id: string;
-  state: iobJS.State;
-}
+type StateWithId = Pick<iobJS.ChangedStateObject<any, any>, 'id' | 'state'>;
 
 interface DisabledReason {
   disabled: boolean;
@@ -114,25 +105,13 @@ class WhitelistedApp {
 
 class Tatort {
   public get stream(): Observable<DisabledReason> {
-    return concat(this.initialValue, this.changes).pipe(
-      distinctUntilKeyChanged('disabled'),
-    );
-  }
-
-  private get initialValue(): Observable<DisabledReason> {
-    return of({
-      disabled: this.isTatortTimeWindow(new Date()),
-      reason: 'Tatort',
-    });
-  }
-
-  private get changes(): Observable<DisabledReason> {
-    return interval(minutesToMs(1)).pipe(
+    return concat(of(1), interval(minutesToMs(1))).pipe(
       timestamp(),
       map(val => {
         const now = new Date(val.timestamp);
         return { disabled: this.isTatortTimeWindow(now), reason: 'Tatort' };
       }),
+      distinctUntilKeyChanged('disabled'),
     );
   }
 
@@ -178,8 +157,14 @@ class ActivityIndicator {
   constructor(...ids: (string | (() => Observable<StateWithId>))[]) {
     this.ids = ids;
 
-    this._stream = concat(this.initialValue, this.changes).pipe(
-      distinctUntilChanged((last, next) => last.state.lc === next.state.lc),
+    this._stream = merge(
+      ...this.stateBasedActivityIndicators,
+      ...this.customActivityIndicators,
+    ).pipe(
+      distinctUntilChanged(
+        (previous, current) => previous >= current,
+        x => x.state.lc,
+      ),
     );
   }
 
@@ -187,74 +172,19 @@ class ActivityIndicator {
     return this._stream;
   }
 
-  private get initialValue(): Observable<StateWithId> {
-    const latest = this.stateBasedActivityIndicators
-      .map(indicator => {
-        return {
-          id: indicator,
-          state: getState(indicator),
-        };
-      })
-      .filter(state => {
-        if (state.state.notExist) {
-          log(`${state.id} does not exist`);
-          return false;
-        }
-        return true;
-      })
-      .map(state => {
-        return {
-          id: state.id,
-          state: state.state as iobJS.State,
-        };
-      })
-      .reduce((latest, state) => {
-        if (!latest) {
-          return state;
-        }
-
-        if (state.state.lc > latest.state.lc) {
-          log(
-            `Preferred ${state.id} over ${latest.id} (${state.state.lc} > ${latest.state.lc})`,
-          );
-          return state;
-        }
-
-        return latest;
-      }, undefined);
-
-    if (latest) {
-      log(
-        `Found latest activity from ${Format.dateTime(
-          new Date(latest.state.lc),
-        )}: ${JSON.stringify(latest)}`,
-      );
-      return of(latest);
-    } else {
-      log('No known latest activity');
-      return EMPTY;
-    }
-  }
-
-  private get changes(): Observable<StateWithId> {
-    const stateChanges = new Observable<StateWithId>(observer => {
-      on({ id: this.stateBasedActivityIndicators, ack: true }, event => {
-        const state = {
-          id: event.id,
-          state: event.state,
-        };
-
-        observer.next(state);
-      });
-    }).pipe(share());
-
-    return merge(stateChanges, ...this.customActivityIndicators);
-  }
-
-  private get stateBasedActivityIndicators(): string[] {
+  private get stateBasedActivityIndicators(): Observable<StateWithId>[] {
     return this.ids
       .filter(id => typeof id === 'string')
-      .map(id => id.toString());
+      .map(id => id.toString())
+      .map(
+        indicator =>
+          new Stream<StateWithId>(indicator, {
+            map: event => ({
+              id: event.id,
+              state: event.state,
+            }),
+          }).stream,
+      );
   }
 
   private get customActivityIndicators(): Observable<StateWithId>[] {
