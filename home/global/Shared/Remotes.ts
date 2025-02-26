@@ -180,9 +180,7 @@ export namespace Remotes {
           }
 
           const currentIndex = states
-            .map(obj => {
-              return { object: obj, state: getState(obj) };
-            })
+            .map(state => ({ object: state, state: getState(state) }))
             .reduce((acc, state, index) => {
               if (acc < 0 && state.state.val === true) {
                 return index;
@@ -598,19 +596,17 @@ export namespace Remotes {
     private toggleStreams(
       config: DeviceConfig & ToggleDeviceConfig,
     ): ToggleAndSwitchStreams {
-      const clicked = new Observable<string>(observer => {
-        on({ id: `${config.device}.single`, val: true, ack: true }, event => {
-          observer.next(event.id);
-        });
-      }).pipe(
+      const clicked = new Observable<string>(observer =>
+        on({ id: `${config.device}.single`, val: true, ack: true }, event =>
+          observer.next(event.id),
+        ),
+      ).pipe(
         share(),
-        map(_event => {
-          return {
-            device: config.device,
-            states: config.toggle.states,
-            off: config.toggle.off,
-          };
-        }),
+        map(_event => ({
+          device: config.device,
+          states: config.toggle.states,
+          off: config.toggle.off,
+        })),
       );
 
       // Since both streams are merged, only pass the click event.
@@ -623,11 +619,11 @@ export namespace Remotes {
     private cycleStreams(
       config: DeviceConfig & CycleDeviceConfig,
     ): CycleStreams {
-      const switched = new Observable<string>(observer => {
-        on({ id: `${config.device}.single`, val: true, ack: true }, event => {
-          observer.next(event.id);
-        });
-      }).pipe(share());
+      const switched = new Observable<string>(observer =>
+        on({ id: `${config.device}.single`, val: true, ack: true }, event =>
+          observer.next(event.id),
+        ),
+      ).pipe(share());
 
       const lightState = new Observable<iobJS.State>(observer => {
         on({ id: config.cycle.off, ack: true }, event =>
@@ -668,14 +664,10 @@ export namespace Remotes {
 
       return {
         off: turnOff.pipe(
-          map(_ => {
-            return { device: config.device, state: config.cycle.off };
-          }),
+          map(_ => ({ device: config.device, state: config.cycle.off })),
         ),
         next: next.pipe(
-          map(_ => {
-            return { device: config.device, states: config.cycle.on };
-          }),
+          map(_ => ({ device: config.device, states: config.cycle.on })),
         ),
       };
     }
@@ -714,29 +706,25 @@ export namespace Remotes {
     private cycleStreams(
       config: DeviceConfig & CycleDeviceConfig,
     ): CycleStreams {
-      const left = new Observable<string>(observer => {
+      const left = new Observable<string>(observer =>
         on(
           { id: `${config.device}.single_left`, val: true, ack: true },
-          event => {
-            observer.next(event.id);
-          },
-        );
-      }).pipe(share());
+          event => observer.next(event.id),
+        ),
+      ).pipe(share());
 
-      const right = new Observable<string>(observer => {
+      const right = new Observable<string>(observer =>
         on(
           { id: `${config.device}.single_right`, val: true, ack: true },
-          event => {
-            observer.next(event.id);
-          },
-        );
-      }).pipe(share());
+          event => observer.next(event.id),
+        ),
+      ).pipe(share());
 
-      const lightState = new Observable<iobJS.State>(observer => {
+      const lightState = new Observable<iobJS.State>(observer =>
         on({ id: config.cycle.off, ack: true }, event =>
           observer.next(event.state),
-        );
-      }).pipe(
+        ),
+      ).pipe(
         share(),
         startWith(getState(config.cycle.off)),
         // False -> false.
@@ -767,14 +755,10 @@ export namespace Remotes {
 
       return {
         off: turnOff.pipe(
-          map(_ => {
-            return { device: config.device, state: config.cycle.off };
-          }),
+          map(_ => ({ device: config.device, state: config.cycle.off })),
         ),
         next: next.pipe(
-          map(_ => {
-            return { device: config.device, states: config.cycle.on };
-          }),
+          map(_ => ({ device: config.device, states: config.cycle.on })),
         ),
       };
     }
@@ -813,23 +797,19 @@ export namespace Remotes {
     private maximumBrightnessSceneStreams(
       config: DeviceConfig & MaximumBrightnessSceneDeviceConfig,
     ): MaximumBrightnessSceneStreams {
-      const both = new Observable<string>(observer => {
+      const both = new Observable<string>(observer =>
         on(
           { id: `${config.device}.single_both`, val: true, ack: true },
-          event => {
-            observer.next(event.id);
-          },
-        );
-      }).pipe(share());
+          event => observer.next(event.id),
+        ),
+      ).pipe(share());
 
       return {
         turnedOn: both.pipe(
-          map(_ => {
-            return {
-              device: config.device,
-              states: config.max_brightness_scenes,
-            };
-          }),
+          map(_ => ({
+            device: config.device,
+            states: config.max_brightness_scenes,
+          })),
         ),
       };
     }
@@ -864,32 +844,26 @@ export namespace Remotes {
     private toggleStreams(
       config: DeviceConfig & ToggleDeviceConfig,
     ): ToggleAndFollowRemoteStreams {
-      const stateChanges = new Observable<iobJS.ChangedStateObject>(
-        observer => {
-          on({ id: `${config.device}.state`, ack: true }, event => {
-            observer.next(event);
-          });
-        },
+      const stateChanges = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.state`, ack: true }, event =>
+          observer.next(event),
+        ),
       ).pipe(share());
 
       return {
         turnedOn: stateChanges.pipe(
           filter(event => event.state.val),
-          map(_event => {
-            return {
-              device: config.device,
-              states: config.toggle.states,
-            };
-          }),
+          map(_ => ({
+            device: config.device,
+            states: config.toggle.states,
+          })),
         ),
         turnedOff: stateChanges.pipe(
           filter(event => !event.state.val),
-          map(_event => {
-            return {
-              device: config.device,
-              states: config.toggle.states,
-            };
-          }),
+          map(_event => ({
+            device: config.device,
+            states: config.toggle.states,
+          })),
         ),
       };
     }
@@ -897,26 +871,20 @@ export namespace Remotes {
     private cycleStreams(
       config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
     ): CycleStreams {
-      const stateChanges = new Observable<iobJS.ChangedStateObject>(
-        observer => {
-          on({ id: `${config.device}.state`, ack: true }, event => {
-            observer.next(event);
-          });
-        },
+      const stateChanges = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.state`, ack: true }, event =>
+          observer.next(event),
+        ),
       ).pipe(share());
 
       return {
         off: stateChanges.pipe(
           filter(event => !event.state.val),
-          map(_event => {
-            return { device: config.device, state: config.cycle.off };
-          }),
+          map(_ => ({ device: config.device, state: config.cycle.off })),
         ),
         next: stateChanges.pipe(
           filter(event => event.state.val),
-          map(_event => {
-            return { device: config.device, states: config.cycle.on };
-          }),
+          map(_ => ({ device: config.device, states: config.cycle.on })),
         ),
       };
     }
@@ -924,17 +892,17 @@ export namespace Remotes {
     private dimmerStreams(
       config: DeviceConfig & DimmerDeviceConfig,
     ): DimmerStreams {
-      const down = new Observable<iobJS.ChangedStateObject>(observer => {
-        on({ id: `${config.device}.down_button`, ack: true }, event => {
-          observer.next(event);
-        });
-      }).pipe(share());
+      const down = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.down_button`, ack: true }, event =>
+          observer.next(event),
+        ),
+      ).pipe(share());
 
-      const up = new Observable<iobJS.ChangedStateObject>(observer => {
-        on({ id: `${config.device}.up_button`, ack: true }, event => {
-          observer.next(event);
-        });
-      }).pipe(share());
+      const up = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.up_button`, ack: true }, event =>
+          observer.next(event),
+        ),
+      ).pipe(share());
 
       const darker = down.pipe(filter(event => event.state.val));
       const brighter = up.pipe(filter(event => event.state.val));
@@ -979,29 +947,26 @@ export namespace Remotes {
     private toggleStreams(
       config: DeviceConfig & ToggleDeviceConfig,
     ): ToggleAndFollowRemoteStreams {
-      const stateChanges = new Observable<iobJS.ChangedStateObject>(
-        observer => {
-          on(
-            { id: `${config.device}.state`, change: 'ne', ack: true },
-            event => {
-              observer.next(event);
-            },
-          );
-        },
+      const stateChanges = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.state`, change: 'ne', ack: true }, event =>
+          observer.next(event),
+        ),
       ).pipe(share());
 
       return {
         turnedOn: stateChanges.pipe(
           filter(event => event.state.val),
-          map(_event => {
-            return { device: config.device, states: config.toggle.states };
-          }),
+          map(_event => ({
+            device: config.device,
+            states: config.toggle.states,
+          })),
         ),
         turnedOff: stateChanges.pipe(
           filter(event => !event.state.val),
-          map(_event => {
-            return { device: config.device, states: config.toggle.states };
-          }),
+          map(_event => ({
+            device: config.device,
+            states: config.toggle.states,
+          })),
         ),
       };
     }
@@ -1010,23 +975,19 @@ export namespace Remotes {
       config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
     ): CycleStreams {
       return {
-        off: new Observable<iobJS.ChangedStateObject>(observer => {
-          on({ id: `${config.device}.state`, ack: true, val: false }, event => {
-            observer.next(event);
-          });
-        }).pipe(
-          map(_event => {
-            return { device: config.device, state: config.cycle.off };
-          }),
+        off: new Observable<iobJS.ChangedStateObject>(observer =>
+          on({ id: `${config.device}.state`, ack: true, val: false }, event =>
+            observer.next(event),
+          ),
+        ).pipe(
+          map(_event => ({ device: config.device, state: config.cycle.off })),
         ),
-        next: new Observable<iobJS.ChangedStateObject>(observer => {
-          on({ id: `${config.device}.state`, ack: true, val: true }, event => {
-            observer.next(event);
-          });
-        }).pipe(
-          map(_event => {
-            return { device: config.device, states: config.cycle.on };
-          }),
+        next: new Observable<iobJS.ChangedStateObject>(observer =>
+          on({ id: `${config.device}.state`, ack: true, val: true }, event =>
+            observer.next(event),
+          ),
+        ).pipe(
+          map(_event => ({ device: config.device, states: config.cycle.on })),
         ),
       };
     }
@@ -1034,17 +995,17 @@ export namespace Remotes {
     private dimmerStreams(
       config: DeviceConfig & DimmerDeviceConfig,
     ): DimmerStreams {
-      const down_hold = new Observable<iobJS.ChangedStateObject>(observer => {
-        on({ id: `${config.device}.down_hold`, ack: true }, event => {
-          observer.next(event);
-        });
-      }).pipe(share());
+      const down_hold = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.down_hold`, ack: true }, event =>
+          observer.next(event),
+        ),
+      ).pipe(share());
 
-      const up_hold = new Observable<iobJS.ChangedStateObject>(observer => {
-        on({ id: `${config.device}.up_hold`, ack: true }, event => {
-          observer.next(event);
-        });
-      }).pipe(share());
+      const up_hold = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.up_hold`, ack: true }, event =>
+          observer.next(event),
+        ),
+      ).pipe(share());
 
       const darker = down_hold.pipe(filter(event => event.state.val));
       const brighter = up_hold.pipe(filter(event => event.state.val));
@@ -1080,37 +1041,28 @@ export namespace Remotes {
     private toggleStreams(
       config: DeviceConfig & ToggleDeviceConfig,
     ): ToggleAndSwitchStreams {
-      const stateChanges = new Observable<iobJS.ChangedStateObject>(
-        observer => {
-          on(
-            { id: `${config.device}.POWER`, change: 'ne', ack: true },
-            event => {
-              observer.next(event);
-            },
-          );
-        },
+      const stateChanges = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.POWER`, change: 'ne', ack: true }, event =>
+          observer.next(event),
+        ),
       ).pipe(share());
 
       return {
         turnedOn: stateChanges.pipe(
           filter(event => event.state.val === 'ON'),
-          map(_event => {
-            return {
-              device: config.device,
-              states: config.toggle.states,
-              off: config.toggle.off,
-            };
-          }),
+          map(_event => ({
+            device: config.device,
+            states: config.toggle.states,
+            off: config.toggle.off,
+          })),
         ),
         turnedOff: stateChanges.pipe(
           filter(event => event.state.val !== 'ON'),
-          map(_event => {
-            return {
-              device: config.device,
-              states: config.toggle.states,
-              off: config.toggle.off,
-            };
-          }),
+          map(_event => ({
+            device: config.device,
+            states: config.toggle.states,
+            off: config.toggle.off,
+          })),
         ),
       };
     }
@@ -1118,17 +1070,17 @@ export namespace Remotes {
     private cycleStreams(
       config: DeviceConfig & CycleDeviceConfig,
     ): CycleStreams {
-      const shellySwitched = new Observable<string>(observer => {
-        on({ id: `${config.device}.POWER`, ack: true }, event => {
-          observer.next(event.id);
-        });
-      }).pipe(share());
+      const shellySwitched = new Observable<string>(observer =>
+        on({ id: `${config.device}.POWER`, ack: true }, event =>
+          observer.next(event.id),
+        ),
+      ).pipe(share());
 
-      const lightState = new Observable<iobJS.State>(observer => {
+      const lightState = new Observable<iobJS.State>(observer =>
         on({ id: config.cycle.off, ack: true }, event =>
           observer.next(event.state),
-        );
-      }).pipe(
+        ),
+      ).pipe(
         share(),
         startWith(getState(config.cycle.off)),
         // False -> false.
@@ -1163,14 +1115,10 @@ export namespace Remotes {
 
       return {
         off: turnOff.pipe(
-          map(_ => {
-            return { device: config.device, state: config.cycle.off };
-          }),
+          map(_ => ({ device: config.device, state: config.cycle.off })),
         ),
         next: next.pipe(
-          map(_ => {
-            return { device: config.device, states: config.cycle.on };
-          }),
+          map(_ => ({ device: config.device, states: config.cycle.on })),
         ),
       };
     }
@@ -1226,12 +1174,10 @@ export namespace Remotes {
 
     static for(...ids: string[]): Observable<string[]> {
       const stateChanges = ids.map(id => {
-        const stream = new Observable<{ id: string; val: boolean }>(
-          observer => {
-            on({ id: id, ack: true }, event => {
-              observer.next({ id: id, val: event.state.val });
-            });
-          },
+        const stream = new Observable<{ id: string; val: boolean }>(observer =>
+          on({ id: id, ack: true }, event =>
+            observer.next({ id: id, val: event.state.val }),
+          ),
         ).pipe(share());
 
         const state = getState(id);
@@ -1240,12 +1186,12 @@ export namespace Remotes {
         return stream.pipe(startWith(initial));
       });
 
-      return combineLatest(stateChanges, (...stateChanges) => {
-        return stateChanges
+      return combineLatest(stateChanges, (...stateChanges) =>
+        stateChanges
           .filter(x => x.val === true)
           .map(x => x.id)
-          .map(id => id.replace(/\.state$/, ''));
-      });
+          .map(id => id.replace(/\.state$/, '')),
+      );
     }
   }
 }

@@ -12,8 +12,8 @@ const config = {
         'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
         'scene.0.Kitchen.Lights_Bright',
       ],
-    }
-  }
+    },
+  },
 };
 
 const remotes = [
