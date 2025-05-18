@@ -181,9 +181,9 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       },
       'negated-state': {
         alias: {
-          id: stateId.replace('.cmnd.', '.stat.'),
-          read: 'val === "OFF"',
-          write: 'val === false ? "ON" : "OFF"',
+          id: { read: stateId.replace('.cmnd.', '.stat.'), write: stateId },
+          read: 'val !== "ON"',
+          write: 'val !== true ? "ON" : "OFF"',
         },
         role: 'indicator.state',
         type: 'boolean',
