@@ -61,14 +61,14 @@ const configs: Config[] = [
   },
   {
     room: 'Hall',
-    presence: 'zigbee.0.00158d0004ab6e83.occupancy',
+    presence: 'zigbee.0.54ef441000cca37e.occupancy',
     minimumTimeOn: () => timer(0.5 * 60 * 1000),
     stateInput: new Subject<Notification>(),
     overriddenBy: [
       'scene.0.Hall.Lights_Bright',
       '0_userdata.0.long-term-absence',
     ],
-    illumination: 'zigbee.0.00158d0004ab6e83.illuminance',
+    illumination: 'zigbee.0.54ef441000cca37e.illuminance_raw',
     illuminationThreshold: 40,
     turnOff: 'scene.0.Hall.Lights',
     determineScene: () => {
