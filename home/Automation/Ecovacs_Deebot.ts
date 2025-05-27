@@ -212,7 +212,7 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
           custom: {
             [AdapterIds.lovelace]: {
               enabled: true,
-              entity: 'script',
+              entity: 'scene',
               name: Lovelace.id('Clean Scheduled Spot Areas'),
               attr_device_class: 'script',
               attr_icon: 'mdi:broom',
@@ -239,7 +239,7 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
           custom: {
             [AdapterIds.lovelace]: {
               enabled: true,
-              entity: 'script',
+              entity: 'scene',
               name: Lovelace.id('Clean Scheduled Custom Areas'),
               attr_device_class: 'script',
               attr_icon: 'mdi:broom',
