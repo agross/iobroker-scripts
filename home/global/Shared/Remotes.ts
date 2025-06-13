@@ -578,7 +578,7 @@ export namespace Remotes {
         ),
       ).pipe(share());
 
-      const lightState = new Observable<iobJS.State>(observer => {
+      const lightState = new Observable<iobJS.TypedState>(observer => {
         on({ id: config.cycle.off, ack: true }, event =>
           observer.next(event.state),
         );
@@ -673,7 +673,7 @@ export namespace Remotes {
         ),
       ).pipe(share());
 
-      const lightState = new Observable<iobJS.State>(observer =>
+      const lightState = new Observable<iobJS.TypedState>(observer =>
         on({ id: config.cycle.off, ack: true }, event =>
           observer.next(event.state),
         ),
@@ -978,7 +978,7 @@ export namespace Remotes {
         ),
       ).pipe(share());
 
-      const lightState = new Observable<iobJS.State>(observer =>
+      const lightState = new Observable<iobJS.TypedState>(observer =>
         on({ id: config.cycle.off, ack: true }, event =>
           observer.next(event.state),
         ),

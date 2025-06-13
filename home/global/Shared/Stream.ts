@@ -73,8 +73,8 @@ export class Stream<T> {
       native: undefined,
       type: undefined,
       oldState: undefined,
-      newState: current as iobJS.State,
-      state: current as iobJS.State,
+      newState: current,
+      state: current,
     };
 
     return of(eventMapper(currentAsEvent));

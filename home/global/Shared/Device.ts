@@ -25,7 +25,17 @@ class Device {
 
     const device = getObject(deviceId);
 
-    return device.common.name;
+    return Device.english(device.common.name);
+  }
+
+  // Cannot use Utils.english for some weird ioBroker.javascript reason, so
+  // duplicate.
+  static english(value: iobJS.StringOrTranslated): string {
+    if (typeof value === 'string') {
+      return value;
+    } else {
+      return value.en;
+    }
   }
 
   public static type(id: string): string {
