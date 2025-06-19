@@ -269,6 +269,8 @@ function translate(str: string) {
     ['Highest Day Temperature', 'Tageshöchsttemperatur'],
     ['Day', 'Tag'],
     ['Sunny Day', 'Sonniger Tag'],
+
+    ['Raised Bed', 'Hochbeet'],
   ]);
 
   let loop = 0;
