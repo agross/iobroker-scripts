@@ -271,6 +271,7 @@ function translate(str: string) {
     ['Sunny Day', 'Sonniger Tag'],
 
     ['Raised Bed', 'Hochbeet'],
+    ['Soil Moisture', 'Bodenfeuchte'],
   ]);
 
   let loop = 0;
