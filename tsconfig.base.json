@@ -11,6 +11,7 @@
     "module": "ES2022",
     "moduleResolution": "Bundler",
     "sourceMap": false,
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": ["node", "@iobroker/types"]
   }
 }
