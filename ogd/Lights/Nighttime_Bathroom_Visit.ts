@@ -6,12 +6,12 @@ const config = {
   allLightsOff: 'scene.0.Lights.All_Lights_Off',
   locations: {
     east: {
-      switch: 'zigbee.0.50325ffffe71dbf1.state',
+      switch: 'zigbee.0.50325ffffe71dbf1',
       scene: 'scene.0.Bedroom East.Nighttime_Bathroom_Visit',
       bedroomLights: 'scene.0.Bedroom East.Lights',
     },
     west: {
-      switch: 'zigbee.0.50325ffffe6b9dac.state',
+      switch: 'zigbee.0.50325ffffe6b9dac',
       scene: 'scene.0.Bedroom West.Nighttime_Bathroom_Visit',
       bedroomLights: 'scene.0.Bedroom West.Lights',
     },
@@ -69,15 +69,10 @@ function clearVisits() {
 }
 
 const locations = Object.entries(config.locations).map(([name, location]) => {
-  const button = new Stream<boolean>(
-    {
-      id: location.switch,
-      ack: true,
-    },
-    { pipe: obs => obs },
-  ).stream;
-
-  const on = button.pipe(
+  const on = new Stream<boolean>({
+    id: `${location.switch}.on`,
+    ack: true,
+  }).stream.pipe(
     filter(x => x === true),
     tap(_ => {
       log(`Bathroom visit started: ${name}`);
@@ -87,8 +82,11 @@ const locations = Object.entries(config.locations).map(([name, location]) => {
     }),
   );
 
-  const off = button.pipe(
-    filter(x => x === false),
+  const off = new Stream<boolean>({
+    id: `${location.switch}.off`,
+    ack: true,
+  }).stream.pipe(
+    filter(x => x === true),
     tap(_ => {
       const [__, active] = getVisits();
 

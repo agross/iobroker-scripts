@@ -208,56 +208,9 @@ export namespace Remotes {
     states: States;
   }
 
-  interface ToggleAndFollowRemoteStreams {
-    turnedOn: Observable<{ device: string; states: States }>;
-    turnedOff: Observable<{ device: string; states: States }>;
-  }
-
   interface ToggleAndSwitchStreams {
     turnedOn: Observable<{ device: string; states: States; off?: States }>;
     turnedOff: Observable<{ device: string; states: States; off?: States }>;
-  }
-
-  // The state is determined by the stateful remote.
-  class ToggleAndFollowRemoteState implements IFeature {
-    private readonly config: ToggleAndFollowRemoteStreams;
-
-    constructor(config: ToggleAndFollowRemoteStreams) {
-      this.config = config;
-    }
-
-    public setUp(): Subscription {
-      const on = this.config.turnedOn.pipe(
-        tap(({ device, states }) => {
-          if (typeof states === 'function') {
-            states = states();
-          }
-
-          log(`${device}: Turned on. States to set: ${JSON.stringify(states)}`);
-
-          states.forEach(state => setState(state, true));
-        }),
-      );
-
-      const off = this.config.turnedOff.pipe(
-        tap(({ device, states }) => {
-          if (typeof states === 'function') {
-            states = states();
-          }
-
-          log(
-            `${device}: Turned off. States to set: ${JSON.stringify(states)}`,
-          );
-
-          states.forEach(state => setState(state, false));
-        }),
-      );
-
-      return [on, off].reduce((acc, $) => {
-        acc.add($.subscribe());
-        return acc;
-      }, new Subscription());
-    }
   }
 
   // Whenever the remote switches state, either turn on states (if none is on)
@@ -819,18 +772,11 @@ export namespace Remotes {
     constructor(
       config: DeviceConfig &
         DimmerDeviceConfig &
-        ToggleDeviceConfig &
         CycleDeviceConfigWithDynamicOff,
     ) {
       super();
 
       const features: IFeature[] = [];
-
-      if (config.toggle) {
-        features.push(
-          new ToggleAndFollowRemoteState(this.toggleStreams(config)),
-        );
-      }
 
       if (config.cycle) {
         features.push(new Cycle(this.cycleStreams(config)));
@@ -839,136 +785,6 @@ export namespace Remotes {
       features.push(new Dimmer(this.dimmerStreams(config)));
 
       this.addFeature(...features);
-    }
-
-    private toggleStreams(
-      config: DeviceConfig & ToggleDeviceConfig,
-    ): ToggleAndFollowRemoteStreams {
-      const stateChanges = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.state`, ack: true }, event =>
-          observer.next(event),
-        ),
-      ).pipe(share());
-
-      return {
-        turnedOn: stateChanges.pipe(
-          filter(event => event.state.val),
-          map(_ => ({
-            device: config.device,
-            states: config.toggle.states,
-          })),
-        ),
-        turnedOff: stateChanges.pipe(
-          filter(event => !event.state.val),
-          map(_event => ({
-            device: config.device,
-            states: config.toggle.states,
-          })),
-        ),
-      };
-    }
-
-    private cycleStreams(
-      config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
-    ): CycleStreams {
-      const stateChanges = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.state`, ack: true }, event =>
-          observer.next(event),
-        ),
-      ).pipe(share());
-
-      return {
-        off: stateChanges.pipe(
-          filter(event => !event.state.val),
-          map(_ => ({ device: config.device, state: config.cycle.off })),
-        ),
-        next: stateChanges.pipe(
-          filter(event => event.state.val),
-          map(_ => ({ device: config.device, states: config.cycle.on })),
-        ),
-      };
-    }
-
-    private dimmerStreams(
-      config: DeviceConfig & DimmerDeviceConfig,
-    ): DimmerStreams {
-      const down = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.down_button`, ack: true }, event =>
-          observer.next(event),
-        ),
-      ).pipe(share());
-
-      const up = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.up_button`, ack: true }, event =>
-          observer.next(event),
-        ),
-      ).pipe(share());
-
-      const darker = down.pipe(filter(event => event.state.val));
-      const brighter = up.pipe(filter(event => event.state.val));
-      const stop = merge(down, up).pipe(filter(event => !event.state.val));
-
-      return {
-        brightnessChange: config.dim.brightnessChange,
-        lights: config.dim.lights,
-        darker: darker.pipe(map(_event => config.device)),
-        brighter: brighter.pipe(map(_event => config.device)),
-        stop: stop.pipe(map(_event => config.device)),
-      };
-    }
-  }
-
-  export class Philips extends Remote {
-    constructor(
-      config: DeviceConfig &
-        DimmerDeviceConfig &
-        ToggleDeviceConfig &
-        CycleDeviceConfigWithDynamicOff,
-    ) {
-      super();
-
-      const features: IFeature[] = [];
-
-      if (config.toggle) {
-        features.push(
-          new ToggleAndFollowRemoteState(this.toggleStreams(config)),
-        );
-      }
-
-      if (config.cycle) {
-        features.push(new Cycle(this.cycleStreams(config)));
-      }
-
-      features.push(new Dimmer(this.dimmerStreams(config)));
-
-      this.addFeature(...features);
-    }
-
-    private toggleStreams(
-      config: DeviceConfig & ToggleDeviceConfig,
-    ): ToggleAndFollowRemoteStreams {
-      const stateChanges = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.state`, change: 'ne', ack: true }, event =>
-          observer.next(event),
-        ),
-      ).pipe(share());
-
-      return {
-        turnedOn: stateChanges.pipe(
-          filter(event => event.state.val),
-          map(_event => ({
-            device: config.device,
-            states: config.toggle.states,
-          })),
-        ),
-        turnedOff: stateChanges.pipe(
-          filter(event => !event.state.val),
-          map(_event => ({
-            device: config.device,
-            states: config.toggle.states,
-          })),
-        ),
-      };
     }
 
     private cycleStreams(
@@ -976,14 +792,14 @@ export namespace Remotes {
     ): CycleStreams {
       return {
         off: new Observable<iobJS.ChangedStateObject>(observer =>
-          on({ id: `${config.device}.state`, ack: true, val: false }, event =>
+          on({ id: `${config.device}.off`, ack: true, val: true }, event =>
             observer.next(event),
           ),
         ).pipe(
           map(_event => ({ device: config.device, state: config.cycle.off })),
         ),
         next: new Observable<iobJS.ChangedStateObject>(observer =>
-          on({ id: `${config.device}.state`, ack: true, val: true }, event =>
+          on({ id: `${config.device}.on`, ack: true, val: true }, event =>
             observer.next(event),
           ),
         ).pipe(
@@ -995,32 +811,118 @@ export namespace Remotes {
     private dimmerStreams(
       config: DeviceConfig & DimmerDeviceConfig,
     ): DimmerStreams {
-      const down_hold = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.down_hold`, ack: true }, event =>
-          observer.next(event),
+      const release = new Observable<iobJS.ChangedStateObject>(observer =>
+        on(
+          {
+            id: `${config.device}.brightness_stop`,
+            ack: true,
+            val: true,
+          },
+          event => observer.next(event),
         ),
       ).pipe(share());
 
       const up_hold = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.up_hold`, ack: true }, event =>
-          observer.next(event),
+        on(
+          { id: `${config.device}.brightness_move_up`, ack: true, val: true },
+          event => observer.next(event),
         ),
       ).pipe(share());
 
-      const darker = down_hold.pipe(filter(event => event.state.val));
-      const brighter = up_hold.pipe(filter(event => event.state.val));
-
-      const stop = merge(down_hold, up_hold).pipe(
-        filter(event => event.state.val === false),
-        debounceTime(900),
-      );
+      const down_hold = new Observable<iobJS.ChangedStateObject>(observer =>
+        on(
+          { id: `${config.device}.brightness_move_down`, ack: true, val: true },
+          event => observer.next(event),
+        ),
+      ).pipe(share());
 
       return {
         brightnessChange: config.dim.brightnessChange,
         lights: config.dim.lights,
-        darker: darker.pipe(map(_event => config.device)),
-        brighter: brighter.pipe(map(_event => config.device)),
-        stop: stop.pipe(map(_event => config.device)),
+        darker: down_hold.pipe(map(_event => config.device)),
+        brighter: up_hold.pipe(map(_event => config.device)),
+        stop: release.pipe(map(_event => config.device)),
+      };
+    }
+  }
+
+  export class Philips extends Remote {
+    constructor(
+      config: DeviceConfig &
+        DimmerDeviceConfig &
+        CycleDeviceConfigWithDynamicOff,
+    ) {
+      super();
+
+      const features: IFeature[] = [];
+
+      if (config.cycle) {
+        features.push(new Cycle(this.cycleStreams(config)));
+      }
+
+      features.push(new Dimmer(this.dimmerStreams(config)));
+
+      this.addFeature(...features);
+    }
+
+    private cycleStreams(
+      config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
+    ): CycleStreams {
+      return {
+        off: new Observable<iobJS.ChangedStateObject>(observer =>
+          on(
+            { id: `${config.device}.off_press_release`, ack: true, val: true },
+            event => observer.next(event),
+          ),
+        ).pipe(
+          map(_event => ({ device: config.device, state: config.cycle.off })),
+        ),
+        next: new Observable<iobJS.ChangedStateObject>(observer =>
+          on(
+            { id: `${config.device}.on_press_release`, ack: true, val: true },
+            event => observer.next(event),
+          ),
+        ).pipe(
+          map(_event => ({ device: config.device, states: config.cycle.on })),
+        ),
+      };
+    }
+
+    private dimmerStreams(
+      config: DeviceConfig & DimmerDeviceConfig,
+    ): DimmerStreams {
+      const release = new Observable<iobJS.ChangedStateObject>(observer =>
+        on(
+          {
+            id: [
+              `${config.device}.up_hold_release`,
+              `${config.device}.down_hold_release`,
+            ],
+            ack: true,
+            val: true,
+          },
+          event => observer.next(event),
+        ),
+      ).pipe(share());
+
+      const up_hold = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.up_hold`, ack: true, val: true }, event =>
+          observer.next(event),
+        ),
+      ).pipe(share());
+
+      const down_hold = new Observable<iobJS.ChangedStateObject>(observer =>
+        on({ id: `${config.device}.down_hold`, ack: true, val: true }, event =>
+          observer.next(event),
+        ),
+      ).pipe(share());
+
+      return {
+        brightnessChange: config.dim.brightnessChange,
+        lights: config.dim.lights,
+        darker: down_hold.pipe(map(_event => config.device)),
+        brighter: up_hold.pipe(map(_event => config.device)),
+        stop: release.pipe(map(_event => config.device)),
       };
     }
   }
