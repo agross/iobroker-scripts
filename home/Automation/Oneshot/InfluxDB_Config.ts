@@ -86,6 +86,7 @@ sendTo(
     zigbeeVibrationSensors(enabledDataPoints);
     zigbeeSmokeDetectors(enabledDataPoints);
     zigbeeLights(enabledDataPoints);
+    zigbeeValves(enabledDataPoints);
 
     homeMaticCommon(enabledDataPoints);
     homeMaticThermostats(enabledDataPoints);
@@ -266,6 +267,23 @@ function zigbeeLights(enabledDataPoints: {}) {
   $('state[id=zigbee.*.state](functions=light)').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Light On`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+}
+
+function zigbeeValves(enabledDataPoints: {}) {
+  const devices = [...$('state[id=zigbee.*.irrigation_interval]')].map(x => ({
+    id: Device.id(x),
+    name: Device.deviceName(x),
+  }));
+
+  devices.forEach(async device => {
+    const id = `${device.id}.state`;
+
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Valve Open`,
     });
 
     check(enabledDataPoints, id, expect);

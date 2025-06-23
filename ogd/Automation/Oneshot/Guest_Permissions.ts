@@ -270,8 +270,11 @@ function translate(str: string) {
     ['Day', 'Tag'],
     ['Sunny Day', 'Sonniger Tag'],
 
+    ['Lawn', 'Rasen'],
     ['Raised Bed', 'Hochbeet'],
     ['Soil Moisture', 'Bodenfeuchte'],
+    ['Irrigation', 'Bewässerung'],
+    ['Valve Open', 'Ventil offen'],
   ]);
 
   let loop = 0;

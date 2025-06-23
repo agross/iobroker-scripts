@@ -43,6 +43,7 @@ zigbeeDoorContacts();
 zigbeeMotionSensors();
 zigbeeTemperatureHumidityAndPressureSensors();
 zigbeeSmokeDetectors();
+zigbeeValves();
 
 scenes();
 
@@ -261,6 +262,32 @@ function zigbeeSmokeDetectors() {
           name: Lovelace.id(`${name} Smoke Detected`),
           attr_device_class: 'smoke',
           attr_friendly_name: name.replace('Detector', 'Detected'),
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+}
+
+function zigbeeValves() {
+  const devices = [...$('state[id=zigbee.*.irrigation_interval]')].map(x => ({
+    id: Device.id(x),
+    name: Device.deviceName(x),
+  }));
+
+  devices.forEach(async device => {
+    const id = `${device.id}.state`;
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'switch',
+          name: Lovelace.id(`${device.name} Valve Open`),
+          attr_device_class: 'outlet',
+          attr_friendly_name: `${device.name} Valve Open`,
+          attr_icon: 'mdi:water',
         },
       },
     };
