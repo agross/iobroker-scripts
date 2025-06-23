@@ -1,4 +1,5 @@
-import wol from 'wake_on_lan';
+// import wol from 'wake_on_lan';
+var wol = require('wake_on_lan');
 
 const config = {
   monitor: 'lgtv.0.states.power',

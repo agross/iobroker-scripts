@@ -1,4 +1,5 @@
-import wol from 'wake_on_lan';
+// import wol from 'wake_on_lan';
+var wol = require('wake_on_lan');
 
 wol.wake('00:11:32:6a:cb:35', { address: '172.16.0.255' });
 
