@@ -731,8 +731,11 @@ function fuelPrices() {
 
 function synology() {
   $('state[id=synology.*.commands.*][role=button]').each(id => {
+    let hostname = 'NAS';
     const hostnameState = `${id.split('.').slice(0, 2).join('.')}.FileStation.info.hostname`;
-    const hostname = getState(hostnameState).val;
+    if (existsState(hostnameState)) {
+      hostname = getState(hostnameState).val;
+    }
 
     const command = id.split('.').slice(-1)[0];
     const commandTitleCase = `${command[0].toUpperCase()}${command.substring(1)}`;
