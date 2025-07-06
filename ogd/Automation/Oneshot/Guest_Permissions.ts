@@ -227,6 +227,7 @@ function translate(str: string) {
 
     ['East', 'Ost'],
     ['North', 'Nord'],
+    ['Southern Bed', 'Südliches Beet'],
     ['South', 'Süd'],
 
     ['Illuminance', 'Lichtstärke'],
@@ -272,9 +273,11 @@ function translate(str: string) {
 
     ['Lawn', 'Rasen'],
     ['Raised Bed', 'Hochbeet'],
+    ['Bed', 'Beet'],
     ['Soil Moisture', 'Bodenfeuchte'],
     ['Irrigation', 'Bewässerung'],
     ['Valve Open', 'Ventil offen'],
+    ['Minutes', 'Minuten'],
   ]);
 
   let loop = 0;
