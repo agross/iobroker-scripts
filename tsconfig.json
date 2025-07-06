@@ -156,6 +156,9 @@
       "path": "ogd/Automation/Update_Notification.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Valve_Status.tsconfig.json"
+    },
+    {
       "path": "ogd/Lights/Automatic_Lights.tsconfig.json"
     },
     {
