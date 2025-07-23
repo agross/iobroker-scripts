@@ -147,6 +147,9 @@
       "path": "ogd/Automation/Presence.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Scheduled_Scenes.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Shelly_Shutters.tsconfig.json"
     },
     {
