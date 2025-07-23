@@ -271,6 +271,7 @@ function translate(str: string) {
     ['Day', 'Tag'],
     ['Sunny Day', 'Sonniger Tag'],
 
+    ['Garden', 'Garten'],
     ['Lawn', 'Rasen'],
     ['Raised Bed', 'Hochbeet'],
     ['Bed', 'Beet'],
