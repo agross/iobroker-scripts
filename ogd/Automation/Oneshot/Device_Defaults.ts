@@ -1,0 +1,1 @@
+../../../home/Automation/Oneshot/Device_Defaults.ts

@@ -30,6 +30,9 @@
       "path": "home/Automation/Media_Player.tsconfig.json"
     },
     {
+      "path": "home/Automation/Oneshot/Device_Defaults.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Oneshot/Get_Zigbee_Light_Color_Temperature_Range.tsconfig.json"
     },
     {
@@ -46,9 +49,6 @@
     },
     {
       "path": "home/Automation/Oneshot/WOL_NAS.tsconfig.json"
-    },
-    {
-      "path": "home/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
     },
     {
       "path": "home/Automation/Presence.tsconfig.json"
@@ -123,6 +123,9 @@
       "path": "ogd/Automation/Leaving_And_Returning.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Oneshot/Device_Defaults.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Oneshot/Get_Zigbee_Light_Color_Temperature_Range.tsconfig.json"
     },
     {
@@ -139,9 +142,6 @@
     },
     {
       "path": "ogd/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"
-    },
-    {
-      "path": "ogd/Automation/Oneshot/Zigbee_Power_On_Behavior.tsconfig.json"
     },
     {
       "path": "ogd/Automation/Presence.tsconfig.json"

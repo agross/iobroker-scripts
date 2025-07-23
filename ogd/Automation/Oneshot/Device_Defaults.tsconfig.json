@@ -16,7 +16,7 @@
     "../../global/Shared/Utils.ts",
     "../../global/ShutterConfig.ts",
     "../../global/Site.ts",
-    "Zigbee_Power_On_Behavior.ts"
+    "Device_Defaults.ts"
   ],
   "compilerOptions": {
     "composite": true,
