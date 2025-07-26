@@ -308,6 +308,12 @@ const remotes = [
     },
     max_brightness_scenes: ['scene.0.Bathroom.Lights_Bright'],
   }),
+  new Remotes.Shelly({
+    device: 'mqtt.0.ogd.shed.power.stat.shelly1minigen3-1',
+    toggle: {
+      states: ['scene.0.Garden.Shed'],
+    },
+  }),
 ];
 
 const subscriptions = remotes.map(remote => remote.setUp());
