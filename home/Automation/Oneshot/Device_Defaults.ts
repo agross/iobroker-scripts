@@ -21,9 +21,23 @@ function defaultTransitionTime(deviceId) {
   return 2;
 }
 
-await $('state[id=zigbee.*.power_on_behavior](functions=light)').setStateAsync(
-  'previous',
+const powerOnBehavior = $(
+  'state[id=zigbee.*.power_on_behavior](functions=light)',
 );
+
+await powerOnBehavior.setStateAsync('off');
+
+// https://www.zigbee2mqtt.io/devices/8718696449691.html#power-on-behavior
+[...powerOnBehavior]
+  .map(state => `${Device.id(state)}.send_payload`)
+  .forEach(state =>
+    setState(
+      state,
+      JSON.stringify({
+        hue_power_on_behavior: 'off',
+      }),
+    ),
+  );
 
 $('state[id=zigbee.*.transition_time](functions=light)').each(
   async transitionTime => {
