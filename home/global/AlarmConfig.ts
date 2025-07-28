@@ -8,4 +8,6 @@ class AlarmConfig {
   public static allowDeviceAlarm(_stateId: string): boolean {
     return true;
   }
+
+  public static alarmEnabledChanged(_enabled: boolean) {}
 }

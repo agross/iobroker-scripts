@@ -20,4 +20,25 @@ class AlarmConfig {
       .val as number;
     return temp && temp > 15;
   }
+
+  public static alarmEnabledChanged(enabled: boolean) {
+    [
+      'mqtt.0.ogd.frigate.notifications.set',
+      ...$('mqtt.0.ogd.frigate.*.detect.set'),
+      ...$('mqtt.0.ogd.frigate.*.motion.set'),
+      ...$('mqtt.0.ogd.frigate.*.recordings.set'),
+      ...$('mqtt.0.ogd.frigate.*.snapshots.set'),
+    ].forEach(state => {
+      log(
+        `${enabled ? 'Enabling' : 'Disabling'} ${state.replace(/\.\w+?$/, '')}`,
+      );
+      setState(state, enabled ? 'ON' : 'OFF');
+    });
+
+    const tracking = {
+      bSmartTrack: enabled ? 1 : 0,
+    };
+
+    setState('reolink.0.ai_config.raw', JSON.stringify(tracking));
+  }
 }
