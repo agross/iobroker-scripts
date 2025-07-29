@@ -1,4 +1,12 @@
 class Utils {
+  public static english(value: iobJS.StringOrTranslated): string {
+    if (typeof value === 'string') {
+      return value;
+    } else {
+      return value.en;
+    }
+  }
+
   public static shrink(object: {}, reference: {}): {} {
     if (!object) {
       return object;

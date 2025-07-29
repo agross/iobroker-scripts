@@ -160,10 +160,11 @@ async function copyCommonNameToSmartNameWithGermanTranslation(
     return;
   }
 
-  const german = translate(object.common.name);
-  if (german === object.common.name) {
+  const english = Utils.english(object.common.name);
+  const german = translate(english);
+  if (german === english) {
     log(
-      `No translation for ${deviceOrObjectId}.common.name: "${object.common.name}"`,
+      `No translation for ${deviceOrObjectId}.common.name: "${english}"`,
       'warn',
     );
     return;

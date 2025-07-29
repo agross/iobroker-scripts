@@ -508,7 +508,7 @@ function scripts() {
 
 function pingedMachines() {
   $('state[id=ping.*.iobroker.*][role=indicator.reachable]').each(async id => {
-    const aliveMachine = (await getObjectAsync(id)).common.name;
+    const aliveMachine = Utils.english((await getObjectAsync(id)).common.name);
     const machine = aliveMachine.replace(/^Alive\s+/, '');
     const name = `Ping ${machine}`;
 
@@ -632,7 +632,7 @@ function ecovacsDeebot() {
       return;
     }
 
-    const area = (await getObjectAsync(id)).common.name;
+    const area = Utils.english((await getObjectAsync(id)).common.name);
 
     if (area.length === 1) {
       log(

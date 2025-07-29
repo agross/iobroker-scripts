@@ -31,9 +31,9 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
       schedulerId: spotAreaId.replace(/_\d+$/, ''),
       object: getObject(spotAreaId),
     }))
-    .filter(spotArea => spotArea.object.common.name.length > 1)
+    .filter(spotArea => Utils.english(spotArea.object.common.name).length > 1)
     .reduce((acc, spotArea) => {
-      const areaName = spotArea.object.common.name;
+      const areaName = Utils.english(spotArea.object.common.name);
 
       acc[areaName] = {
         type: 'state',
