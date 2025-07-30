@@ -35,10 +35,17 @@ class AlarmConfig {
       setState(state, enabled ? 'ON' : 'OFF');
     });
 
+    // Disable object tracking of the PTZ cam.
     const tracking = {
       bSmartTrack: enabled ? 1 : 0,
     };
 
     setState('reolink.0.ai_config.raw', JSON.stringify(tracking));
+
+    // Go to privacy position and stay there.
+    setState('reolink.0.settings.ptzEnableGuard', enabled);
+    if (!enabled) {
+      setState('reolink.0.settings.ptzPreset', 0);
+    }
   }
 }
