@@ -1,3 +1,6 @@
+import { Subscription } from 'rxjs';
+import { filter, pairwise, tap } from 'rxjs/operators';
+
 class AlarmConfig {
   public static homematicPresence = undefined;
 
@@ -21,7 +24,9 @@ class AlarmConfig {
     return temp && temp > 15;
   }
 
-  public static alarmEnabledChanged(enabled: boolean) {
+  static frigateMonitor?: Subscription;
+
+  static frigate(alarmEnabled: boolean) {
     [
       'mqtt.0.ogd.frigate.notifications.set',
       ...$('mqtt.0.ogd.frigate.*.detect.set'),
@@ -30,10 +35,37 @@ class AlarmConfig {
       ...$('mqtt.0.ogd.frigate.*.snapshots.set'),
     ].forEach(state => {
       log(
-        `${enabled ? 'Enabling' : 'Disabling'} ${state.replace(/\.\w+?$/, '')}`,
+        `${alarmEnabled ? 'Enabling' : 'Disabling'} ${state.replace(/\.\w+?$/, '')}`,
       );
-      setState(state, enabled ? 'ON' : 'OFF');
+      setState(state, alarmEnabled ? 'ON' : 'OFF');
     });
+  }
+
+  public static alarmEnabledChanged(enabled: boolean) {
+    AlarmConfig.frigate(enabled);
+
+    // Frigate resets detection, motion etc. on restart according to its config.
+    // https://github.com/blakeblackshear/frigate/issues/5502#issuecomment-1431280542
+    // When a Frigate restart occurs while the alarm is disabled, set the
+    // Frigate state accordingly.
+    if (enabled) {
+      this.frigateMonitor?.unsubscribe();
+    } else {
+      this.frigateMonitor = new Stream<number>('mqtt.0.ogd.frigate.stats', {
+        map: event => JSON.parse(event.state.val).service.uptime,
+      }).stream
+        .pipe(
+          pairwise(),
+          filter(([prev, next]) => next - prev < 0),
+          tap(([prev, next]) =>
+            log(
+              `Frigate was restarted with uptime ${prev} -> ${next}, reapplying`,
+            ),
+          ),
+          tap(_ => AlarmConfig.frigate(false)),
+        )
+        .subscribe();
+    }
 
     // Disable object tracking of the PTZ cam.
     const tracking = {
