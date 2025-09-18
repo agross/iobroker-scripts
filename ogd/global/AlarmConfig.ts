@@ -1,7 +1,19 @@
 import { Subscription } from 'rxjs';
 import { filter, pairwise, tap } from 'rxjs/operators';
 
-class AlarmConfig {
+declare global {
+  class AlarmConfig {
+    public static homematicPresence: string;
+
+    public static get triggerAlarmOn(): [string];
+
+    public static allowDeviceAlarm(_stateId: string): boolean;
+
+    public static alarmEnabledChanged(_enabled: boolean);
+  }
+}
+
+export class AlarmConfig {
   public static homematicPresence = undefined;
 
   public static get triggerAlarmOn() {
