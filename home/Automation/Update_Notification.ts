@@ -145,7 +145,7 @@ const updates = new Stream<string>(config.indicator).stream
     filter(updates => updates.adapters.length > 0),
     tap(updates => {
       const message = Object.entries<any>(updates.json)
-        .map(([k, v]) => `${k} ${v.installedVersion} -> ${v.availableVersion}`)
+        .map(([k, v]) => `${k} ${v.installedVersion} ⮕ ${v.availableVersion}`)
         .join('\n');
 
       const replies = updates.adapters.map(adapter => {
