@@ -224,6 +224,7 @@ function translate(str: string) {
     ['House Entrance', 'Hauseingang'],
     ['House', 'Haus'],
     ['Porch', 'Vordach'],
+    ['Shed', 'Holzlager'],
 
     ['East', 'Ost'],
     ['North', 'Nord'],
