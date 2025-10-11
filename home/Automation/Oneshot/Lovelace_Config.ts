@@ -481,14 +481,24 @@ function scripts() {
     const lovelaceId = name.replace(/[._]/g, ' ');
     const friendlyName = name.replace(/.*\.(\w+)$/, '$1').replace(/[._]/g, ' ');
 
+    const config = {
+      enabled: true,
+      entity: 'automation',
+      name: Lovelace.id(lovelaceId),
+      attr_friendly_name: friendlyName,
+    } as Record<string, any>;
+
+    if (name === 'Automation.TV_Idle'){
+      config.attr_icon = "mdi:clock-time-three-outline";
+    }
+
+    if (name === 'Automation.Washing_Machine'){
+      config.attr_icon = "mdi:washing-machine-alert";
+    }
+
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'automation',
-          name: Lovelace.id(lovelaceId),
-          attr_friendly_name: friendlyName,
-        },
+        [AdapterIds.lovelace]: config,
       },
     };
 
