@@ -103,27 +103,6 @@ class WhitelistedApp {
   }
 }
 
-class Tatort {
-  public get stream(): Observable<DisabledReason> {
-    return concat(of(1), interval(minutesToMs(1))).pipe(
-      timestamp(),
-      map(val => {
-        const now = new Date(val.timestamp);
-        return { disabled: this.isTatortTimeWindow(now), reason: 'Tatort' };
-      }),
-      distinctUntilKeyChanged('disabled'),
-    );
-  }
-
-  private isSunday(date: Date): boolean {
-    return date.getDay() == 0;
-  }
-
-  private isTatortTimeWindow(date: Date): boolean {
-    return this.isSunday(date) && date.getHours() >= 20 && date.getHours() < 23;
-  }
-}
-
 class TV {
   private device: string;
   private _stream: Observable<boolean>;
@@ -200,7 +179,6 @@ const tvLog = tv.stream.pipe(tap(x => log(`TV on: ${x}`))).subscribe();
 
 const timerDisabled: Observable<DisabledReason> = combineLatest([
   new WhitelistedApp(config.tvDevice, ...config.whitelistedLgApps).stream,
-  new Tatort().stream,
 ]).pipe(
   map(flags => {
     return {
