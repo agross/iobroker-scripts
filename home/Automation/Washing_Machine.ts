@@ -1,14 +1,17 @@
 import { EMPTY, of, timer } from 'rxjs';
-import {
-  bufferCount,
-  filter,
-  first,
-  map,
-  switchMap,
-  tap,
-} from 'rxjs/operators';
+import { filter, first, map, scan, switchMap, tap } from 'rxjs/operators';
 
-const config = {
+type Config = {
+  workingThreshold: number;
+  finishedThreshold: number;
+  powerMonitor: string;
+  powerState: string;
+  repowerTimeout: number;
+  repowerState: string[];
+  callbacks: any[];
+};
+
+const config: Config = {
   workingThreshold: 10,
   finishedThreshold: 18,
   powerMonitor: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power',
@@ -53,23 +56,120 @@ await ObjectCreator.create(
   config.repowerState[0],
 );
 
-const powerUsage = new Stream<number>(config.powerMonitor, {
+interface State {
+  next(power: number): State;
+}
+
+class Idle implements State {
+  constructor(private config: Config) {
+    this.config = config;
+  }
+
+  next(powerUsage: number): State {
+    if (powerUsage >= this.config.workingThreshold)
+      return new Working(this.config, powerUsage);
+
+    return this;
+  }
+}
+
+class Working implements State {
+  lastMeasurements: number[] = [];
+
+  constructor(
+    private config: Config,
+    powerUsage: number,
+  ) {
+    this.config = config;
+
+    this.lastMeasurements.push(powerUsage);
+  }
+
+  next(powerUsage: number): State {
+    this.lastMeasurements.push(powerUsage);
+    while (this.lastMeasurements.length > 6) {
+      this.lastMeasurements.shift();
+    }
+
+    if (this.lastMeasurements.length < 6) {
+      return this;
+    }
+
+    const lastMinute = this.lastMeasurements.reduce((acc, x) => acc + x, 0);
+
+    if (lastMinute < this.config.finishedThreshold) {
+      log(
+        `Latest recorded power usage ${JSON.stringify(this.lastMeasurements)}`,
+      );
+
+      this.notify();
+      this.cutPower();
+      this.scheduleRepowering();
+      return new Idle(this.config);
+    }
+
+    return this;
+  }
+
+  private notify() {
+    Notify.mobile(`Washing machine has finished`, {
+      telegram: {
+        reply_markup: {
+          inline_keyboard: [this.config.callbacks],
+        },
+      },
+    });
+  }
+
+  private cutPower() {
+    setState(this.config.powerState, false);
+  }
+
+  private scheduleRepowering() {
+    const dueDate = new Date(Date.now() + this.config.repowerTimeout);
+
+    setState(
+      this.config.repowerState.join('.'),
+      dueDate.toISOString(),
+      true,
+      err => {
+        if (err) {
+          log(
+            `Could not set timestamp to repower washing machine to ${Format.dateTime(
+              dueDate,
+            )}: ${err}`,
+            'error',
+          );
+        } else {
+          log(
+            `Set timestamp to repower washing machine to ${Format.dateTime(
+              dueDate,
+            )}`,
+          );
+        }
+      },
+    );
+  }
+}
+
+const monitor = new Stream<number>(config.powerMonitor, {
   map: event => event.state.val as number,
   pipe: obs => obs, // All values, not distinct ones.
-}).stream;
+}).stream
+  .pipe(
+    scan((state: State, powerUsage) => {
+      const next = state.next(powerUsage);
 
-const running = powerUsage.pipe(
-  tap(watts => log(`Usage ${JSON.stringify(watts)}`, 'debug')),
-  filter(watts => watts >= config.workingThreshold),
-);
+      if (state.constructor.name !== next.constructor.name) {
+        log(
+          `Power usage ${powerUsage} causing ${state.constructor.name} -> ${next.constructor.name}`,
+        );
+      }
 
-const notRunning = powerUsage.pipe(
-  // Last 6 values, 10 s intervals, e.g. [3, 3, 3, 2, 2, 2]
-  bufferCount(6),
-  tap(watts => log(`Buffer ${watts}`)),
-  map(watts => watts.reduce((acc, x) => acc + x, 0)),
-  filter(watts => watts < config.finishedThreshold),
-);
+      return next;
+    }, new Idle(config)),
+  )
+  .subscribe();
 
 const repower = new Stream<string>(config.repowerState.join('.')).stream
   .pipe(
@@ -116,47 +216,6 @@ const callbacks = Notify.subscribeToCallbacks()
   )
   .subscribe();
 
-const done = running
-  .pipe(
-    switchMap(_ => notRunning.pipe(first())),
-    tap(_ =>
-      Notify.mobile(`Washing machine has finished`, {
-        telegram: {
-          reply_markup: {
-            inline_keyboard: [config.callbacks],
-          },
-        },
-      }),
-    ),
-    tap(_ => setState(config.powerState, false)),
-    tap(_ => {
-      const dueDate = new Date(Date.now() + config.repowerTimeout);
-
-      setState(
-        config.repowerState.join('.'),
-        dueDate.toISOString(),
-        true,
-        err => {
-          if (err) {
-            log(
-              `Could not set timestamp to repower washing machine to ${Format.dateTime(
-                dueDate,
-              )}: ${err}`,
-              'error',
-            );
-          } else {
-            log(
-              `Set timestamp to repower washing machine to ${Format.dateTime(
-                dueDate,
-              )}`,
-            );
-          }
-        },
-      );
-    }),
-  )
-  .subscribe();
-
 onStop(() => {
-  [done, repower].forEach(x => x.unsubscribe());
+  [monitor, repower, callbacks].forEach(x => x.unsubscribe());
 });
