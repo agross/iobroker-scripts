@@ -1,14 +1,14 @@
-import { interval, Observable, of, concat, combineLatest, merge } from 'rxjs';
+import { Observable, combineLatest, merge } from 'rxjs';
 import {
   distinctUntilChanged,
   tap,
   map,
-  timestamp,
   debounceTime,
   withLatestFrom,
   filter,
   scan,
   distinctUntilKeyChanged,
+  share,
 } from 'rxjs/operators';
 
 const config = {
@@ -78,7 +78,7 @@ class WhitelistedApp {
 
     this._stream = new Stream<DisabledReason>(this.stateId, {
       map: event => this.isWhitelisted(event.state.val),
-    }).stream.pipe(distinctUntilKeyChanged('disabled'));
+    }).stream.pipe(distinctUntilKeyChanged('disabled'), share());
   }
 
   private isWhitelisted(app: string): DisabledReason {
@@ -113,6 +113,8 @@ class TV {
     this._stream = new Stream<boolean>(`${this.device}.states.on`).stream.pipe(
       debounceTime(10000),
       distinctUntilChanged(),
+      tap(x => log(`TV on: ${x}`)),
+      share(),
     );
   }
 
@@ -174,8 +176,6 @@ class ActivityIndicator {
 }
 
 const tv = new TV(config.tvDevice);
-
-const tvLog = tv.stream.pipe(tap(x => log(`TV on: ${x}`))).subscribe();
 
 const timerDisabled: Observable<DisabledReason> = combineLatest([
   new WhitelistedApp(config.tvDevice, ...config.whitelistedLgApps).stream,
@@ -275,7 +275,7 @@ const turnOff = activity
 onStop(() => {
   tv.message(`TV Idle disabled`);
 
-  [timerDisabledNotifications, turnOff, tvLog, activityLog]
+  [timerDisabledNotifications, turnOff, activityLog]
     .concat(timeoutNotifications)
     .forEach(subscription => subscription.unsubscribe());
 });
