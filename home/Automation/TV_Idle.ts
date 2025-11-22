@@ -36,8 +36,23 @@ const config = {
         map(([_input, time]) => time),
       );
     },
+    function (): Observable<StateWithId> {
+      // lgtv.0.states.currentApp receives an empty string every minute before
+      // changing back again to the current app.
+      return new Stream<StateWithId>(
+        {
+          id: 'lgtv.0.states.currentApp',
+          ack: true,
+        },
+        {
+          map: event => ({
+            id: event.id,
+            state: event.state,
+          }),
+        },
+      ).stream.pipe(filter(x => x.state.val.length > 0));
+    },
     'lgtv.0.states.channelId',
-    'lgtv.0.states.currentApp',
     'lgtv.0.states.volume',
   ],
   tvDevice: 'lgtv.0',
@@ -76,9 +91,14 @@ class WhitelistedApp {
     this.device = device;
     this.apps = apps;
 
-    this._stream = new Stream<DisabledReason>(this.stateId, {
-      map: event => this.isWhitelisted(event.state.val),
-    }).stream.pipe(distinctUntilKeyChanged('disabled'), share());
+    this._stream = new Stream<string>(this.stateId, {
+      map: event => event.state.val as string,
+    }).stream.pipe(
+      filter(x => x.length > 0),
+      map(x => this.isWhitelisted(x)),
+      distinctUntilKeyChanged('disabled'),
+      share(),
+    );
   }
 
   private isWhitelisted(app: string): DisabledReason {
