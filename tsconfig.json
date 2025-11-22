@@ -162,6 +162,9 @@
       "path": "ogd/Automation/Valve_Status.tsconfig.json"
     },
     {
+      "path": "ogd/Keep_Cams_Recording.tsconfig.json"
+    },
+    {
       "path": "ogd/Lights/Automatic_Lights.tsconfig.json"
     },
     {
