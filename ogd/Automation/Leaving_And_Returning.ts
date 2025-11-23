@@ -14,6 +14,13 @@ const config = {
       ),
       activate: 'scene.0.Leaving.Long-Term',
     },
+    {
+      trigger: AdapterId.build(
+        AdapterIds.zigbee,
+        '54ef4410001c6707.double_right',
+      ),
+      activate: 'scene.0.House.Getting_Wood',
+    },
   ],
   returning: {
     trigger: new Stream<boolean>('0_userdata.0.presence').stream.pipe(
