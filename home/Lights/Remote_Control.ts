@@ -98,6 +98,7 @@ const remotes = [
           'scene.0.Living Room.Lights_Cozy',
           'scene.0.Living Room.Lights_TV',
           'scene.0.Living Room.Lights_Reading',
+          'scene.0.Living Room.Lights_Warm_White',
           'scene.0.Living Room.Lights_Bright',
         ];
 
