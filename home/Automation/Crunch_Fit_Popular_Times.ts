@@ -67,6 +67,23 @@ const update = timer(0, config.intervalInMs)
         populartimes: { name: string; data: number[] }[];
       };
 
+      if (d.current_popularity === undefined || d.populartimes === undefined) {
+        log(
+          `Data returned is missing popular times or current popularity: ${JSON.stringify(
+            await data,
+            undefined,
+            2,
+          )}`,
+          'error',
+        );
+
+        return {
+          popularity: [],
+          maxPopularity: [],
+          now: 0,
+        };
+      }
+
       const maxPopularity = Math.max(
         ...d.populartimes.map(x => Math.max(...x.data)),
       );
