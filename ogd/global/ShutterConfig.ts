@@ -11,7 +11,7 @@ class ShutterConfig {
     }
 
     const maxDayTemperature =
-      'daswetter.0.NextDays.Location_1.Day_1.Maximale_Temperatur_value';
+      'pirate-weather.0.weather.daily.00.temperatureMax';
 
     const maxTempToday = await getStateAsync(maxDayTemperature);
 

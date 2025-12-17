@@ -488,12 +488,12 @@ function scripts() {
       attr_friendly_name: friendlyName,
     } as Record<string, any>;
 
-    if (name === 'Automation.TV_Idle'){
-      config.attr_icon = "mdi:clock-time-three-outline";
+    if (name === 'Automation.TV_Idle') {
+      config.attr_icon = 'mdi:clock-time-three-outline';
     }
 
-    if (name === 'Automation.Washing_Machine'){
-      config.attr_icon = "mdi:washing-machine-alert";
+    if (name === 'Automation.Washing_Machine') {
+      config.attr_icon = 'mdi:washing-machine-alert';
     }
 
     const expect: Partial<iobJS.StateCommon> = {
@@ -573,23 +573,23 @@ function androidDebugBridge() {
 }
 
 function maxDayTemperature() {
-  $(
-    'state[id=daswetter.*.NextDays.Location_1.Day_1.Maximale_Temperatur_value]',
-  ).each(async id => {
-    const expect: Partial<iobJS.StateCommon> = {
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'sensor',
-          name: Lovelace.id('Weather Max Temp Today'),
-          attr_friendly_name: 'Highest Day Temperature',
-          attr_icon: 'mdi:thermometer-chevron-up',
+  $('state[id=pirate-weather.*.weather.daily.00.temperatureMax]').each(
+    async id => {
+      const expect: Partial<iobJS.StateCommon> = {
+        custom: {
+          [AdapterIds.lovelace]: {
+            enabled: true,
+            entity: 'sensor',
+            name: Lovelace.id('Weather Max Temp Today'),
+            attr_friendly_name: 'Highest Day Temperature',
+            attr_icon: 'mdi:thermometer-chevron-up',
+          },
         },
-      },
-    };
+      };
 
-    await check(id, expect);
-  });
+      await check(id, expect);
+    },
+  );
 }
 
 function ecovacsDeebot() {
