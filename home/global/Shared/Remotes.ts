@@ -1,7 +1,14 @@
-import { Observable, merge, combineLatest, Subscription, NEVER } from 'rxjs';
+import {
+  Observable,
+  merge,
+  combineLatest,
+  Subscription,
+  NEVER,
+  concat,
+  of,
+} from 'rxjs';
 import {
   filter,
-  debounceTime,
   map,
   startWith,
   withLatestFrom,
@@ -10,6 +17,8 @@ import {
   share,
   tap,
   delay,
+  take,
+  exhaustMap,
 } from 'rxjs/operators';
 
 declare global {
@@ -369,21 +378,13 @@ export namespace Remotes {
     }
 
     public setUp(): Subscription {
-      let interval = undefined;
-
       const darker = this.config.darker
         .pipe(withLatestFrom(this.config.lights))
         .pipe(
           tap(([device, states]) => {
-            if (!interval) {
-              log(`${device}: Starting darker dimmer`);
+            log(`${device}: Starting darker dimmer`);
 
-              states.forEach(light => {
-                setState(`${light}.transition_time`, 0.2);
-              });
-
-              interval = setInterval(() => this.makeDarker(states), 200);
-            }
+            states.forEach(light => setState(`${light}.brightness_move`, -30));
           }),
         );
 
@@ -391,15 +392,9 @@ export namespace Remotes {
         .pipe(withLatestFrom(this.config.lights))
         .pipe(
           tap(([device, states]) => {
-            if (!interval) {
-              log(`${device}: Starting brighter dimmer`);
+            log(`${device}: Starting brighter dimmer`);
 
-              states.forEach(light => {
-                setState(`${light}.transition_time`, 0.2);
-              });
-
-              interval = setInterval(() => this.makeBrighter(states), 200);
-            }
+            states.forEach(light => setState(`${light}.brightness_move`, 30));
           }),
         );
 
@@ -407,16 +402,9 @@ export namespace Remotes {
         .pipe(withLatestFrom(this.config.lights))
         .pipe(
           tap(([device, states]) => {
-            if (interval) {
-              log(`Stopping ${device} dimmer`);
+            log(`${device}: Stopping dimmer`);
 
-              clearInterval(interval);
-              interval = undefined;
-
-              states.forEach(light => {
-                setState(`${light}.transition_time`, 3);
-              });
-            }
+            states.forEach(light => setState(`${light}.brightness_move`, 0));
           }),
         );
 
@@ -820,21 +808,21 @@ export namespace Remotes {
           },
           event => observer.next(event),
         ),
-      ).pipe(share());
+      );
 
       const up_hold = new Observable<iobJS.ChangedStateObject>(observer =>
         on(
           { id: `${config.device}.brightness_move_up`, ack: true, val: true },
           event => observer.next(event),
         ),
-      ).pipe(share());
+      );
 
       const down_hold = new Observable<iobJS.ChangedStateObject>(observer =>
         on(
           { id: `${config.device}.brightness_move_down`, ack: true, val: true },
           event => observer.next(event),
         ),
-      ).pipe(share());
+      );
 
       return {
         brightnessChange: config.dim.brightnessChange,
@@ -891,38 +879,61 @@ export namespace Remotes {
     private dimmerStreams(
       config: DeviceConfig & DimmerDeviceConfig,
     ): DimmerStreams {
-      const release = new Observable<iobJS.ChangedStateObject>(observer =>
+      const down_hold = new Observable<boolean>(observer =>
+        on({ id: `${config.device}.down_hold`, ack: true, val: true }, _event =>
+          observer.next(true),
+        ),
+      );
+
+      const down_release = new Observable<boolean>(observer =>
         on(
           {
-            id: [
-              `${config.device}.up_hold_release`,
-              `${config.device}.down_hold_release`,
-            ],
+            id: `${config.device}.down_hold_release`,
             ack: true,
             val: true,
           },
-          event => observer.next(event),
+          _event => observer.next(false),
         ),
-      ).pipe(share());
+      ).pipe(take(1));
 
-      const up_hold = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.up_hold`, ack: true, val: true }, event =>
-          observer.next(event),
-        ),
-      ).pipe(share());
+      const darker = down_hold.pipe(
+        exhaustMap(x => concat(of(x), down_release)),
+      );
 
-      const down_hold = new Observable<iobJS.ChangedStateObject>(observer =>
-        on({ id: `${config.device}.down_hold`, ack: true, val: true }, event =>
-          observer.next(event),
+      const up_hold = new Observable<boolean>(observer =>
+        on({ id: `${config.device}.up_hold`, ack: true, val: true }, _event =>
+          observer.next(true),
         ),
-      ).pipe(share());
+      );
+
+      const up_release = new Observable<boolean>(observer =>
+        on(
+          {
+            id: `${config.device}.up_hold_release`,
+            ack: true,
+            val: true,
+          },
+          _event => observer.next(false),
+        ),
+      ).pipe(take(1));
+
+      const brighter = up_hold.pipe(exhaustMap(x => concat(of(x), up_release)));
 
       return {
         brightnessChange: config.dim.brightnessChange,
         lights: config.dim.lights,
-        darker: down_hold.pipe(map(_event => config.device)),
-        brighter: up_hold.pipe(map(_event => config.device)),
-        stop: release.pipe(map(_event => config.device)),
+        darker: darker.pipe(
+          filter(x => x === true),
+          map(_event => config.device),
+        ),
+        brighter: brighter.pipe(
+          filter(x => x === true),
+          map(_event => config.device),
+        ),
+        stop: merge(darker, brighter).pipe(
+          filter(x => x === false),
+          map(_event => config.device),
+        ),
       };
     }
   }
