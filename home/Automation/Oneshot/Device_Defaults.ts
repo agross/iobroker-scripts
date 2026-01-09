@@ -50,7 +50,7 @@ $('state[id=zigbee.*.transition_time](functions=light)').each(
       log(
         `Setting ${transitionTime} (${Device.deviceName(transitionTime)}) to ${expected}`,
       );
-      await setStateAsync(transitionTime, expected);
+      await setStateAsync(transitionTime, expected, true);
     }
   },
 );
