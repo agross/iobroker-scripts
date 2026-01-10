@@ -100,11 +100,6 @@ const alarmEnabled = new Stream<boolean>(config.alarmEnabled.join('.')).stream;
 const alarmEnabledNotifications = alarmEnabled
   .pipe(
     tap(enabled => config.alarmEnabledChanged(enabled)),
-    tap(enabled => {
-      const message = `Alarm ${enabled ? 'enabled' : 'disabled'}`;
-
-      Notify.mobile(message);
-    }),
   )
   .subscribe();
 
