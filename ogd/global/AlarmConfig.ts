@@ -86,10 +86,10 @@ export class AlarmConfig {
 
     setState('reolink.0.ai_config.raw', JSON.stringify(tracking));
 
-    // Go to privacy position and stay there.
+    // Go to default position and stay there.
     setState('reolink.0.settings.ptzEnableGuard', enabled);
     if (!enabled) {
-      setState('reolink.0.settings.ptzPreset', 0);
+      setState('reolink.0.settings.ptzPreset', 1);
     }
   }
 }
