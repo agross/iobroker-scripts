@@ -182,21 +182,34 @@ function zigbeeTemperatureHumidityAndPressureSensors() {
   $('state[id=zigbee.*.humidity]').each(async id => {
     const name = Device.deviceName(id);
 
-    let measurement = 'Humidity';
-    const device = Device.id(id);
-    if (device && getObject(device).common.type === '3RSM0147Z') {
-      measurement = 'Soil Moisture';
-    }
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'sensor',
+          name: Lovelace.id(`${name} Humidity`),
+          attr_device_class: 'humidity',
+          attr_unit_of_measurement: '%',
+          attr_friendly_name: `${name.replace(/\sSensor/, '')} Humidity`,
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+
+  $('state[id=zigbee.*.soil_moisture]').each(async id => {
+    const name = Device.deviceName(id);
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
         [AdapterIds.lovelace]: {
           enabled: true,
           entity: 'sensor',
-          name: Lovelace.id(`${name} ${measurement}`),
+          name: Lovelace.id(`${name} Soil Moisture`),
           attr_device_class: 'humidity',
           attr_unit_of_measurement: '%',
-          attr_friendly_name: name.replace(/\sSensor/, '') + ` ${measurement}`,
+          attr_friendly_name: `${name.replace(/\sSensor/, '')} Soil Moisture`,
         },
       },
     };

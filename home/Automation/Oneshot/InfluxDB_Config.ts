@@ -189,15 +189,16 @@ function zigbeeTemperatureHumidityAndPressureSensors(enabledDataPoints: {}) {
   });
 
   $('state[id=zigbee.*.humidity]').each(id => {
-    let measurement = 'Humidity';
-
-    const device = Device.id(id);
-    if (device && getObject(device).common.type === '3RSM0147Z') {
-      measurement = 'Soil Moisture';
-    }
-
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} ${measurement}`,
+      aliasId: `${Device.deviceName(id)} Humidity`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=zigbee.*.soil_moisture]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Soil Moisture`,
     });
 
     check(enabledDataPoints, id, expect);
