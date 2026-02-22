@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "got": "^14.0.0",
-    "rxjs": "^6.6.7"
+    "rxjs": "^7.0.0"
   },
   "//": [
     "@alcalzone/pak: https://github.com/ioBroker/iobroker.js-controller/issues/3183",
