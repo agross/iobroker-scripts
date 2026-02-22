@@ -6,7 +6,7 @@
     "build": "tsc --build --verbose"
   },
   "dependencies": {
-    "got": "^13.0.0",
+    "got": "^14.0.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
