@@ -16,7 +16,7 @@
     "../global/Shared/Utils.ts",
     "../global/ShutterConfig.ts",
     "../global/Site.ts",
-    "Living_Room_6_Short.ts"
+    "Living_Room.ts"
   ],
   "compilerOptions": {
     "composite": true,
