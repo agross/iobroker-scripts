@@ -5,9 +5,12 @@
   "scripts": {
     "build": "tsc --build --verbose"
   },
+  "//": [
+    "rxjs: version 7 is not compatible: https://github.com/ioBroker/ioBroker.javascript/issues/928"
+  ],
   "dependencies": {
     "got": "^14.0.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^6.6.7"
   },
   "//": [
     "@alcalzone/pak: https://github.com/ioBroker/iobroker.js-controller/issues/3183",
