@@ -26,14 +26,14 @@
       "description": "Version defined by ioBroker",
       "matchDatasources": ["nodenv"],
       "matchPackageNames": ["node"],
-      "dependencyDashboardApproval": "true",
+      "dependencyDashboardApproval": true,
       "dependencyDashboardCategory": "Version defined by ioBroker"
     },
     {
       "description": "Version defined by ioBroker.javascript",
       "matchDatasources": ["npm"],
       "matchPackageNames": ["@alcalzone/pak"],
-      "dependencyDashboardApproval": "true",
+      "dependencyDashboardApproval": true,
       "dependencyDashboardCategory": "Version defined by ioBroker.javascript"
     }
   ]
