@@ -20,5 +20,21 @@
         "# renovate: (?<datasource>git-refs)=(?<packageName>.+?) ref=(?<currentValue>.+?)(?: depName=(?<depName>.+?))?(?: versioning=(?<versioning>[a-z-]+?))?\\s.+?\\w+?[:=]\\s*(?<currentDigest>.+?)\\s"
       ]
     }
+  ],
+  "packageRules": [
+    {
+      "description": "Version defined by ioBroker",
+      "matchDatasources": ["nodenv"],
+      "matchPackageNames": ["node"],
+      "dependencyDashboardApproval": true,
+      "dependencyDashboardCategory": "Version defined by ioBroker"
+    },
+    {
+      "description": "Version defined by ioBroker.javascript",
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["@alcalzone/pak"],
+      "dependencyDashboardApproval": true,
+      "dependencyDashboardCategory": "Version defined by ioBroker.javascript"
+    }
   ]
 }
