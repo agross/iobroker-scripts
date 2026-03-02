@@ -10,10 +10,18 @@ const permissions = [
   ...shutters(),
   ...powerPlugs(),
   ...custom(),
-].map(async stateId => {
+].map(async (stateId: string) => {
   const expect: Partial<iobJS.StateACL> = { state: 0x666 };
 
   await setPermissions(stateId, expect);
+
+  const maybeAlias = getObject(stateId);
+  const target =
+    maybeAlias.common?.alias?.id?.write || maybeAlias.common?.alias?.id;
+
+  if (target) {
+    await setPermissions(target, expect);
+  }
 });
 await Promise.all(permissions);
 
@@ -101,20 +109,17 @@ function scenes() {
 
 function powerPlugs() {
   const allowed = [
-    ...$('state[id=mqtt.*.*.*.power.cmnd.*.POWER]'),
     ...$('state[id=alias.*.mqtt.*.*.*.*.nous-a1t-*.*][role=switch]'),
-  ].filter(x => !/nous-a1t-(1|3|4)/.test(x));
+  ].filter(x => /nous-a1t-(2)\./.test(x));
 
   log(`Allowed power plugs: ${JSON.stringify(allowed)}`);
-
   return allowed;
 }
 
 function shutters() {
-  return [
-    ...$('state[id=mqtt.*.*.*.shutter.cmnd.*.ShutterPosition1]'),
-    ...$('state[id=alias.*.mqtt.*.*.*.shutter.shelly25-*.*]'),
-  ].filter(x => !x.endsWith('.device_temperature'));
+  return [...$('state[id=alias.*.mqtt.*.*.*.shutter.shelly25-*.*]')].filter(
+    x => !x.endsWith('.device_temperature'),
+  );
 }
 
 function custom() {
