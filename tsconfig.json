@@ -45,6 +45,9 @@
       "path": "home/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"
     },
     {
+      "path": "home/Automation/Oneshot/User_Permissions.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Oneshot/WOL_AXL.tsconfig.json"
     },
     {
