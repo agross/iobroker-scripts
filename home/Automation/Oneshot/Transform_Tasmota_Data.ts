@@ -26,6 +26,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         ['nous-a1t-2', 'Living Room Heater'],
         ['nous-a1t-3', 'Kitchen Refrigerator'],
         ['nous-a1t-4', 'Equipment Room Freezer'],
+        ['nous-a1t-5', 'Shed South Cam'],
       ]);
     }
 
@@ -140,6 +141,14 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
             attr_device_class: 'outlet',
             attr_icon: 'mdi:ice-pop',
+          };
+
+        case 'nous-a1t-5':
+          return {
+            entity: entityType,
+            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
+            attr_device_class: 'outlet',
+            attr_icon: 'mdi:cctv',
           };
       }
     }
