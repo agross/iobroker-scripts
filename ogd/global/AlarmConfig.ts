@@ -42,8 +42,8 @@ export class AlarmConfig {
     [
       'mqtt.0.ogd.frigate.notifications.set',
       ...$('mqtt.0.ogd.frigate.*.detect.set'),
-      ...$('mqtt.0.ogd.frigate.*.motion.set'),
-      ...$('mqtt.0.ogd.frigate.*.recordings.set'),
+      // ...$('mqtt.0.ogd.frigate.*.motion.set'),
+      // ...$('mqtt.0.ogd.frigate.*.recordings.set'),
       ...$('mqtt.0.ogd.frigate.*.snapshots.set'),
     ].forEach(state => {
       log(
