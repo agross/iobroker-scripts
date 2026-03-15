@@ -275,7 +275,9 @@ function zigbeeLights(enabledDataPoints: {}) {
 }
 
 function zigbeeValves(enabledDataPoints: {}) {
-  const devices = [...$('state[id=zigbee.*.irrigation_interval]')].map(x => ({
+  const devices = [
+    ...$('state[id=zigbee.*.auto_close_when_water_shortage]'),
+  ].map(x => ({
     id: Device.id(x),
     name: Device.deviceName(x),
   }));

@@ -1,7 +1,9 @@
-const devices = [...$('state[id=zigbee.*.irrigation_interval]')].map(x => ({
-  id: Device.id(x),
-  name: Device.deviceName(x),
-}));
+const devices = [...$('state[id=zigbee.*.auto_close_when_water_shortage]')].map(
+  x => ({
+    id: Device.id(x),
+    name: Device.deviceName(x),
+  }),
+);
 
 // { "cyclic_timed_irrigation": { "total_number": 1, "irrigation_duration": 60 } }
 type Command = {
