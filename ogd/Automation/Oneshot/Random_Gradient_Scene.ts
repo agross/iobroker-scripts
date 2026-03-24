@@ -1,6 +1,4 @@
 const config = {
-  override: ['0_userdata.0', 'global-brightness-override'],
-  state: () => config.override.join('.'),
   excludedScenes: [
     'artic_aurora',
     'autumn_gold',
