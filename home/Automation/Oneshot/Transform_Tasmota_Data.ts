@@ -26,7 +26,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         ['nous-a1t-2', 'Living Room Heater'],
         ['nous-a1t-3', 'Kitchen Refrigerator'],
         ['nous-a1t-4', 'Equipment Room Freezer'],
-        ['nous-a1t-5', 'Shed South Cam'],
+        ['nous-b2t-1', 'Shed South Cam'],
       ]);
     }
 
@@ -143,7 +143,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
             attr_icon: 'mdi:ice-pop',
           };
 
-        case 'nous-a1t-5':
+        case 'nous-b2t-1':
           return {
             entity: entityType,
             name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
