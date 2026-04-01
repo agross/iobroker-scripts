@@ -383,10 +383,12 @@ const cover = combineLatest([fanart, track])
 
         let buffer: Buffer;
         try {
-          buffer = await got(imageUri, {
-            username: native.login,
-            password: native.password,
-          }).buffer();
+          buffer = Buffer.from(
+            await got(imageUri, {
+              username: native.login,
+              password: native.password,
+            }).buffer(),
+          );
         } catch (error) {
           log(`Could not get cover from Kodi ${imageUri}: ${error}`, 'error');
           return undefined;

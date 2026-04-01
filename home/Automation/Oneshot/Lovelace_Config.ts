@@ -100,7 +100,7 @@ function zigbeeIcons() {
       const iconUrl = `https://www.zigbee2mqtt.io/images/devices/${device.common.type}.jpg`;
 
       try {
-        const response = await got(iconUrl).buffer();
+        const response = Buffer.from(await got(iconUrl).buffer());
         const iconAsBase64 = response.toString('base64');
 
         const expect: Partial<iobJS.StateCommon> = {

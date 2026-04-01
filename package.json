@@ -9,7 +9,7 @@
     "rxjs: version 7 is not compatible: https://github.com/ioBroker/ioBroker.javascript/issues/928"
   ],
   "dependencies": {
-    "got": "^14.0.0",
+    "got": "^15.0.0",
     "rxjs": "^6.6.7"
   },
   "//": [
