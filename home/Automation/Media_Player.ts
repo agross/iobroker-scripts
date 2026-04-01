@@ -1,6 +1,12 @@
 import got from 'got';
 import { combineLatest } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, tap } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  tap,
+} from 'rxjs/operators';
 import util from 'util';
 
 const config = {
@@ -367,6 +373,7 @@ const cover = combineLatest([fanart, track])
     // another notification arrives with the actual data.
     debounceTime(2000),
     distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
+    filter(([fanart, track]) => fanart.length > 0 || track.length > 0),
     map(async ([fanart, track]) => {
       const kodiImageService = async uri => {
         if (!uri || !uri.length) {
