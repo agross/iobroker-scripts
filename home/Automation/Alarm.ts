@@ -9,12 +9,20 @@ import {
 } from 'rxjs/operators';
 
 const config = {
+  delay: {
+    absence: 5,
+    presence: 0,
+  },
   alarmEnabled: ['0_userdata.0', 'alarm-enabled'],
   presence: '0_userdata.0.presence',
   homematicPresence: AlarmConfig.homematicPresence,
   triggerAlarmOn: AlarmConfig.triggerAlarmOn,
   alarmEnabledChanged: AlarmConfig.alarmEnabledChanged,
 };
+
+function minToMs(min: number): number {
+  return min * 60 * 1000;
+}
 
 await ObjectCreator.create(
   {
@@ -57,31 +65,36 @@ const acknowledgeCommand = new Stream<boolean>({
 const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
   .pipe(
     tap(present => {
-      const delayByMinutes = present ? 0 : 5;
-      const delay = delayByMinutes * 60 * 1000;
+      const delay = present ? config.delay.presence : config.delay.absence;
 
       log(
-        `Setting alarm=${!present} and HomeMatic presence=${present} in ${delayByMinutes} min`,
+        `Setting alarm=${!present} and HomeMatic presence=${present} in ${delay} min`,
       );
 
       if (config.homematicPresence) {
-        setStateDelayed(config.homematicPresence, present, delay, true, err => {
-          if (err) {
-            log(
-              `Could not set HomeMatic presence to ${present}: ${err}`,
-              'error',
-            );
-          } else {
-            log(`Set HomeMatic presence to ${present}`);
-          }
-        });
+        setStateDelayed(
+          config.homematicPresence,
+          present,
+          minToMs(delay),
+          true,
+          err => {
+            if (err) {
+              log(
+                `Could not set HomeMatic presence to ${present}: ${err}`,
+                'error',
+              );
+            } else {
+              log(`Set HomeMatic presence to ${present}`);
+            }
+          },
+        );
       }
 
       setStateDelayed(
         config.alarmEnabled.join('.'),
         !present,
         true,
-        delay,
+        minToMs(delay),
         true,
         err => {
           if (err) {
@@ -98,19 +111,17 @@ const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
 const alarmEnabled = new Stream<boolean>(config.alarmEnabled.join('.')).stream;
 
 const alarmEnabledNotifications = alarmEnabled
-  .pipe(
-    tap(enabled => config.alarmEnabledChanged(enabled)),
-  )
+  .pipe(tap(enabled => config.alarmEnabledChanged(enabled)))
   .subscribe();
 
 const alarmTriggers = new Observable<string[]>(observer => {
   log(`Monitoring alarm trigger: ${config.triggerAlarmOn.join(', ')}`);
 
   on({ id: config.triggerAlarmOn, val: true, change: 'ne' }, event => {
-    const deviceName = Device.deviceName(event.id);
+    const deviceName = Device.deviceName(event.id!);
 
     log(`Potential alarm triggered by ${deviceName}`);
-    observer.next([deviceName, event.id]);
+    observer.next([deviceName, event.id!]);
   });
 }).pipe(
   filter(([deviceName, id]) => {
