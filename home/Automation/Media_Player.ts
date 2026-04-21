@@ -365,7 +365,9 @@ await ObjectCreator.create(kodiUserData(), '0_userdata.0');
 await ObjectCreator.create(kodiObjectDefinition(), 'alias.0');
 
 const fanart = new Stream<string>(`${config.kodi}.info.fanart`).stream;
-const track = new Stream<string>(`${config.kodi}.info.thumbnail`).stream;
+const track = new Stream<string>(`${config.kodi}.info.thumbnail`).stream.pipe(
+  map(x => (x === 'image://DefaultAlbumCover.png/' ? '' : x)),
+);
 
 const cover = combineLatest([fanart, track])
   .pipe(
@@ -375,14 +377,19 @@ const cover = combineLatest([fanart, track])
     distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
     filter(([fanart, track]) => fanart.length > 0 || track.length > 0),
     map(async ([fanart, track]) => {
-      const kodiImageService = async uri => {
-        if (!uri || !uri.length) {
+      const kodiImageService = async (uri: string) => {
+        if (!uri) {
           return undefined;
         }
 
-        const kodiConfig = await getObjectAsync(
-          `system.adapter.${config.kodi}`,
-        );
+        const adapterConfigId = `system.adapter.${config.kodi}`;
+        const kodiConfig = await getObjectAsync(adapterConfigId);
+
+        if (!kodiConfig) {
+          log(`Kodi adaper config not found: ${adapterConfigId}`, 'warn');
+          return undefined;
+        }
+
         const native = kodiConfig.native;
         const imageUri = `http://${native.ip}:${
           native.portweb || 8081
@@ -415,7 +422,7 @@ const cover = combineLatest([fanart, track])
         return undefined;
       };
 
-      const directLink = uri => {
+      const directLink = (uri: string) => {
         return decodeURIComponent(uri.replace(/^image:\/\//, ''))
           .replace(/\/$/, '')
           .replace(/^http:\/\//, 'https://');
