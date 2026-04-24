@@ -103,9 +103,11 @@ sendTo(
     alarm(enabledDataPoints);
     presence(enabledDataPoints);
 
+    marstek(enabledDataPoints);
+
     $('state[id=lgtv.*.states.power]').each(id => {
       const expect = Object.assign({}, config.default, {
-        aliasId: `Living Room TV Power`,
+        aliasId: `Living Room TV Power State`,
       });
 
       check(enabledDataPoints, id, expect);
@@ -409,7 +411,7 @@ function powerPlugs(enabledDataPoints: {}) {
     ...$('state[id=alias.0.mqtt.*.nous-a1t-*.state]'),
   ].forEach(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Power`,
+      aliasId: `${Device.deviceName(id)} Power State`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -420,7 +422,7 @@ function powerPlugs(enabledDataPoints: {}) {
     ...$('state[id=alias.0.mqtt.*.nous-a1t-*.power]'),
   ].forEach(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Power Watts`,
+      aliasId: `${Device.deviceName(id)} Power Usage`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -626,6 +628,291 @@ function presence(enabledDataPoints: {}) {
 
     check(enabledDataPoints, id, expect);
   });
+}
+
+function marstek(enabledDataPoints: {}) {
+  const name = 'Marstek Venus A';
+
+  const numeric = {
+    ...config.default,
+    ...{
+      storageType: 'Number',
+    },
+  };
+
+  const boolean = {
+    ...config.default,
+    ...{
+      storageType: 'Boolean',
+    },
+  };
+
+  $('state[id=marstek-venus.*.battery.capacity]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Battery Capacity`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.battery.soc]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Battery State Of Charge`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.battery.temperature]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Battery Temperature`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.battery.chargingAllowed]').each(id => {
+    const expect = {
+      ...boolean,
+      ...{
+        aliasId: `${name} Battery Charging Allowed`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.battery.dischargingAllowed]').each(id => {
+    const expect = {
+      ...boolean,
+      ...{
+        aliasId: `${name} Battery Discharging Allowed`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.control.mode]').each(id => {
+    const expect = {
+      ...config.default,
+      ...{ storageType: 'String' },
+      ...{
+        aliasId: `${name} Control Mode`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.energy.gridExport]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Total Grid Output Energy`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.energy.gridImport]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Total Grid Input Energy`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.energy.loadTotal]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Total Load (Or Off-Grid) Energy Consumed`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.energy.pvTotal]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Total Solar Energy Generated`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.energymeter.ctState]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Power Meter Connection`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.energymeter.power*]').each(id => {
+    function letterIndex(c: string) {
+      return c.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+    }
+
+    const match = id.match(/[ABC]$/);
+    if (!match) {
+      return undefined;
+    }
+
+    const index = letterIndex(id.at(-1)!);
+
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} L${index} Grid Power Usage`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.energymeter.powerTotal]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Grid Power Usage`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  const extractChannel = (id: string) => {
+    const match = id.match(/\.(pv\d+)/);
+    if (!match) {
+      return undefined;
+    }
+    return match[1].toUpperCase();
+  };
+
+  $('state[id=marstek-venus.*.power.pv][role=value.power]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Solar Charging Power`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.power.grid][role=value.power]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Grid-Tied Power`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.power.load][role=value.power]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Off-Grid Power`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.power.pvTotal][role=value.power]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Total Solar Energy Generated`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.power.pv*][role=value.power]').each(id => {
+    const channel = extractChannel(id);
+    if (!channel) return;
+
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} ${channel} Power`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.power.pv*Current][role=value.current]').each(
+    id => {
+      const channel = extractChannel(id);
+      if (!channel) return;
+
+      const expect = {
+        ...numeric,
+        ...{
+          aliasId: `${name} ${channel} Current`,
+        },
+      };
+
+      check(enabledDataPoints, id, expect);
+    },
+  );
+
+  $('state[id=marstek-venus.*.power.pv*State][role=indicator]').each(id => {
+    const channel = extractChannel(id);
+    if (!channel) return;
+
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} ${channel} State`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=marstek-venus.*.power.pv*Voltage][role=value.voltage]').each(
+    id => {
+      const channel = extractChannel(id);
+      if (!channel) return;
+
+      const expect = {
+        ...numeric,
+        ...{
+          aliasId: `${name} ${channel} Voltage`,
+        },
+      };
+
+      check(enabledDataPoints, id, expect);
+    },
+  );
 }
 
 stopScript(undefined);
