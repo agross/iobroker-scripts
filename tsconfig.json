@@ -135,6 +135,9 @@
       "path": "ogd/Automation/Presence.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Refocus_Camera.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Scheduled_Scenes.tsconfig.json"
     },
     {
