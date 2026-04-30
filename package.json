@@ -18,7 +18,7 @@
     "prettier: formatting of our code"
   ],
   "devDependencies": {
-    "iobroker.javascript": "9.2.0",
+    "iobroker.javascript": "9.2.1",
     "@types/wake_on_lan": "^0.0.33",
     "prettier": "^3.6.2"
   },
