@@ -843,17 +843,6 @@ function marstek(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=marstek-venus.*.power.pvTotal][role=value.power]').each(id => {
-    const expect = {
-      ...numeric,
-      ...{
-        aliasId: `${name} Total Solar Energy Generated`,
-      },
-    };
-
-    check(enabledDataPoints, id, expect);
-  });
-
   $('state[id=marstek-venus.*.power.pv*][role=value.power]').each(id => {
     const channel = extractChannel(id);
     if (!channel) return;
