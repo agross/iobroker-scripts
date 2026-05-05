@@ -744,7 +744,8 @@ function marstek(enabledDataPoints: {}) {
       },
     };
 
-    check(enabledDataPoints, id, expect);
+    // Always 0.
+    // check(enabledDataPoints, id, expect);
   });
 
   $('state[id=marstek-venus.*.energy.pvTotal]').each(id => {
@@ -840,7 +841,8 @@ function marstek(enabledDataPoints: {}) {
       },
     };
 
-    check(enabledDataPoints, id, expect);
+    // Always 0.
+    // check(enabledDataPoints, id, expect);
   });
 
   $('state[id=marstek-venus.*.power.pv*][role=value.power]').each(id => {
