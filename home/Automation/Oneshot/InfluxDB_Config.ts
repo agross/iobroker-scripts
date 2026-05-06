@@ -98,8 +98,6 @@ sendTo(
     car(enabledDataPoints);
     fuelPrices(enabledDataPoints);
 
-    system(enabledDataPoints);
-
     alarm(enabledDataPoints);
     presence(enabledDataPoints);
 
@@ -554,48 +552,6 @@ function fuelPrices(enabledDataPoints: {}) {
 
     const expect = Object.assign({}, config.default, {
       aliasId: `Diesel Price ${stationName}`,
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-}
-
-function system(enabledDataPoints: {}) {
-  $('state[id=info.0.sysinfo.cpu.temperature.main]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: 'Raspberry Pi Temperature',
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=system.host.iobroker.load]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: 'Raspberry Pi Load',
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=info.0.sysinfo.memory.info.available]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: 'Raspberry Pi Memory Available',
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=info.0.sysinfo.cpu.currentSpeed.avgSpeed]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: 'Raspberry Pi CPU Speed',
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=system.host.iobroker.uptime]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: 'Raspberry Pi Uptime',
     });
 
     check(enabledDataPoints, id, expect);
