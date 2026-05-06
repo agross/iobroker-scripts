@@ -102,6 +102,7 @@ sendTo(
     presence(enabledDataPoints);
 
     marstek(enabledDataPoints);
+    solarPrediction(enabledDataPoints);
 
     $('state[id=lgtv.*.states.power]').each(id => {
       const expect = Object.assign({}, config.default, {
@@ -860,6 +861,39 @@ function marstek(enabledDataPoints: {}) {
       check(enabledDataPoints, id, expect);
     },
   );
+}
+
+function solarPrediction(enabledDataPoints: {}) {
+  const name = 'Solar Energy Predicted';
+
+  const numeric = {
+    ...config.default,
+    ...{
+      storageType: 'Number',
+    },
+  };
+
+  $('state[id=solarprognose.0.forecast.00.energy]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Today`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=solarprognose.0.forecast.01.energy]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: `${name} Tomorrow`,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
 }
 
 stopScript(undefined);
