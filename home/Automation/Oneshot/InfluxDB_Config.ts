@@ -631,6 +631,7 @@ function marstek(enabledDataPoints: {}) {
       ...numeric,
       ...{
         aliasId: `${name} Battery Temperature`,
+        ignoreAboveNumber: 100,
       },
     };
 
