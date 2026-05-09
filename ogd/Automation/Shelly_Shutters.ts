@@ -48,7 +48,7 @@ function getAliasDefinition(): ObjectDefinitionRoot {
           id: stateId
             .replace('.stat.', '.tele.')
             .replace('.SHUTTER1', '.SENSOR'),
-          read: 'JSON.parse(val).ANALOG.Temperature',
+          read: 'JSON.parse(val)?.ANALOG?.Temperature ?? null',
           // No write function makes this read-only.
         },
         role: 'state',
