@@ -408,6 +408,7 @@ function powerPlugs(enabledDataPoints: {}) {
   [
     ...$('state[id=alias.0.mqtt.*.gosund-sp111-*.state]'),
     ...$('state[id=alias.0.mqtt.*.nous-a1t-*.state]'),
+    ...$('state[id=alias.0.mqtt.*.nous-b2t-*.state]'),
   ].forEach(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Power State`,
@@ -419,6 +420,7 @@ function powerPlugs(enabledDataPoints: {}) {
   [
     ...$('state[id=alias.0.mqtt.*.gosund-sp111-*.power]'),
     ...$('state[id=alias.0.mqtt.*.nous-a1t-*.power]'),
+    ...$('state[id=alias.0.mqtt.*.nous-b2t-*.power]'),
   ].forEach(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Power Usage`,
