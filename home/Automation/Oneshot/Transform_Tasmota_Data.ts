@@ -1,168 +1,117 @@
+import got from 'got';
+
+const config = {
+  devices: [
+    ...$('state[id=mqtt.*.cmnd.gosund-sp111-*.POWER]'),
+    ...$('state[id=mqtt.*.cmnd.nous-a1t-*.POWER]'),
+    ...$('state[id=mqtt.*.cmnd.nous-b2t-*.POWER]'),
+  ],
+};
+
+type Result<T> = { ok: true; value: T } | { ok: false; error: unknown };
+
+type DeviceInfo = {
+  deviceId: string;
+  powerStateId: string;
+  deviceName: string;
+  lovelace: { icon?: string; name?: string };
+};
+
+async function toResult<T>(promise: Promise<T>): Promise<Result<T>> {
+  try {
+    return { ok: true, value: await promise };
+  } catch (error) {
+    return { ok: false, error };
+  }
+}
+
+async function deviceInfo(stateId: string): Promise<DeviceInfo> {
+  const teleState = stateId
+    .replace('.cmnd.', '.tele.')
+    .replace(/\.POWER$/, '.STATE');
+  const tele = JSON.parse(getState(teleState).val);
+
+  const status: any = await got
+    .get(`http://${tele.IPAddress}/cm`, {
+      searchParams: { cmnd: 'Status' },
+    })
+    .json();
+
+  const deviceName = status.Status.DeviceName;
+  const friendlyName: string = status.Status.FriendlyName[0];
+  const [icon, name] =
+    friendlyName === '' ? [undefined, undefined] : friendlyName.split('|', 2);
+
+  return {
+    deviceId: stateId
+      .replace(/\.[^.]*$/, '')
+      .replace(/\.(cmnd|tele|stat)\./, '.'),
+    powerStateId: stateId,
+    deviceName: deviceName,
+    lovelace: { icon, name },
+  };
+}
+
+const deviceInfos = await Promise.all(
+  config.devices.map(async dev => ({
+    state: dev,
+    info: await toResult(deviceInfo(dev)),
+  })),
+);
+
+log(JSON.stringify(deviceInfos));
+
 function getObjectDefinition(): ObjectDefinitionRoot {
-  function deviceId(id: string): string {
-    return id.replace(/\.[^.]*$/, '').replace(/\.(cmnd|tele|stat)\./, '.');
-  }
-
-  function stateIdToPurpose(stateId: string) {
-    const deviceName = stateId.split('.').at(-2);
-    log(`Getting purpose of ${stateId} from ${deviceName} at ${Site.location}`);
-
-    let devices: Map<string, string>;
-
-    if (Site.location === 'Home') {
-      devices = new Map([
-        ['gosund-sp111-1', 'Living Room Media'],
-        ['gosund-sp111-2', 'Kitchen Down Light'],
-        ['gosund-sp111-3', 'Bathroom Washing Machine'],
-        ['gosund-sp111-4', 'Office Desk'],
-        ['nous-a1t-1', 'NAS'],
-        ['nous-a1t-2', 'Server'],
-      ]);
-    }
-
-    if (Site.location === 'OGD') {
-      devices = new Map([
-        ['nous-a1t-1', 'Bathroom Water Heater'],
-        ['nous-a1t-2', 'Living Room Heater'],
-        ['nous-a1t-3', 'Kitchen Refrigerator'],
-        ['nous-a1t-4', 'Equipment Room Freezer'],
-        ['nous-b2t-1', 'Shed South Cam'],
-      ]);
-    }
-
-    if (!devices.has(deviceName)) {
-      throw new Error(
-        `No mapping from ${stateId} to purpose from ${deviceName} at ${Site.location}`,
-      );
-    }
-    return devices.get(deviceName);
-  }
-
-  function lovelaceConfig(stateId: string, type: 'Power' | 'Power Usage'): {} {
-    const deviceName = stateId.split('.').at(-2);
-
-    log(
-      `Getting Lovelace config of ${stateId} from ${deviceName} at ${Site.location}`,
-    );
-
-    let entityType = ObjectCreator.getEnumIds(stateId, 'functions').includes(
-      'enum.functions.light',
-    )
-      ? 'light'
-      : 'switch';
-
+  function entityType(stateId: string, type: 'Power' | 'Power Usage') {
     if (type == 'Power Usage') {
-      entityType = 'sensor';
+      return 'sensor';
     }
 
-    if (Site.location === 'Home') {
-      switch (deviceName) {
-        case 'gosund-sp111-1':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:music-box-outline',
-            attr_friendly_name: 'NAD C350',
-          };
-
-        case 'gosund-sp111-2':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:lightbulb',
-            attr_friendly_name: stateIdToPurpose(stateId),
-          };
-
-        case 'gosund-sp111-3':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:washing-machine',
-          };
-
-        case 'gosund-sp111-4':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:desktop-tower-monitor',
-          };
-
-        case 'nous-a1t-1':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:nas',
-          };
-
-        case 'nous-a1t-2':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:server-network',
-          };
-      }
+    if (
+      ObjectCreator.getEnumIds(stateId, 'functions').includes(
+        'enum.functions.light',
+      )
+    ) {
+      return 'light';
     }
 
-    if (Site.location === 'OGD') {
-      switch (deviceName) {
-        case 'nous-a1t-1':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:water-boiler',
-          };
-
-        case 'nous-a1t-2':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:radiator',
-          };
-
-        case 'nous-a1t-3':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:fridge',
-          };
-
-        case 'nous-a1t-4':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:ice-pop',
-          };
-
-        case 'nous-b2t-1':
-          return {
-            entity: entityType,
-            name: Lovelace.id(`${stateIdToPurpose(stateId)} ${type}`),
-            attr_device_class: 'outlet',
-            attr_icon: 'mdi:cctv',
-          };
-      }
-    }
-
-    throw new Error(
-      `No mapping from ${stateId} to Lovelace config from ${deviceName} at ${Site.location}`,
-    );
+    return 'switch';
   }
 
-  return [
-    ...$('state[id=*.cmnd.gosund-sp111-*.POWER]'),
-    ...$('state[id=*.cmnd.nous-a1t-*.POWER]'),
-  ].reduce((acc, stateId) => {
-    const device = deviceId(stateId);
+  function lovelaceConfig(info: DeviceInfo, type: 'Power' | 'Power Usage'): {} {
+    const base = {
+      entity: entityType(info.powerStateId, type),
+      name: Lovelace.id(`${info.deviceName} ${type}`),
+      attr_device_class: 'outlet',
+    };
+
+    const icon = {
+      attr_icon: info.lovelace.icon,
+    };
+
+    const name = {
+      attr_friendly_name:
+        type === 'Power' ? info.lovelace.name : `${info.lovelace.name} ${type}`,
+    };
+
+    return {
+      ...base,
+      ...(info.lovelace.icon != null ? icon : {}),
+      ...(info.lovelace.name != null ? name : {}),
+    };
+  }
+
+  return deviceInfos.reduce((acc, deviceInfo) => {
+    const stateId = deviceInfo.state;
+    const info = deviceInfo.info;
+
+    if (!info.ok) {
+      log(
+        `Could not determine information from ${deviceInfo.state}, skipping: ${(info as any).error}`,
+        'warn',
+      );
+      return acc;
+    }
 
     const deviceStates: {
       [id: string]: iobJS.StateCommon;
@@ -172,7 +121,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           id: stateId
             .replace('.cmnd.', '.tele.')
             .replace(/\.POWER$/, '.SENSOR'),
-          read: 'JSON.parse(val).ENERGY.Power',
+          read: 'JSON.parse(val)?.ENERGY?.Power ?? null',
           // No write function makes this read-only.
         },
         role: 'value',
@@ -180,17 +129,20 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         unit: 'W',
         read: true,
         write: false,
-        name: `${stateIdToPurpose(stateId)} Power Usage`,
+        name: `${info.value.deviceName} Power Usage`,
         custom: {
           [AdapterIds.lovelace]: {
             enabled: true,
-            ...lovelaceConfig(stateId, 'Power Usage'),
+            ...lovelaceConfig(info.value, 'Power Usage'),
           },
         },
       },
       'negated-state': {
         alias: {
-          id: { read: stateId.replace('.cmnd.', '.stat.'), write: stateId },
+          id: {
+            read: deviceInfo.state.replace('.cmnd.', '.stat.'),
+            write: deviceInfo.state,
+          },
           read: 'val !== "ON"',
           write: 'val !== true ? "ON" : "OFF"',
         },
@@ -198,9 +150,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         type: 'boolean',
         read: true,
         write: true,
-        name: `${stateIdToPurpose(
-          stateId,
-        )} Power (negated for easier toggling in scenes)`,
+        name: `${info.value.deviceName} Power (negated for easier toggling in scenes)`,
       },
       state: {
         alias: {
@@ -212,20 +162,20 @@ function getObjectDefinition(): ObjectDefinitionRoot {
         type: 'boolean',
         read: true,
         write: true,
-        name: `${stateIdToPurpose(stateId)} Power`,
+        name: `${info.value.deviceName} Power`,
         custom: {
           [AdapterIds.lovelace]: {
             enabled: true,
-            ...lovelaceConfig(stateId, 'Power'),
+            ...lovelaceConfig(info.value, 'Power'),
           },
         },
       },
     };
 
-    acc[device] = {
+    acc[info.value.deviceId] = {
       type: 'device',
       native: {},
-      common: { name: stateIdToPurpose(stateId), role: 'device' },
+      common: { name: info.value.deviceName, role: 'device' },
       enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
       nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
         acc[id] = { type: 'state', native: {}, common: common };
