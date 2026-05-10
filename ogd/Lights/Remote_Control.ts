@@ -314,6 +314,12 @@ const remotes = [
       states: ['scene.0.Garden.Shed'],
     },
   }),
+  new Remotes.Shelly({
+    device: 'mqtt.0.ogd.porch.power.stat.shelly1minigen3-2',
+    toggle: {
+      states: ['scene.0.House.Lights_Porch_Bright'],
+    },
+  }),
 ];
 
 const subscriptions = remotes.map(remote => remote.setUp());
