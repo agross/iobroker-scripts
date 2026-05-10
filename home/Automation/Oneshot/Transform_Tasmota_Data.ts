@@ -59,8 +59,6 @@ const deviceInfos = await Promise.all(
   })),
 );
 
-log(JSON.stringify(deviceInfos));
-
 function getObjectDefinition(): ObjectDefinitionRoot {
   function entityType(stateId: string, type: 'Power' | 'Power Usage') {
     if (type == 'Power Usage') {
