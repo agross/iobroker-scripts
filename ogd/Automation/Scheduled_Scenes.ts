@@ -1,7 +1,17 @@
+import util from 'util';
 import { tap } from 'rxjs/operators';
 
 const config = {
   override: ['0_userdata.0', 'Scheduled Scenes'],
+  disabledTriggers: {
+    onTrue: { trigger: {}, cron: null, astro: null },
+    onFalse: {
+      enabled: false,
+      trigger: {},
+      cron: null,
+      astro: null,
+    },
+  },
 };
 
 function scenesWithTriggers() {
@@ -14,7 +24,9 @@ function scenesWithTriggers() {
       object.native.onFalse.trigger.id ||
       object.native.onFalse.cron;
 
-    return hasTrigger;
+    const hasSavedTrigger = object.common?.custom?.sceneTrigger;
+
+    return hasTrigger || hasSavedTrigger;
   });
 }
 
@@ -63,14 +75,34 @@ function getObjectDefinition(scenes: string[]): ObjectDefinitionRoot {
 const scenes = scenesWithTriggers();
 
 scenes.forEach(async id => {
-  log(`Saving default triggers: ${id}`);
-
   const object = await getObjectAsync(id);
+  if (!object) {
+    return;
+  }
 
-  object.common.custom.sceneTrigger = {
-    onTrue: object.native.onTrue,
-    onFalse: object.native.onFalse,
-  };
+  object.common.custom ??= {};
+  object.common.custom.sceneTrigger ??= {};
+
+  if (
+    !util.isDeepStrictEqual(
+      JSON.parse(JSON.stringify(config.disabledTriggers.onTrue)),
+      JSON.parse(JSON.stringify(object.native.onTrue)),
+    )
+  ) {
+    object.common.custom.sceneTrigger.onTrue = object.native.onTrue;
+  }
+  if (
+    !util.isDeepStrictEqual(
+      JSON.parse(JSON.stringify(config.disabledTriggers.onFalse)),
+      JSON.parse(JSON.stringify(object.native.onFalse)),
+    )
+  ) {
+    object.common.custom.sceneTrigger.onFalse = object.native.onFalse;
+  }
+
+  log(
+    `Saving default triggers of ${id}: ${JSON.stringify(object.common.custom.sceneTrigger, null, 2)}`,
+  );
 
   await setObjectAsync(id, object as any);
 });
@@ -89,6 +121,9 @@ const subscriptions = [
       .pipe(
         tap(async state => {
           const object = await getObjectAsync(scene);
+          if (!object || !object.common.custom) {
+            return;
+          }
 
           if (state === true) {
             log(`Enabling triggers: ${scene}`);
@@ -98,13 +133,8 @@ const subscriptions = [
           } else {
             log(`Disabling triggers: ${scene}`);
 
-            object.native.onTrue = { trigger: {}, cron: null, astro: null };
-            object.native.onFalse = {
-              enabled: false,
-              trigger: {},
-              cron: null,
-              astro: null,
-            };
+            object.native.onTrue = config.disabledTriggers.onTrue;
+            object.native.onFalse = config.disabledTriggers.onFalse;
           }
 
           await setObjectAsync(scene, object as any);

@@ -287,6 +287,7 @@ function translate(str: string) {
     ['Irrigation', 'Bewässerung'],
     ['Valve Open', 'Ventil offen'],
     ['Minutes', 'Minuten'],
+    ['Schedule enabled for', 'Zeitplan aktiv für'],
   ]);
 
   let loop = 0;
