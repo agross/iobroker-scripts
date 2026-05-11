@@ -224,6 +224,7 @@ function translate(str: string) {
     ['Bedroom', 'Schlafzimmer'],
     ['Workshop', 'Werkstatt'],
     ['Equipment Room', 'Lager'],
+    ['Outside Temperature', 'Außentemperatur'],
     ['Outside', 'Außen'],
     ['Patio', 'Terrasse'],
     ['Hall', 'Flur'],

@@ -19,32 +19,36 @@ function scenesWithTriggers() {
 }
 
 function getObjectDefinition(scenes: string[]): ObjectDefinitionRoot {
-  const template = (name: string) => ({
-    type: 'state',
-    common: {
-      name: name,
-      type: 'boolean',
-      def: true,
-      read: true,
-      write: true,
-      role: 'state',
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'input_boolean',
-          name: Lovelace.id(name),
-          attr_friendly_name: name,
+  const template = (name: string) =>
+    ({
+      type: 'state',
+      common: {
+        name: name,
+        type: 'boolean',
+        def: true,
+        read: true,
+        write: true,
+        role: 'state',
+        custom: {
+          [AdapterIds.lovelace]: {
+            enabled: true,
+            entity: 'input_boolean',
+            name: Lovelace.id(name),
+            attr_friendly_name: name,
+          },
         },
-      },
-    } as iobJS.StateCommon,
-    native: {},
-  });
+      } as iobJS.StateCommon,
+      native: {},
+    }) as ObjectDefinition;
 
-  const overrides = scenes.reduce((acc, id) => {
-    const object = getObject(id);
-    acc[id] = template(`Trigger enabled for ${object.common.name}`);
-    return acc;
-  }, {});
+  const overrides = scenes.reduce(
+    (acc: { [key: string]: ObjectDefinition }, id) => {
+      const object = getObject(id);
+      acc[id] = template(`Schedule enabled for ${object.common.name}`);
+      return acc;
+    },
+    {},
+  );
 
   return {
     [config.override[1]]: {
