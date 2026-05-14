@@ -37,10 +37,23 @@ async function deviceInfo(stateId: string): Promise<DeviceInfo> {
     })
     .json();
 
+  const friendlyNames: { [key: string]: string } = await got
+    .get(`http://${tele.IPAddress}/cm`, {
+      searchParams: { cmnd: 'FriendlyName' },
+    })
+    .json();
+
   const deviceName = status.Status.DeviceName;
-  const friendlyName: string = status.Status.FriendlyName[0];
-  const [icon, name] =
-    friendlyName === '' ? [undefined, undefined] : friendlyName.split('|', 2);
+
+  function undefinedIfDefault(str: string) {
+    if (str.match(/^Tasmota\d$/)) {
+      return undefined;
+    }
+
+    return str;
+  }
+  const icon = undefinedIfDefault(friendlyNames.FriendlyName1);
+  const name = undefinedIfDefault(friendlyNames.FriendlyName2);
 
   return {
     deviceId: stateId
