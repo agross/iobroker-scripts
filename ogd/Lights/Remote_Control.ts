@@ -8,12 +8,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '50325ffffe784bdf'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'equipment_room',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'equipment_room',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Equipment Room.Lights',
@@ -50,12 +48,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c6638'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'kitchen',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'kitchen',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Kitchen.Lights',
@@ -79,12 +75,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af12f'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'bedroom_east',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'bedroom_east',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Bedroom East.Lights',
@@ -101,12 +95,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '00178801086f7100'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'bedroom_east',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'bedroom_east',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Bedroom East.Lights',
@@ -121,12 +113,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef441000123198'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'bedroom_west',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'bedroom_west',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Bedroom West.Lights',
@@ -142,12 +132,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af4b3'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'staircase',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'staircase',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Staircase.Lights',
@@ -159,12 +147,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c66c6'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'living_room',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'living_room',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Living Room.Lights',
@@ -181,12 +167,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c7332'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'living_room',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'living_room',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Living Room.Lights',
@@ -203,12 +187,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001c84c8'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'living_room',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'living_room',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Living Room.Lights',
@@ -226,12 +208,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '00178801096ab2d7'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'living_room',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'living_room',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Living Room.Lights',
@@ -247,12 +227,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001aea56'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'equipment_room',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'equipment_room',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Equipment Room.Lights',
@@ -267,12 +245,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '54ef4410001af501'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'bathroom',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'bathroom',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Bathroom.Lights',
@@ -311,13 +287,29 @@ const remotes = [
   new Remotes.Shelly({
     device: 'mqtt.0.ogd.shed.power.stat.shelly1minigen3-1',
     toggle: {
-      states: ['scene.0.Garden.Shed'],
+      off: ['scene.0.Garden.Shed'],
+      states: () => {
+        if (getState(AlarmConfig.alarmState.join('.')).val !== false) {
+          // Disable if alarm is enabled.
+          return [];
+        }
+
+        return ['scene.0.Garden.Shed'];
+      },
     },
   }),
   new Remotes.Shelly({
     device: 'mqtt.0.ogd.porch.power.stat.shelly1minigen3-2',
     toggle: {
-      states: ['scene.0.House.Lights_Porch_Bright'],
+      off: ['scene.0.House.Lights_Porch_Bright'],
+      states: () => {
+        if (getState(AlarmConfig.alarmState.join('.')).val !== false) {
+          // Disable if alarm is enabled.
+          return [];
+        }
+
+        return ['scene.0.House.Lights_Porch_Bright'];
+      },
     },
   }),
 ];
