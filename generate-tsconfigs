@@ -18,7 +18,6 @@ for location in "${locations[@]}"; do
   mapfile -t typescripts < <(find "$location" -type f,l -name '*.ts' -not -iwholename '*/global/*')
   mapfile -t globals < <(cd "$location/global" && find -L -- * -type f -name '*.ts')
 
-
   for ts in "${typescripts[@]}"; do
     printf '%s\n' "$ts"
 
@@ -32,7 +31,6 @@ for location in "${locations[@]}"; do
 
     jq --null-input \
        --arg root_relative "$root_relative" \
-       --arg global_relative "$global_relative" \
        --argjson globals "[${global_scripts%,}]" \
        --arg ts "${ts##*/}" \
        '{
@@ -40,7 +38,7 @@ for location in "${locations[@]}"; do
           files: (["\($root_relative)iobroker.d.ts"] + ($globals | sort) + [$ts]),
           compilerOptions: {
             composite: true,
-            rootDir: $global_relative
+            rootDir: $root_relative
           }
         }' > "${ts%.ts}.tsconfig.json"
 

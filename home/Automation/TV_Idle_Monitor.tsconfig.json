@@ -20,6 +20,6 @@
   ],
   "compilerOptions": {
     "composite": true,
-    "rootDir": "../"
+    "rootDir": "../../"
   }
 }
