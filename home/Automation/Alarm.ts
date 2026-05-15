@@ -13,9 +13,9 @@ const config = {
     absence: 5,
     presence: 0,
   },
-  alarmEnabled: ['0_userdata.0', 'alarm-enabled'],
-  presence: '0_userdata.0.presence',
-  homematicPresence: AlarmConfig.homematicPresence,
+  alarmEnabled: AlarmConfig.alarmState,
+  presence: PresenceConfig.presenceState,
+  homematicPresence: PresenceConfig.homematicPresenceState,
   triggerAlarmOn: AlarmConfig.triggerAlarmOn,
   alarmEnabledChanged: AlarmConfig.alarmEnabledChanged,
 };

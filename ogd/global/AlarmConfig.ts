@@ -3,18 +3,18 @@ import { filter, pairwise, tap } from 'rxjs/operators';
 
 declare global {
   class AlarmConfig {
-    public static homematicPresence: string;
+    public static readonly alarmState: string[];
 
-    public static get triggerAlarmOn(): [string];
+    public static get triggerAlarmOn(): string[];
 
     public static allowDeviceAlarm(_stateId: string): boolean;
 
-    public static alarmEnabledChanged(_enabled: boolean);
+    public static alarmEnabledChanged(_enabled: boolean): void;
   }
 }
 
 export class AlarmConfig {
-  public static homematicPresence = undefined;
+  public static readonly alarmState = ['0_userdata.0', 'alarm-enabled'];
 
   public static get triggerAlarmOn() {
     return [
@@ -31,9 +31,11 @@ export class AlarmConfig {
     }
 
     // Living room temperature.
-    const temp = getState('zigbee.0.00158d000689c5a6.temperature')
-      .val as number;
-    return temp && temp > 15;
+    const temp = getState('zigbee.0.00158d000689c5a6.temperature').val;
+
+    if (typeof temp !== 'number' || !Number.isFinite(temp)) return true;
+
+    return temp > 15;
   }
 
   static frigateMonitor?: Subscription;

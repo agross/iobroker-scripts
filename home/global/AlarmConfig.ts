@@ -1,5 +1,5 @@
 class AlarmConfig {
-  public static homematicPresence = 'hm-rega.0.950';
+  public static readonly alarmState = ['0_userdata.0', 'alarm-enabled'];
 
   public static get triggerAlarmOn() {
     return [...$('state[id=zigbee.*.opened]')];
