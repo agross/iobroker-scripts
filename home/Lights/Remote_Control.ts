@@ -22,12 +22,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '588e81fffe2bacf4'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'kitchen',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'kitchen',
+        function: 'light',
+      }),
     },
     cycle: config.scenes.kitchen,
   }),
@@ -36,12 +34,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '588e81fffe2a6948'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'kitchen',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'kitchen',
+        function: 'light',
+      }),
     },
     cycle: config.scenes.kitchen,
   }),
@@ -50,12 +46,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '588e81fffe17a8ca'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'bedroom',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'bedroom',
+        function: 'light',
+      }),
     },
     cycle: {
       off: () => {
@@ -84,12 +78,10 @@ const remotes = [
     device: AdapterId.build(AdapterIds.zigbee, '001788010872fbc4'),
     dim: {
       brightnessChange: config.brightnessChange,
-      lights: Remotes.DimmableLights.for(
-        ...new Remotes.ObjectsWithStateQuery({
-          rooms: 'living_room',
-          functions: 'light',
-        }).values(),
-      ),
+      lights: Remotes.DimmableLights.for({
+        room: 'living_room',
+        function: 'light',
+      }),
     },
     cycle: {
       off: 'scene.0.Living Room.Lights',

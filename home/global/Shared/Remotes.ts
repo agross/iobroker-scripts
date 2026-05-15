@@ -23,51 +23,43 @@ import {
 
 declare global {
   namespace Remotes {
-    type States = string[] | ObjectsWithStateQuery;
+    type State = string | (() => string);
+    type States = string[] | (() => string[]);
 
-    interface CycleConfig {
-      off: string;
-      on: string[] | (() => string[]);
-    }
+    type CycleConfig = {
+      off: State;
+      on: States;
+    };
 
-    interface CycleConfigWithDynamicOff {
-      off: string | (() => string);
-      on: string[] | (() => string[]);
-    }
-
-    interface ToggleConfig {
+    type ToggleConfig = {
       off?: States;
       states: States;
-    }
+    };
 
-    interface DimmerConfig {
+    type DimmerConfig = {
       brightnessChange: number;
       lights: Observable<string[]>;
-    }
+    };
 
-    interface DeviceConfig {
+    type DeviceConfig = {
       device: string;
-    }
+    };
 
-    interface DimmerDeviceConfig {
+    type DimmerDeviceConfig = {
       dim?: DimmerConfig;
-    }
+    };
 
-    interface ToggleDeviceConfig {
-      toggle?: ToggleConfig;
-    }
+    type ToggleDeviceConfig = {
+      toggle: ToggleConfig;
+    };
 
-    interface CycleDeviceConfig {
-      cycle?: CycleConfig;
-    }
+    type CycleDeviceConfig = {
+      cycle: CycleConfig;
+    };
 
-    interface CycleDeviceConfigWithDynamicOff {
-      cycle?: CycleConfigWithDynamicOff;
-    }
-
-    interface MaximumBrightnessSceneDeviceConfig {
+    type MaximumBrightnessSceneDeviceConfig = {
       max_brightness_scenes?: string[];
-    }
+    };
 
     abstract class Remote {
       setUp(): Subscription;
@@ -75,7 +67,7 @@ declare global {
 
     class AqaraWS_EUK03 extends Remote {
       constructor(
-        config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig,
+        config: DeviceConfig & (ToggleDeviceConfig | CycleDeviceConfig),
       );
     }
 
@@ -92,8 +84,7 @@ declare global {
       constructor(
         config: DeviceConfig &
           DimmerDeviceConfig &
-          ToggleDeviceConfig &
-          CycleDeviceConfigWithDynamicOff,
+          (ToggleDeviceConfig | CycleDeviceConfig),
       );
     }
 
@@ -101,38 +92,21 @@ declare global {
       constructor(
         config: DeviceConfig &
           DimmerDeviceConfig &
-          ToggleDeviceConfig &
-          CycleDeviceConfigWithDynamicOff,
+          (ToggleDeviceConfig | CycleDeviceConfig),
       );
     }
 
     class Shelly extends Remote {
       constructor(
-        config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig,
+        config: DeviceConfig & (ToggleDeviceConfig | CycleDeviceConfig),
       );
     }
 
-    interface ObjectsWithStateQueryConfig {
-      rooms: string | string[];
-      functions: string | string[];
-    }
-
-    class ObjectsWithStateQuery {
-      constructor(config: ObjectsWithStateQueryConfig);
-      forEach(
-        callbackfn: (value: string, index: number, array: string[]) => void,
-        thisArg?: any,
-      ): void;
-      map<U>(
-        callbackfn: (value: string, index: number, array: string[]) => U,
-        thisArg?: any,
-      ): U[];
-      values(): string[];
-      get length(): number;
-    }
-
     class DimmableLights {
-      static for(...ids: string[]): Observable<string[]>;
+      static for(config: {
+        room: string;
+        function: string;
+      }): Observable<string[]>;
     }
   }
 }
@@ -143,16 +117,33 @@ export namespace Remotes {
   }
 
   type State = string | (() => string);
-  type States = string[] | (() => string[]) | ObjectsWithStateQuery;
 
-  interface CycleConfig {
-    off: string;
-    on: string[] | (() => string[]);
+  type States =
+    | string
+    | readonly string[]
+    | (() => string)
+    | (() => readonly string[]);
+
+  function isStringArray(
+    value: string | readonly string[],
+  ): value is readonly string[] {
+    return Array.isArray(value);
   }
 
-  interface CycleConfigWithDynamicOff {
-    off: string | (() => string);
-    on: string[] | (() => string[]);
+  function resolveState(state: State): string {
+    return typeof state === 'function' ? state() : state;
+  }
+  function resolveStates(states?: States): string[] {
+    if (!states) return [];
+
+    const value = typeof states === 'function' ? states() : states;
+
+    return isStringArray(value) ? [...value] : [value];
+  }
+
+  interface CycleConfig {
+    off: State;
+    on: States;
   }
 
   interface CycleStreams {
@@ -184,11 +175,9 @@ export namespace Remotes {
 
       const next = this.config.next.pipe(
         tap(({ device, states }) => {
-          if (typeof states === 'function') {
-            states = states();
-          }
+          const resolvedStates = resolveStates(states);
 
-          const currentIndex = states
+          const currentIndex = resolvedStates
             .map(state => ({ object: state, state: getState(state) }))
             .reduce((acc, state, index) => {
               if (acc < 0 && state.state.val === true) {
@@ -198,7 +187,8 @@ export namespace Remotes {
               return acc;
             }, -1);
 
-          const activate = states[currentIndex + 1] || states[0];
+          const activate =
+            resolvedStates[currentIndex + 1] || resolvedStates[0];
           log(`${device}: Cycle next: ${activate}`);
 
           setState(activate, true);
@@ -252,9 +242,7 @@ export namespace Remotes {
         map(({ device, states, off }) => {
           let anyOnDeterminedBy = off || states;
 
-          if (typeof anyOnDeterminedBy === 'function') {
-            anyOnDeterminedBy = anyOnDeterminedBy();
-          }
+          anyOnDeterminedBy = resolveStates(anyOnDeterminedBy);
 
           const anyOn = anyOnDeterminedBy
             .map(object => getState(object))
@@ -275,47 +263,44 @@ export namespace Remotes {
       const noneOn = toggled.pipe(
         filter(x => !x.anyOn),
         tap(({ device, states, off, anyOn }) => {
-          if (typeof states === 'function') {
-            states = states();
-          }
+          const resolvedStates = resolveStates(states);
 
-          log(`${device}: None on. Setting true for ${JSON.stringify(states)}`);
+          log(
+            `${device}: None on. Setting true for ${JSON.stringify(resolvedStates)}`,
+          );
 
-          states.forEach(state => setState(state, true));
+          resolvedStates.forEach(state => setState(state, true));
         }),
       );
 
       const someOn = toggled.pipe(filter(x => x.anyOn));
 
       const explicitOffTurnedOff = someOn.pipe(
-        filter(x => !!x.off),
         tap(({ device, states, off, anyOn }) => {
-          if (typeof off === 'function') {
-            off = off();
+          if (!off) {
+            return;
           }
-
+          const resolvedOff = resolveStates(off);
           log(
-            `${device}: Explicit off. Setting false for ${JSON.stringify(off)}`,
+            `${device}: Explicit off. Setting false for ${JSON.stringify(resolvedOff)}`,
           );
 
-          off.forEach(state => setState(state, false));
+          resolvedOff.forEach(state => setState(state, false));
         }),
       );
 
       const implicitOffTurnedOff = someOn.pipe(
         filter(x => !x.off),
         tap(({ device, states, off, anyOn }) => {
-          if (typeof states === 'function') {
-            states = states();
-          }
+          const resolvedStates = resolveStates(states);
 
           log(
             `${device}: Implicit off. Setting false for ${JSON.stringify(
-              states,
+              resolvedStates,
             )}`,
           );
 
-          states.forEach(state => setState(state, false));
+          resolvedStates.forEach(state => setState(state, false));
         }),
       );
 
@@ -344,13 +329,13 @@ export namespace Remotes {
       return this.config.turnedOn
         .pipe(
           tap(({ device, states }) => {
-            if (typeof states === 'function') {
-              states = states();
-            }
+            const resolvedStates = resolveStates(states);
 
-            log(`${device}: Setting true for ${JSON.stringify(states)}`);
+            log(
+              `${device}: Setting true for ${JSON.stringify(resolvedStates)}`,
+            );
 
-            states.forEach(state => setState(state, true));
+            resolvedStates.forEach(state => setState(state, true));
           }),
         )
         .subscribe();
@@ -413,62 +398,6 @@ export namespace Remotes {
         return acc;
       }, new Subscription());
     }
-
-    private makeDarker(states: States) {
-      this.changeBrightness(
-        states,
-        (ref, brightness) => brightness < (ref || Infinity),
-        brightness => brightness - this.config.brightnessChange,
-      );
-    }
-
-    private makeBrighter(states: States) {
-      this.changeBrightness(
-        states,
-        (ref, brightness) => brightness > (ref || -Infinity),
-        brightness => brightness + this.config.brightnessChange,
-      );
-    }
-
-    private changeBrightness(
-      states: States,
-      selector: (reference: number, brightness: number) => boolean,
-      newBrightness: (brightness: number) => number,
-    ) {
-      if (typeof states === 'function') {
-        states = states();
-      }
-
-      const brightnesses = states.map(light => `${light}.brightness`);
-
-      const minBrightness = brightnesses
-        .map(stateId => ({ source: stateId, state: getState(stateId) }))
-        .filter(state => !state.state.notExist && state.state.val)
-        .reduce(
-          (acc, item) => (selector(acc.state.val, item.state.val) ? item : acc),
-          { source: undefined, state: { val: undefined } },
-        );
-
-      if (!minBrightness.source) {
-        return;
-      }
-
-      log(
-        `Picked ${minBrightness.source} "${minBrightness.state.val}" as reference`,
-      );
-
-      let brightness = newBrightness(minBrightness.state.val);
-      if (brightness <= 0) {
-        // Keep lights on.
-        brightness = 1;
-      }
-      if (brightness > 100) {
-        brightness = 100;
-      }
-
-      log(`Setting brightness ${brightness}`);
-      brightnesses.forEach(b => setState(b, brightness));
-    }
   }
 
   interface DeviceConfig {
@@ -479,17 +408,15 @@ export namespace Remotes {
     dim?: DimmerConfig;
   }
 
-  interface ToggleDeviceConfig {
-    toggle?: ToggleConfig;
-  }
+  type ToggleDeviceConfig = {
+    mode: 'toggle';
+    toggle: ToggleConfig;
+  };
 
-  interface CycleDeviceConfig {
-    cycle?: CycleConfig;
-  }
-
-  interface CycleDeviceConfigWithDynamicOff {
-    cycle?: CycleConfigWithDynamicOff;
-  }
+  type CycleDeviceConfig = {
+    mode: 'cycle';
+    cycle: CycleConfig;
+  };
 
   interface MaximumBrightnessSceneDeviceConfig {
     max_brightness_scenes?: string[];
@@ -515,19 +442,18 @@ export namespace Remotes {
   export class AqaraWS_EUK03 extends Remote {
     constructor(
       config: DeviceConfig &
-        ToggleDeviceConfig &
-        CycleDeviceConfig &
+        (ToggleDeviceConfig | CycleDeviceConfig) &
         MaximumBrightnessSceneDeviceConfig,
     ) {
       super();
 
       const features: IFeature[] = [];
 
-      if (config.toggle) {
+      if (config.mode == 'toggle') {
         features.push(new ToggleAndSwitch(this.toggleStreams(config)));
       }
 
-      if (config.cycle) {
+      if (config.mode == 'cycle') {
         features.push(new Cycle(this.cycleStreams(config)));
       }
 
@@ -566,13 +492,13 @@ export namespace Remotes {
         ),
       ).pipe(share());
 
+      const resolvedOff = resolveState(config.cycle.off);
+
       const lightState = new Observable<iobJS.TypedState>(observer => {
-        on({ id: config.cycle.off, ack: true }, event =>
-          observer.next(event.state),
-        );
+        on({ id: resolvedOff, ack: true }, event => observer.next(event.state));
       }).pipe(
         share(),
-        startWith(getState(config.cycle.off)),
+        startWith(getState(resolvedOff)),
         // False -> false.
         // Anything else (true and Uncertain, for scenes) -> true.
         map(state => state.val !== false),
@@ -625,18 +551,21 @@ export namespace Remotes {
 
       const features: IFeature[] = [];
 
-      if (config.cycle) {
+      if (config.mode == 'cycle') {
         features.push(new Cycle(this.cycleStreams(config)));
       }
 
       if (config.dim) {
-        features.push(new Dimmer(this.dimmerStreams(config)));
+        features.push(new Dimmer(this.dimmerStreams(config, config.dim)));
       }
 
       if (config.max_brightness_scenes) {
         features.push(
           new MaximumBrightnessScene(
-            this.maximumBrightnessSceneStreams(config),
+            this.maximumBrightnessSceneStreams(
+              config,
+              config.max_brightness_scenes,
+            ),
           ),
         );
       }
@@ -661,13 +590,13 @@ export namespace Remotes {
         ),
       ).pipe(share());
 
+      const resolvedOff = resolveState(config.cycle.off);
+
       const lightState = new Observable<iobJS.TypedState>(observer =>
-        on({ id: config.cycle.off, ack: true }, event =>
-          observer.next(event.state),
-        ),
+        on({ id: resolvedOff, ack: true }, event => observer.next(event.state)),
       ).pipe(
         share(),
-        startWith(getState(config.cycle.off)),
+        startWith(getState(resolvedOff)),
         // False -> false.
         // Anything else (true and Uncertain, for scenes) -> true.
         map(state => state.val !== false),
@@ -705,7 +634,8 @@ export namespace Remotes {
     }
 
     private dimmerStreams(
-      config: DeviceConfig & DimmerDeviceConfig,
+      config: DeviceConfig,
+      dim: DimmerConfig,
     ): DimmerStreams {
       const down = new Observable<iobJS.ChangedStateObject>(observer => {
         on({ id: `${config.device}.double_left`, ack: true }, event => {
@@ -727,8 +657,8 @@ export namespace Remotes {
       );
 
       return {
-        brightnessChange: config.dim.brightnessChange,
-        lights: config.dim.lights,
+        brightnessChange: dim.brightnessChange,
+        lights: dim.lights,
         darker: darker.pipe(map(_event => config.device)),
         brighter: brighter.pipe(map(_event => config.device)),
         stop: stop.pipe(map(_event => config.device)),
@@ -736,7 +666,8 @@ export namespace Remotes {
     }
 
     private maximumBrightnessSceneStreams(
-      config: DeviceConfig & MaximumBrightnessSceneDeviceConfig,
+      config: DeviceConfig,
+      scenes: string[],
     ): MaximumBrightnessSceneStreams {
       const both = new Observable<string>(observer =>
         on(
@@ -749,7 +680,7 @@ export namespace Remotes {
         turnedOn: both.pipe(
           map(_ => ({
             device: config.device,
-            states: config.max_brightness_scenes,
+            states: scenes,
           })),
         ),
       };
@@ -757,26 +688,24 @@ export namespace Remotes {
   }
 
   export class TradfriDimmer extends Remote {
-    constructor(
-      config: DeviceConfig &
-        DimmerDeviceConfig &
-        CycleDeviceConfigWithDynamicOff,
-    ) {
+    constructor(config: DeviceConfig & DimmerDeviceConfig & CycleDeviceConfig) {
       super();
 
       const features: IFeature[] = [];
 
-      if (config.cycle) {
+      if (config.mode == 'cycle') {
         features.push(new Cycle(this.cycleStreams(config)));
       }
 
-      features.push(new Dimmer(this.dimmerStreams(config)));
+      if (config.dim) {
+        features.push(new Dimmer(this.dimmerStreams(config, config.dim)));
+      }
 
       this.addFeature(...features);
     }
 
     private cycleStreams(
-      config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
+      config: DeviceConfig & CycleDeviceConfig,
     ): CycleStreams {
       return {
         off: new Observable<iobJS.ChangedStateObject>(observer =>
@@ -797,7 +726,8 @@ export namespace Remotes {
     }
 
     private dimmerStreams(
-      config: DeviceConfig & DimmerDeviceConfig,
+      config: DeviceConfig,
+      dim: DimmerConfig,
     ): DimmerStreams {
       const release = new Observable<iobJS.ChangedStateObject>(observer =>
         on(
@@ -825,8 +755,8 @@ export namespace Remotes {
       );
 
       return {
-        brightnessChange: config.dim.brightnessChange,
-        lights: config.dim.lights,
+        brightnessChange: dim.brightnessChange,
+        lights: dim.lights,
         darker: down_hold.pipe(map(_event => config.device)),
         brighter: up_hold.pipe(map(_event => config.device)),
         stop: release.pipe(map(_event => config.device)),
@@ -835,26 +765,25 @@ export namespace Remotes {
   }
 
   export class Philips extends Remote {
-    constructor(
-      config: DeviceConfig &
-        DimmerDeviceConfig &
-        CycleDeviceConfigWithDynamicOff,
-    ) {
+    constructor(config: DeviceConfig & DimmerDeviceConfig & CycleDeviceConfig) {
       super();
 
       const features: IFeature[] = [];
 
       if (config.cycle) {
-        features.push(new Cycle(this.cycleStreams(config)));
+        features.push(new Cycle(this.cycleStreams(config, config.cycle)));
       }
 
-      features.push(new Dimmer(this.dimmerStreams(config)));
+      if (config.dim) {
+        features.push(new Dimmer(this.dimmerStreams(config, config.dim)));
+      }
 
       this.addFeature(...features);
     }
 
     private cycleStreams(
-      config: DeviceConfig & CycleDeviceConfigWithDynamicOff,
+      config: DeviceConfig,
+      cycle: CycleConfig,
     ): CycleStreams {
       return {
         off: new Observable<iobJS.ChangedStateObject>(observer =>
@@ -862,22 +791,19 @@ export namespace Remotes {
             { id: `${config.device}.off_press_release`, ack: true, val: true },
             event => observer.next(event),
           ),
-        ).pipe(
-          map(_event => ({ device: config.device, state: config.cycle.off })),
-        ),
+        ).pipe(map(_event => ({ device: config.device, state: cycle.off }))),
         next: new Observable<iobJS.ChangedStateObject>(observer =>
           on(
             { id: `${config.device}.on_press_release`, ack: true, val: true },
             event => observer.next(event),
           ),
-        ).pipe(
-          map(_event => ({ device: config.device, states: config.cycle.on })),
-        ),
+        ).pipe(map(_event => ({ device: config.device, states: cycle.on }))),
       };
     }
 
     private dimmerStreams(
-      config: DeviceConfig & DimmerDeviceConfig,
+      config: DeviceConfig,
+      dim: DimmerConfig,
     ): DimmerStreams {
       const down_hold = new Observable<boolean>(observer =>
         on({ id: `${config.device}.down_hold`, ack: true, val: true }, _event =>
@@ -920,8 +846,8 @@ export namespace Remotes {
       const brighter = up_hold.pipe(exhaustMap(x => concat(of(x), up_release)));
 
       return {
-        brightnessChange: config.dim.brightnessChange,
-        lights: config.dim.lights,
+        brightnessChange: dim.brightnessChange,
+        lights: dim.lights,
         darker: darker.pipe(
           filter(x => x === true),
           map(_event => config.device),
@@ -939,14 +865,16 @@ export namespace Remotes {
   }
 
   export class Shelly extends Remote {
-    constructor(config: DeviceConfig & ToggleDeviceConfig & CycleDeviceConfig) {
+    constructor(
+      config: DeviceConfig & (ToggleDeviceConfig | CycleDeviceConfig),
+    ) {
       super();
 
-      if (config.toggle) {
+      if (config.mode == 'toggle') {
         this.addFeature(new ToggleAndSwitch(this.toggleStreams(config)));
       }
 
-      if (config.cycle) {
+      if (config.mode == 'cycle') {
         this.addFeature(new Cycle(this.cycleStreams(config)));
       }
     }
@@ -989,13 +917,13 @@ export namespace Remotes {
         ),
       ).pipe(share());
 
+      const resolvedOff = resolveState(config.cycle.off);
+
       const lightState = new Observable<iobJS.TypedState>(observer =>
-        on({ id: config.cycle.off, ack: true }, event =>
-          observer.next(event.state),
-        ),
+        on({ id: resolvedOff, ack: true }, event => observer.next(event.state)),
       ).pipe(
         share(),
-        startWith(getState(config.cycle.off)),
+        startWith(getState(resolvedOff)),
         // False -> false.
         // Anything else (true and Uncertain, for scenes) -> true.
         map(state => state.val !== false),
@@ -1037,55 +965,16 @@ export namespace Remotes {
     }
   }
 
-  interface ObjectsWithStateQueryConfig {
-    rooms: string | string[];
-    functions: string | string[];
-  }
-
-  export class ObjectsWithStateQuery {
-    private config: ObjectsWithStateQueryConfig;
-
-    constructor(config: ObjectsWithStateQueryConfig) {
-      this.config = config;
-    }
-
-    public forEach(
-      callbackfn: (value: string, index: number, array: string[]) => void,
-      thisArg?: any,
-    ): void {
-      this.values().forEach(callbackfn, thisArg);
-    }
-
-    public map<U>(
-      callbackfn: (value: string, index: number, array: string[]) => U,
-      thisArg?: any,
-    ): U[] {
-      return this.values().map(callbackfn, thisArg);
-    }
-
-    public values(): string[] {
-      const states: string[] = [];
-
-      $(this.query('state.id=*.state')).each(id => {
-        states.push(id);
-      });
-
-      return states;
-    }
-
-    public get length(): number {
-      return this.values().length;
-    }
-
-    private query(stateQuery: string): string {
-      return `channel[${stateQuery}](rooms=${this.config.rooms})(functions=${this.config.functions})`;
-    }
-  }
-
   export class DimmableLights {
     private constructor() {}
 
-    static for(...ids: string[]): Observable<string[]> {
+    static for(config: {
+      room: string;
+      function: string;
+    }): Observable<string[]> {
+      const selector = `channel[state.id=*.state](rooms=${config.room})(functions=${config.function})`;
+
+      const ids = [...$(selector)];
       const stateChanges = ids.map(id => {
         const stream = new Observable<{ id: string; val: boolean }>(observer =>
           on({ id: id, ack: true }, event =>
@@ -1099,11 +988,13 @@ export namespace Remotes {
         return stream.pipe(startWith(initial));
       });
 
-      return combineLatest(stateChanges, (...stateChanges) =>
-        stateChanges
-          .filter(x => x.val === true)
-          .map(x => x.id)
-          .map(id => id.replace(/\.state$/, '')),
+      return combineLatest(stateChanges).pipe(
+        map(stateChanges =>
+          stateChanges
+            .filter(x => x.val === true)
+            .map(x => x.id)
+            .map(id => id.replace(/\.state$/, '')),
+        ),
       );
     }
   }
