@@ -1,41 +1,44 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-# set -x
 
 locations=(home ogd)
 
-concat() {
-  str="${1?Need string}"
-  times="${2?Need repetitions}"
-
-  for((i=0; i < times; i++)); do
-    printf '%s' "$str"
-  done
-}
+script_dir="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
 for location in "${locations[@]}"; do
-  mapfile -t typescripts < <(find "$location" -type f,l -name '*.ts' -not -iwholename '*/global/*')
-  mapfile -t globals < <(cd "$location/global" && find -L -- * -type f -name '*.ts')
+  mapfile -t typescripts < <(find "$script_dir/$location" \
+                                  -type f,l \
+                                  -name '*.ts' \
+                                  -not -iwholename '*/global/*')
+  mapfile -t globals < <(find -L \
+                              "$script_dir/$location/global" \
+                              -type f \
+                              -name '*.ts')
 
   for ts in "${typescripts[@]}"; do
     printf '%s\n' "$ts"
 
-    depth="${ts//[^\/]}"
-    depth="${#depth}"
+    ts_dir=$(dirname "$ts")
 
-    root_relative="$(concat '../' "$depth")"
-    global_relative="$(concat '../' "$((depth - 1))")"
+    root_relative="$(realpath --relative-to="$ts_dir" "$script_dir")"
 
-    printf -v global_scripts "\"${global_relative}global/%s\"," "${globals[@]}"
+    globals_relative=()
+    for global in "${globals[@]}"; do
+      globals_relative+=("$(realpath --no-symlinks --relative-to="$ts_dir" "$global")")
+    done
+
+    globals_relative_json="$(printf '%s\n' "${globals_relative[@]}" |
+                             jq --raw-input . |
+                             jq --slurp .)"
 
     jq --null-input \
        --arg root_relative "$root_relative" \
-       --argjson globals "[${global_scripts%,}]" \
+       --argjson globals "$globals_relative_json" \
        --arg ts "${ts##*/}" \
        '{
-          extends: "\($root_relative)tsconfig.json",
-          files: (["\($root_relative)iobroker.d.ts"] + ($globals | sort) + [$ts]),
+          extends: "\($root_relative)/tsconfig.json",
+          files: (["\($root_relative)/iobroker.d.ts"] + ($globals | sort) + [$ts]),
           compilerOptions: {
             composite: true,
             rootDir: $root_relative
@@ -47,15 +50,18 @@ for location in "${locations[@]}"; do
   done
 done
 
-mapfile -t tsconfigs < <(find "${locations[@]}" -mindepth 1 -type f -name '*.tsconfig.json' | sort)
+mapfile -t tsconfigs < <(find "${locations[@]}" \
+                              -mindepth 1 \
+                              -type f \
+                              -name '*.tsconfig.json' |
+                         sort)
 
-paths=''
-for tsconfig in "${tsconfigs[@]}"; do
-  paths+="{ \"path\": \"$tsconfig\" },"
-done
+paths="$(printf '%s\n' "${tsconfigs[@]}" |
+         jq --raw-input '{ path: . }' |
+         jq --slurp .)"
 
 jq --null-input \
-   --argjson references "[${paths%,}]" \
+   --argjson references "$paths" \
   '{
      extends: "./tsconfig.base.json",
      exclude: ["*"],
