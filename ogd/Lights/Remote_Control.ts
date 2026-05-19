@@ -289,8 +289,8 @@ const remotes = [
     toggle: {
       off: ['scene.0.Garden.Shed'],
       states: () => {
-        if (getState(AlarmConfig.alarmState.join('.')).val !== false) {
-          // Disable if alarm is enabled.
+        var absent = getState('0_userdata.0.long-term-absence').val;
+        if (absent === true) {
           return [];
         }
 
@@ -303,8 +303,8 @@ const remotes = [
     toggle: {
       off: ['scene.0.House.Lights_Porch_Bright'],
       states: () => {
-        if (getState(AlarmConfig.alarmState.join('.')).val !== false) {
-          // Disable if alarm is enabled.
+        var absent = getState('0_userdata.0.long-term-absence').val;
+        if (absent === true) {
           return [];
         }
 
