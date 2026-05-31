@@ -206,8 +206,8 @@ function getAliasDefinition(
             }),
             temperature: state({
               alias: {
-                // TODO: Currently no data point.
-                id: `${car.root}.status.temperatureOutsideStatus`,
+                id: `${car.root}.statuseudata.outside_temperature`,
+                read: '(val / 10 - 273.15).toFixed(1)',
               },
               role: 'value.temperature',
               type: 'number',
@@ -332,8 +332,7 @@ function getAliasDefinition(
             }),
             'oil-level': state({
               alias: {
-                // TODO: Currently no data point.
-                id: `${car.root}.status.oilLevelStatus`,
+                id: `${car.root}.statuseudata.oil_level_actual_level`,
               },
               role: 'indicator',
               type: 'number',
