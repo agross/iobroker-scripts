@@ -265,6 +265,7 @@ function translate(str: string) {
     ['Warm White', 'Warmweiß'],
     ['Bright', 'Hell'],
     ['Colorful', 'Farbig'],
+    ['Color Loop', 'Farbwechsel'],
     ['Cozy', 'Gemütlich'],
     ['Default', 'Normal'],
     ['Dim', 'Abgedunkelt'],
@@ -288,6 +289,8 @@ function translate(str: string) {
     ['Valve Open', 'Ventil offen'],
     ['Minutes', 'Minuten'],
     ['Schedule enabled for', 'Zeitplan aktiv für'],
+    ['Getting Wood', 'Holz holen'],
+    ['Socket', 'Steckdose'],
   ]);
 
   let loop = 0;
