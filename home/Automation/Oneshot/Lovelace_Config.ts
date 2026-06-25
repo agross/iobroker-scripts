@@ -608,6 +608,42 @@ function maxDayTemperature() {
 }
 
 function ecovacsDeebot() {
+  $('state[id=ecovacs-deebot.*.status.device]').each(async id => {
+    const device = id.replace(/\.status\.device$/, '');
+
+    const name = getState(`${device}.info.deviceName`).val;
+
+    const currentMapId = getState(`${device}.map.currentMapMID`).val;
+    setState(`${device}.map.${currentMapId}.loadMapImage`, true, err => {
+      if (err) {
+        log(
+          `Could not load map image for ${device}, needs activation in device adapter settings: ${err}`,
+          'error',
+        );
+      }
+    });
+
+    const expect: Partial<iobJS.StateCommon> = {
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          entity: 'vacuum',
+          name: Lovelace.id(name),
+          attr_friendly_name: name,
+          state_STATE: `${device}.info.deviceStatus`,
+          state_POWER: `${device}.control.clean`,
+          state_PAUSE: `${device}.control.pause`,
+          state_BATTERY: `${device}.info.battery`,
+          // Prefer device image:
+          // state_MAP: `${device}.map.${currentMapId}.map64`,
+          state_MAP: `${device}.info.deviceImageURL`,
+        },
+      },
+    };
+
+    await check(id, expect);
+  });
+
   $('state[id=ecovacs-deebot.*.control.clean]').each(async id => {
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
@@ -647,7 +683,7 @@ function ecovacsDeebot() {
       return;
     }
 
-    const area = Utils.english((await getObjectAsync(id)).common.name);
+    const area = Utils.english((await getObjectAsync(id))!.common.name);
 
     if (area.length === 1) {
       log(
