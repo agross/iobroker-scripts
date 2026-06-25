@@ -12,7 +12,7 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 
-function getObjectDefinition(): ObjectDefinitionRoot {
+function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
   // HomeMatic shutters.
   return [
     ...$('state[id=*.3.LEVEL]{CONTROL=BLIND_TRANSMITTER.LEVEL}'),
@@ -54,7 +54,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           read: `val === 2`,
           write: 'val = 0',
         },
-        role: 'button.close',
+        role: 'button.close.blind',
         type: 'boolean',
         name: 'Close shutters completely',
         read: true,
@@ -78,7 +78,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           read: `val === 1`,
           write: 'val = 100',
         },
-        role: 'button.open',
+        role: 'button.open.blind',
         type: 'boolean',
         name: 'Open shutters completely',
         read: true,
@@ -99,7 +99,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           read: 'false',
           write: 'true',
         },
-        role: 'button.stop',
+        role: 'button.stop.blind',
         type: 'boolean',
         name: 'Stop movement',
         read: true,
@@ -120,7 +120,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           read: 'Math.round(val)',
           write: 'val',
         },
-        role: 'value.blind',
+        role: 'level.tilt',
         type: 'number',
         unit: '%',
         min: 0,
@@ -146,7 +146,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           read: `val === 2`,
           write: 'val = 0',
         },
-        role: 'button.close',
+        role: 'button.close.tilt',
         type: 'boolean',
         name: 'Tilt slats into closed position',
         read: true,
@@ -170,7 +170,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
           read: `val === 1`,
           write: 'val = 100',
         },
-        role: 'button.open',
+        role: 'button.open.tilt',
         type: 'boolean',
         name: 'Tilt slats into open position',
         read: true,
@@ -202,7 +202,7 @@ function getObjectDefinition(): ObjectDefinitionRoot {
   }, {} as ObjectDefinitionRoot);
 }
 
-await ObjectCreator.create(getObjectDefinition(), 'alias.0');
+await ObjectCreator.create(getObjectDefinition('alias.0'), 'alias.0');
 
 // When only slats tilt is set we also need to re-set the current level,
 // otherwise the new slats tilt is not applied. Wait until the shutter stopped
