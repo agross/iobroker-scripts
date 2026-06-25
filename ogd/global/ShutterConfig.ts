@@ -30,7 +30,7 @@ class ShutterConfig {
     ];
   }
 
-  public static afternoon = () => getAstroDate('sunrise', new Date(), 4 * 60);
+  public static afternoon = () => getAstroDate('solarNoon', undefined, -2 * 60);
 
   public static disable = async () => {
     var absent = (await getStateAsync('0_userdata.0.long-term-absence')).val;
