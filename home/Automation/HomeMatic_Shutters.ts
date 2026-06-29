@@ -18,6 +18,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
     ...$('state[id=*.3.LEVEL]{CONTROL=BLIND_TRANSMITTER.LEVEL}'),
   ].reduce<ObjectDefinitionRoot>((acc, stateId) => {
     const device = Device.id(stateId);
+    const name = Device.deviceName(stateId);
 
     const deviceStates: {
       [id: string]: iobJS.StateCommon;
@@ -33,7 +34,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
         unit: '%',
         min: 0,
         max: 100,
-        name: 'Level of shutters',
+        name: `${name}: Level of shutters`,
         read: true,
         write: true,
         custom: {
@@ -56,7 +57,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
         },
         role: 'button.close.blind',
         type: 'boolean',
-        name: 'Close shutters completely',
+        name: `${name}: Close shutters completely`,
         read: true,
         write: true,
         def: false,
@@ -80,7 +81,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
         },
         role: 'button.open.blind',
         type: 'boolean',
-        name: 'Open shutters completely',
+        name: `${name}: Open shutters completely`,
         read: true,
         write: true,
         def: false,
@@ -101,7 +102,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
         },
         role: 'button.stop.blind',
         type: 'boolean',
-        name: 'Stop movement',
+        name: `${name}: Stop movement`,
         read: true,
         write: true,
         def: false,
@@ -125,7 +126,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
         unit: '%',
         min: 0,
         max: 100,
-        name: 'Tilt level of slats',
+        name: `${name}: Tilt level of slats`,
         read: true,
         write: true,
         custom: {
@@ -148,7 +149,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
         },
         role: 'button.close.tilt',
         type: 'boolean',
-        name: 'Tilt slats into closed position',
+        name: `${name}: Close slats`,
         read: true,
         write: true,
         def: false,
@@ -172,7 +173,7 @@ function getObjectDefinition(baseId: string): ObjectDefinitionRoot {
         },
         role: 'button.open.tilt',
         type: 'boolean',
-        name: 'Tilt slats into open position',
+        name: `${name}: Open slats`,
         read: true,
         write: true,
         def: false,
