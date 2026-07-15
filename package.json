@@ -5,14 +5,14 @@
   "scripts": {
     "build": "tsc --build --verbose"
   },
-  "//": [
+  "// dependencies": [
     "rxjs: version 7 is not compatible: https://github.com/ioBroker/ioBroker.javascript/issues/928"
   ],
   "dependencies": {
     "got": "^15.0.0",
     "rxjs": "^6.6.7"
   },
-  "//": [
+  "// devDependencies": [
     "@types/wake_on_lan: types for library included in iobroker.javascript",
     "prettier: formatting of our code"
   ],
