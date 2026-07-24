@@ -876,7 +876,7 @@ function solarPrediction(enabledDataPoints: {}) {
     },
   };
 
-  $('state[id=solarprognose.0.forecast.00.energy]').each(id => {
+  $('state[id=pvforecast.0.summary.energy.today]').each(id => {
     const expect = {
       ...numeric,
       ...{
@@ -887,7 +887,7 @@ function solarPrediction(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=solarprognose.0.forecast.01.energy]').each(id => {
+  $('state[id=pvforecast.0.summary.energy.tomorrow]').each(id => {
     const expect = {
       ...numeric,
       ...{
