@@ -441,9 +441,11 @@ function mqttDevicesWithTemperature(enabledDataPoints: {}) {
 }
 
 function car(enabledDataPoints: {}) {
+  const shorten = (longForm: string) => longForm.split(' ', 2).join(' ');
+
   $('state[id=alias.0.vw-connect.0.*.mileage]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Mileage`,
+      aliasId: `${shorten(Device.deviceName(id))} Mileage`,
       ignoreAboveNumber: 2147483646,
       ignoreZero: true,
     });
@@ -453,7 +455,7 @@ function car(enabledDataPoints: {}) {
 
   $('state[id=alias.0.vw-connect.0.*.oil-level]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Oil Level`,
+      aliasId: `${shorten(Device.deviceName(id))} Oil Level`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -461,7 +463,7 @@ function car(enabledDataPoints: {}) {
 
   $('state[id=alias.0.vw-connect.0.*.adblue-range]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} AdBlue Range`,
+      aliasId: `${shorten(Device.deviceName(id))} AdBlue Range`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -469,7 +471,7 @@ function car(enabledDataPoints: {}) {
 
   $('state[id=alias.0.vw-connect.0.*.fuel-level]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Fuel Level`,
+      aliasId: `${shorten(Device.deviceName(id))} Fuel Level`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -477,15 +479,7 @@ function car(enabledDataPoints: {}) {
 
   $('state[id=alias.0.vw-connect.0.*.fuel-range]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Fuel Range`,
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=alias.0.vw-connect.0.*.locked]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Locked`,
+      aliasId: `${shorten(Device.deviceName(id))} Fuel Range`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -493,7 +487,15 @@ function car(enabledDataPoints: {}) {
 
   $('state[id=alias.0.vw-connect.0.*.parking-brake-engaged]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Parking Break Engaged`,
+      aliasId: `${shorten(Device.deviceName(id))} Parking Break Engaged`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
+
+  $('state[id=0_userdata.0.vw-connect.0.*.locked]').each(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${shorten(Device.deviceName(id))} Locked`,
     });
 
     check(enabledDataPoints, id, expect);
@@ -501,39 +503,7 @@ function car(enabledDataPoints: {}) {
 
   $('state[id=0_userdata.0.vw-connect.0.*.windows-closed]').each(id => {
     const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Windows Closed`,
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=alias.0.vw-connect.0.*.latitude]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Latitude`,
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=alias.0.vw-connect.0.*.longitude]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Longitude`,
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=alias.0.vw-connect.0.*.geohash]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Geohash`,
-    });
-
-    check(enabledDataPoints, id, expect);
-  });
-
-  $('state[id=alias.0.vw-connect.0.*.is-moving]').each(id => {
-    const expect = Object.assign({}, config.default, {
-      aliasId: `${Device.deviceName(id)} Moving`,
+      aliasId: `${shorten(Device.deviceName(id))} Windows Closed`,
     });
 
     check(enabledDataPoints, id, expect);

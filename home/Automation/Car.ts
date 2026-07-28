@@ -36,7 +36,8 @@ function getAliasDefinition(
           nested: {
             'oil-distance': state({
               alias: {
-                id: `${car.root}.status.maintenanceStatus.oilServiceDue_km`,
+                id: `${car.root}.statuseudata.maintenance_interval_distance_until_oil_change`,
+                read: 'val * -1',
               },
               role: 'indicator',
               type: 'number',
@@ -55,7 +56,8 @@ function getAliasDefinition(
             }),
             'oil-time': state({
               alias: {
-                id: `${car.root}.status.maintenanceStatus.oilServiceDue_days`,
+                id: `${car.root}.statuseudata.maintenance_interval__time_until_oil_change`,
+                read: 'val * -1',
               },
               role: 'indicator',
               type: 'number',
@@ -74,7 +76,8 @@ function getAliasDefinition(
             }),
             'inspection-distance': state({
               alias: {
-                id: `${car.root}.status.maintenanceStatus.inspectionDue_km`,
+                id: `${car.root}.statuseudata.maintenance_interval_distance_until_inspection`,
+                read: 'val * -1',
               },
               role: 'indicator',
               type: 'number',
@@ -93,7 +96,8 @@ function getAliasDefinition(
             }),
             'inspection-time': state({
               alias: {
-                id: `${car.root}.status.maintenanceStatus.inspectionDue_days`,
+                id: `${car.root}.statuseudata.maintenance_interval__time_until_inspection`,
+                read: 'val * -1',
               },
               role: 'indicator',
               type: 'number',
@@ -112,98 +116,11 @@ function getAliasDefinition(
             }),
           },
         },
-        Position: {
-          type: 'channel',
-          common: { name: 'Position' },
-          native: {},
-          nested: {
-            latitude: state({
-              alias: {
-                id: `${car.root}.parkingposition.lat`,
-              },
-              role: 'value.gps.latitude',
-              type: 'number',
-              read: true,
-              write: false,
-              name: 'GPS latitude',
-            }),
-            longitude: state({
-              alias: {
-                id: `${car.root}.parkingposition.lon`,
-              },
-              role: 'value.gps.longitude',
-              type: 'number',
-              read: true,
-              write: false,
-              name: 'GPS longitude',
-            }),
-            geohash: state({
-              alias: {
-                id: `${car.root}.position.geohash`,
-              },
-              role: 'indicator',
-              type: 'string',
-              read: true,
-              write: false,
-              name: 'Geohash',
-            }),
-            'is-moving': state({
-              alias: {
-                id: `${car.root}.position.isMoving`,
-              },
-              role: 'indicator',
-              type: 'boolean',
-              read: true,
-              write: false,
-              name: 'Is the vehicle moving',
-            }),
-          },
-        },
         States: {
           type: 'channel',
           common: { name: 'States' },
           native: {},
           nested: {
-            locked: state({
-              alias: {
-                id: `${car.root}.status.accessStatus.doorLockStatus`,
-                read: "val === 'locked'",
-              },
-              role: 'indicator',
-              type: 'boolean',
-              read: true,
-              write: false,
-              name: 'Car Locked',
-              custom: {
-                [AdapterIds.lovelace]: {
-                  enabled: true,
-                  entity: 'binary_sensor',
-                  name: Lovelace.id('Car locked'),
-                  attr_icon: 'mdi:lock',
-                },
-              },
-            }),
-            lock: state({
-              alias: {
-                id: {
-                  read: `${car.root}.status.isCarLocked`,
-                  write: `${car.root}.remote.access`,
-                },
-              },
-              role: 'switch',
-              type: 'boolean',
-              read: true,
-              write: true,
-              name: 'Lock or Unlock Car',
-              custom: {
-                [AdapterIds.lovelace]: {
-                  enabled: true,
-                  entity: 'switch',
-                  name: Lovelace.id('Car lock'),
-                  attr_icon: 'mdi:lock',
-                },
-              },
-            }),
             temperature: state({
               alias: {
                 id: `${car.root}.statuseudata.outside_temperature`,
@@ -227,9 +144,8 @@ function getAliasDefinition(
             }),
             'parking-brake-engaged': state({
               alias: {
-                // TODO: Currently no data point.
-                id: `${car.root}.status.accessStatus.overallStatus`,
-                read: "val === 'safe'",
+                id: `${car.root}.statuseudata.parking_brake`,
+                read: 'val === 1',
               },
               role: 'indicator',
               type: 'boolean',
@@ -247,7 +163,7 @@ function getAliasDefinition(
             }),
             mileage: state({
               alias: {
-                id: `${car.root}.status.maintenanceStatus.mileage_km`,
+                id: `${car.root}.statuseudata.mileage`,
                 read: 'val >= 2147483647 ? null : val',
               },
               role: 'indicator',
@@ -274,7 +190,7 @@ function getAliasDefinition(
           nested: {
             'adblue-range': state({
               alias: {
-                id: `${car.root}.status.measurements_rangeStatus.adBlueRange`,
+                id: `${car.root}.statuseudata.scr_range`,
               },
               role: 'indicator',
               type: 'number',
@@ -293,7 +209,7 @@ function getAliasDefinition(
             }),
             'fuel-range': state({
               alias: {
-                id: `${car.root}.status.rangeStatus.totalRange_km`,
+                id: `${car.root}.statuseudata.cruising_range_primary_engine`,
               },
               role: 'indicator',
               type: 'number',
@@ -312,7 +228,7 @@ function getAliasDefinition(
             }),
             'fuel-level': state({
               alias: {
-                id: `${car.root}.status.rangeStatus.primaryEngine.currentFuelLevel_pct`,
+                id: `${car.root}.statuseudata.fuel_level_current_level`,
               },
               role: 'indicator',
               type: 'number',
@@ -377,42 +293,6 @@ function getUserDataDefinition(
       common: { name: car.name, role: 'device' },
       enumIds: ['enum.rooms.fake', 'enum.functions.security'],
       nested: {
-        Alarm: {
-          type: 'channel',
-          common: { name: 'Unacknowledged Alarm' },
-          native: {},
-          nested: {
-            reason: state({
-              role: 'indicator',
-              type: 'string',
-              read: true,
-              write: false,
-              name: 'Reason',
-              custom: {
-                [AdapterIds.lovelace]: {
-                  enabled: true,
-                  entity: 'sensor',
-                  name: Lovelace.id('Car alarm reason'),
-                },
-              },
-            }),
-            timestamp: state({
-              role: 'indicator',
-              type: 'mixed',
-              read: true,
-              write: false,
-              name: 'Alarm Timestamp',
-              custom: {
-                [AdapterIds.lovelace]: {
-                  enabled: true,
-                  entity: 'sensor',
-                  name: Lovelace.id('Car alarm timestamp'),
-                  attr_device_class: 'timestamp',
-                },
-              },
-            }),
-          },
-        },
         Maintenance: {
           type: 'channel',
           common: { name: 'Maintenance' },
@@ -485,6 +365,38 @@ function getUserDataDefinition(
                 },
               },
             }),
+            unlocked: state({
+              role: 'indicator.state',
+              type: 'boolean',
+              read: true,
+              write: false,
+              name: 'Unlocked',
+              custom: {
+                [AdapterIds.lovelace]: {
+                  enabled: true,
+                  entity: 'binary_sensor',
+                  name: Lovelace.id('Car unlocked'),
+                  attr_device_class: 'lock',
+                  attr_icon: 'mdi:lock-open',
+                },
+              },
+            }),
+            locked: state({
+              role: 'indicator.state',
+              type: 'boolean',
+              read: true,
+              write: false,
+              name: 'Locked',
+              custom: {
+                [AdapterIds.lovelace]: {
+                  enabled: true,
+                  entity: 'binary_sensor',
+                  name: Lovelace.id('Car locked'),
+                  attr_device_class: 'lock',
+                  attr_icon: 'mdi:lock',
+                },
+              },
+            }),
           },
         },
       },
@@ -494,84 +406,107 @@ function getUserDataDefinition(
   }, {} as ObjectDefinitionRoot);
 }
 
-const cars = [
-  ...new Set(
-    [...$(`channel[id=${adapter}*][role=indicator]`)].map(
-      x => adapter + x.substring(adapter.length).replace(/\..*/, ''),
-    ),
-  ),
-].map(root => {
-  return {
-    root: root,
-    name: getState(`${root}.general.model`).val,
-  };
-});
+const cars = [...$(`${adapter}*.general.nickname`)].map(nicknameState => ({
+  root: nicknameState.replace('.general.nickname', ''),
+  name: getState(nicknameState).val,
+}));
 
 await ObjectCreator.create(getAliasDefinition(cars), 'alias.0');
 await ObjectCreator.create(getUserDataDefinition(cars), '0_userdata.0');
 
-const parkedWithWindowOpen = cars.map(car => {
-  const windowMap = {
-    'front-left': 'windows01',
-    'rear-left': 'windows03',
-    'front-right': 'windows02',
-    'rear-right': 'windows04',
-  };
+function windows(car: string) {
+  const states = [...$(`${car}.statuseudata.state_*_window_lifter`)].map(
+    state => {
+      log(`Subscribing to window: ${state}`);
 
-  const windowStates = Object.entries(windowMap).map(([k, v]) => {
-    const state = `${car.root}.status.accessStatus.${v}.status.closed`;
+      return new Stream<number>(state).stream.pipe(
+        map(e => ({
+          window: state
+            .replace(`${car}.statuseudata.state_`, '')
+            .replace('_window_lifter', ''),
+          open: e !== 3,
+        })),
+        distinctUntilKeyChanged('open'),
+      );
+    },
+  );
 
-    log(`Subscribing to ${k} window: ${state}`);
-
-    return new Stream<string>(state).stream.pipe(
-      map(e => {
-        return {
-          window: k,
-          open: e !== 'closed',
-        };
-      }),
-      distinctUntilKeyChanged('open'),
-    );
-  });
-
-  const openWindows = combineLatest(windowStates).pipe(
+  const openWindows = combineLatest(states).pipe(
     map(windows => windows.filter(window => window.open)),
     distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
   );
 
-  const windowsOpenState = `0_userdata.0.${car.root}.States.windows-open`;
-  const windowsClosedState = `0_userdata.0.${car.root}.States.windows-closed`;
-
-  const windowUserStates = openWindows.pipe(
+  const userStates = openWindows.pipe(
     tap(windows => log(`Open windows: ${windows.map(w => w.window).join()}`)),
     tap(windows => {
       const closed = windows.length === 0;
 
-      setState(windowsOpenState, !closed, true);
-      setState(windowsClosedState, closed, true);
+      setState(`0_userdata.0.${car}.States.windows-open`, !closed, true);
+      setState(`0_userdata.0.${car}.States.windows-closed`, closed, true);
     }),
   );
 
-  const locked = new Stream<boolean>(
-    `alias.0.${car.root}.States.locked`,
-  ).stream.pipe(distinctUntilChanged());
+  return [openWindows, userStates];
+}
+
+function locks(car: string) {
+  const states = [...$(`${car}.statuseudata.locked_state_*`)].map(state => {
+    log(`Subscribing to lock: ${state}`);
+
+    return new Stream<number>(state).stream.pipe(
+      map(e => ({
+        lock: state
+          .replace(`${car}.statuseudata.locked_state_`, '')
+          .replace(/^_*/, ''),
+        open: e !== 2,
+      })),
+      distinctUntilKeyChanged('open'),
+    );
+  });
+
+  const unlockedLocks = combineLatest(states).pipe(
+    map(locks => locks.filter(lock => lock.open)),
+    distinctUntilChanged((x, y) => util.isDeepStrictEqual(x, y)),
+  );
+
+  const userStates = unlockedLocks.pipe(
+    tap(locks => log(`Unlocked locks: ${locks.map(l => l.lock).join()}`)),
+    tap(locks => {
+      const locked = locks.length === 0;
+
+      setState(`0_userdata.0.${car}.States.unlocked`, !locked, true);
+      setState(`0_userdata.0.${car}.States.locked`, locked, true);
+    }),
+  );
+
+  return [unlockedLocks, userStates];
+}
+
+const parkedWithWindowOpen = cars.map(car => {
+  const [openWindows, windowUserStates] = windows(car.root);
+  const [unlockedLocks, lockUserStates] = locks(car.root);
+
   const parkingBreakEngaged = new Stream<boolean>(
     `alias.0.${car.root}.States.parking-brake-engaged`,
   ).stream.pipe(distinctUntilChanged());
 
   const parkedWithWindowOpen = combineLatest([
     openWindows,
-    locked,
+    unlockedLocks,
     parkingBreakEngaged,
   ]).pipe(
     filter(
-      ([openWindows, locked, parked]) =>
-        openWindows.length > 0 && locked && parked,
+      ([openWindows, unlockedLocks, parked]) =>
+        openWindows.length > 0 && unlockedLocks.length == 0 && parked,
     ),
     tap(_ => Notify.mobile('Car is parked and locked with window open!')),
   );
 
-  return [windowUserStates.subscribe(), parkedWithWindowOpen.subscribe()];
+  return [
+    windowUserStates.subscribe(),
+    lockUserStates.subscribe(),
+    parkedWithWindowOpen.subscribe(),
+  ];
 });
 
 const parkedAtHomeUnlocked = cars.map(car => {
@@ -580,7 +515,7 @@ const parkedAtHomeUnlocked = cars.map(car => {
   );
 
   const locked = new Stream<boolean>(
-    `alias.0.${car.root}.States.locked`,
+    `0_userdata.0.${car.root}.States.locked`,
   ).stream.pipe(distinctUntilChanged());
 
   const parkingBreakEngaged = new Stream<boolean>(
@@ -642,7 +577,8 @@ const tightenTyres = cars.map(car => {
 });
 
 onStop(() =>
-  []
-    .concat(...parkedWithWindowOpen, ...parkedAtHomeUnlocked, ...tightenTyres)
+  parkedWithWindowOpen
+    .flat()
+    .concat(...parkedAtHomeUnlocked, ...tightenTyres)
     .forEach(s => s.unsubscribe()),
 );
