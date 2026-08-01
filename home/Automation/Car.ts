@@ -415,16 +415,16 @@ await ObjectCreator.create(getAliasDefinition(cars), 'alias.0');
 await ObjectCreator.create(getUserDataDefinition(cars), '0_userdata.0');
 
 function windows(car: string) {
-  const states = [...$(`${car}.statuseudata.state_*_window_lifter`)].map(
+  const states = [...$(`${car}.statuseudata.position_*_window_lifter`)].map(
     state => {
       log(`Subscribing to window: ${state}`);
 
       return new Stream<number>(state).stream.pipe(
         map(e => ({
           window: state
-            .replace(`${car}.statuseudata.state_`, '')
+            .replace(`${car}.statuseudata.position_`, '')
             .replace('_window_lifter', ''),
-          open: e !== 3,
+          open: e !== 0,
         })),
         distinctUntilKeyChanged('open'),
       );
