@@ -450,19 +450,22 @@ function windows(car: string) {
 }
 
 function locks(car: string) {
-  const states = [...$(`${car}.statuseudata.locked_state_*`)].map(state => {
-    log(`Subscribing to lock: ${state}`);
+  const states = [...$(`${car}.statuseudata.locked_state_*`)]
+    // Bonnet is considered unlocked when it's closed.
+    .filter(state => !state.endsWith('_bonnet'))
+    .map(state => {
+      log(`Subscribing to lock: ${state}`);
 
-    return new Stream<number>(state).stream.pipe(
-      map(e => ({
-        lock: state
-          .replace(`${car}.statuseudata.locked_state_`, '')
-          .replace(/^_*/, ''),
-        open: e !== 2,
-      })),
-      distinctUntilKeyChanged('open'),
-    );
-  });
+      return new Stream<number>(state).stream.pipe(
+        map(e => ({
+          lock: state
+            .replace(`${car}.statuseudata.locked_state_`, '')
+            .replace(/^_*/, ''),
+          open: e !== 2,
+        })),
+        distinctUntilKeyChanged('open'),
+      );
+    });
 
   const unlockedLocks = combineLatest(states).pipe(
     map(locks => locks.filter(lock => lock.open)),
