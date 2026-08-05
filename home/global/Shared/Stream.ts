@@ -15,7 +15,9 @@ declare global {
     pipe?: (obs: Observable<T>) => Observable<T>;
   }
 
-  export type EventMapper<T> = (event: iobJS.ChangedStateObject) => T;
+  export type EventMapper<T> = (
+    event: Pick<iobJS.ChangedStateObject, 'id' | 'state'>,
+  ) => T;
 }
 
 export class Stream<T> {
@@ -46,7 +48,7 @@ export class Stream<T> {
 
   private initialValue(
     state: string,
-    eventMapper?: EventMapper<T>,
+    eventMapper: EventMapper<T>,
   ): Observable<T> {
     if (!existsState(state)) {
       log(
@@ -62,18 +64,8 @@ export class Stream<T> {
       return EMPTY;
     }
 
-    const currentAsEvent: iobJS.ChangedStateObject = {
-      _id: state,
+    const currentAsEvent = {
       id: state,
-      from: current.from,
-      ack: current.ack,
-      ts: current.ts,
-      lc: current.lc,
-      common: undefined,
-      native: undefined,
-      type: undefined,
-      oldState: undefined,
-      newState: current,
       state: current,
     };
 
@@ -82,7 +74,7 @@ export class Stream<T> {
 
   private stateChanges(
     state: string,
-    eventMapper?: EventMapper<T>,
+    eventMapper: EventMapper<T>,
   ): Observable<T> {
     return new Observable<T>(observer => {
       on({ id: state, ack: true }, event => {
@@ -93,7 +85,7 @@ export class Stream<T> {
 
   private changes(
     subscribeOptions: iobJS.SubscribeOptions,
-    eventMapper?: EventMapper<T>,
+    eventMapper: EventMapper<T>,
   ): Observable<T> {
     return new Observable<T>(observer => {
       on(subscribeOptions, event => {

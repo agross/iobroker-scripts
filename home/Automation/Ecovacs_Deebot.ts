@@ -262,11 +262,11 @@ const acknowledge = [
   ...$(`state[id=0_userdata.0.${config.adapter}.Scheduled Custom Areas.*]`),
   ...$(`state[id=0_userdata.0.${config.adapter}.clean-scheduled-custom-areas]`),
 ].map(area => {
-  return new Stream<iobJS.ChangedStateObject>(
+  return new Stream<any>(
     { id: area, ack: false },
-    { map: event => event },
+    { map: event => event.state.val },
   ).stream
-    .pipe(tap(state => setState(area, state.state.val, true)))
+    .pipe(tap(state => setState(area, state, true)))
     .subscribe();
 });
 
