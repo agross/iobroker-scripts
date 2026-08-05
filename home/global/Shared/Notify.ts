@@ -46,7 +46,7 @@ export class Notify {
   }
 
   public static subscribeToCallbacks(): Observable<CallbackData> {
-    const eventMapper = e => {
+    const eventMapper = (e: iobJS.ChangedStateObject<any, any>) => {
       const val: string = e.state.val;
 
       const split = val.indexOf(']');

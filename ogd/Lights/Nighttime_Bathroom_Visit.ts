@@ -47,14 +47,14 @@ function getVisits(): [string, Set<string>] {
   }
 }
 
-function addVisit(name) {
+function addVisit(name: string) {
   const [visits, active] = getVisits();
   active.add(name);
 
   setState(visits, JSON.stringify([...active]), true);
 }
 
-function removeVisit(name): [boolean, string[]] {
+function removeVisit(name: string): [boolean, string[]] {
   const [visits, active] = getVisits();
   const deleted = active.delete(name);
 

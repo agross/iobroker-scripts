@@ -101,7 +101,7 @@ export class ObjectCreator {
   private static assign(
     mapping: EnumIdsToObjects,
     objectId: string,
-    enumIds: string[],
+    enumIds: string[] | undefined,
   ): void {
     if (!enumIds) {
       return;
@@ -119,7 +119,7 @@ export class ObjectCreator {
   private static async assignEnums(enums: EnumIdsToObjects): Promise<void> {
     for (let [enumId, objectIds] of Object.entries(enums)) {
       const _enum = await getObjectAsync(enumId);
-      const common = _enum.common as unknown as { members: string[] };
+      const common = _enum!.common as unknown as { members: string[] };
 
       const members = Array.from(common.members);
       objectIds.forEach(objectId => {
