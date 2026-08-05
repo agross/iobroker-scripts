@@ -15,16 +15,22 @@ class Utils {
     log(JSON.stringify(object), 'debug');
     log(JSON.stringify(reference), 'debug');
 
-    const referencePropertyNames = Object.getOwnPropertyNames(reference || {});
-    const dup = { ...object };
+    const referenceRecord = (reference || {}) as Record<string, unknown>;
+    const referencePropertyNames = Object.getOwnPropertyNames(referenceRecord);
+    const dup = { ...object } as Record<string, unknown>;
 
     log(JSON.stringify(referencePropertyNames), 'debug');
 
     Object.getOwnPropertyNames(dup).forEach(prop => {
       if (referencePropertyNames.includes(prop)) {
-        if (typeof dup[prop] === 'object' && !Array.isArray(dup[prop])) {
+        const value = dup[prop];
+
+        if (typeof value === 'object' && !Array.isArray(value)) {
           log(`Recurse ${prop}`, 'debug');
-          dup[prop] = Utils.shrink(dup[prop], reference[prop]);
+          dup[prop] = Utils.shrink(
+            (value || {}) as {},
+            (referenceRecord[prop] || {}) as {},
+          );
         } else {
           log(`Keep ${prop}`, 'debug');
         }
