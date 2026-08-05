@@ -38,6 +38,7 @@ on({ id: config.sensor, val: true, ack: true }, _event => {
 
   const presence = getState(config.presence);
   if (
+    presence.notExist !== true &&
     presence.val === true &&
     presence.lc <= new Date().valueOf() - config.ignoreIfPresentLongerThan
   ) {
