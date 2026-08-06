@@ -163,7 +163,7 @@ class ActivityIndicator {
       ...this.customActivityIndicators,
     ).pipe(
       distinctUntilChanged(
-        (previous, current) => previous >= current,
+        (previous: number, current: number) => previous >= current,
         x => x.state.lc,
       ),
     );

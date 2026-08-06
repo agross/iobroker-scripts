@@ -30,7 +30,7 @@ async function setPermissions(
   expected: Partial<iobJS.StateACL>,
 ) {
   const object = await getObjectAsync(objectId);
-  const aclShrunkDownToExpected = Utils.shrink(object.acl, expected);
+  const aclShrunkDownToExpected = Utils.shrink(object!.acl!, expected);
 
   if (
     aclShrunkDownToExpected &&

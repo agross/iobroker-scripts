@@ -21,19 +21,21 @@ const config = {
 };
 
 function nextEventExtension(): ObjectDefinitionRoot {
-  const stateObjects: (channel: string) => ObjectDefinitionRoot = channel => {
-    const channelStates: { [id: string]: any } = {
-      [config.computedBasedOn]: {
-        name: 'Data Used to Determine Computed Event Location',
-        type: 'string',
-      },
-      [config.computed]: {
-        name: 'Computed Event Location',
-        type: 'string',
-      },
-    };
+  const channelStates: {
+    [id: string]: { name: string; type: iobJS.CommonType };
+  } = {
+    [config.computedBasedOn]: {
+      name: 'Data Used to Determine Computed Event Location',
+      type: 'string',
+    },
+    [config.computed]: {
+      name: 'Computed Event Location',
+      type: 'string',
+    },
+  };
 
-    return Object.entries(channelStates).reduce((acc, [stateId, def]) => {
+  return Object.entries(channelStates).reduce(
+    (acc: ObjectDefinitionRoot, [stateId, def]) => {
       acc[stateId] = {
         type: 'state',
         common: {
@@ -46,20 +48,17 @@ function nextEventExtension(): ObjectDefinitionRoot {
             [AdapterIds.lovelace]: {
               enabled: true,
               entity: 'sensor',
-              name: Lovelace.id(`${channel} ${def.name}`),
-              attr_device_class: def.device_class,
+              name: Lovelace.id(`Next Event ${def.name}`),
             },
           },
         },
         native: {},
-        script: def.script,
       };
 
       return acc;
-    }, {});
-  };
-
-  return stateObjects('Next Event');
+    },
+    {},
+  );
 }
 
 const weather: ObjectDefinitionRoot = {
@@ -174,7 +173,7 @@ const httpRequestCache = new Map();
 async function searchLocation(
   apiKey: string,
   location: string,
-): Promise<[string, string]> {
+): Promise<[string, string] | undefined> {
   try {
     const result = (await got
       .get('http://dataservice.accuweather.com/locations/v1/search', {
@@ -195,7 +194,7 @@ async function searchLocation(
     return [key, name];
   } catch (e) {
     log(e.response.body, 'error');
-    return [undefined, undefined];
+    return;
   }
 }
 
@@ -245,11 +244,16 @@ const locationChanges = combineLatest([
     const adapterConfig = await getObjectAsync(adapterConfigId);
 
     // Get AccuWeather location from address.
-    let [locationKey, locationName] = await searchLocation(
-      adapterConfig.native.apiKey,
+    const location = await searchLocation(
+      adapterConfig!.native.apiKey,
       loc.next,
     );
 
+    if (!location) {
+      return;
+    }
+
+    const [locationKey, locationName] = location;
     if (!locationKey || !locationName) {
       return;
     }

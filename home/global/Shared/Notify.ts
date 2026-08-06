@@ -57,7 +57,7 @@ export class Notify {
       };
     };
 
-    // Cant't use Stream here.
+    // Can't use Stream here.
     return new Observable<CallbackData>(observer => {
       on({ id: this.mobileNotifierCallbacks, ack: true }, event => {
         log(`Mobile notifier callback: ${JSON.stringify(event)}`);

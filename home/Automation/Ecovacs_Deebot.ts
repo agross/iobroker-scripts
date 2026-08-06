@@ -57,7 +57,7 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
         native: {
           sourcedFrom: spotArea.spotAreaId,
           schedulerId: spotArea.schedulerId,
-          areaIndex: spotArea.spotAreaId.match(/spotArea_(\d)+$/)[1],
+          areaIndex: spotArea.spotAreaId.match(/spotArea_(\d)+$/)![1],
         },
       };
 
@@ -283,8 +283,8 @@ const spotAreas = [
       return {
         id: spotArea,
         scheduled: scheduled,
-        scheduleAreaIndex: native.areaIndex,
-        schedulerId: native.schedulerId,
+        scheduleAreaIndex: native.areaIndex as string,
+        schedulerId: native.schedulerId as string,
       };
     }),
   );
@@ -314,11 +314,11 @@ const cleanSpotAreas = [
       tap(([trigger, spotAreas]) => {
         // Reset schedule.
         [trigger.id, ...spotAreas.map(s => s.id)].forEach(id =>
-          setState(id, false, true),
+          setState(id!, false, true),
         );
       }),
       map(([_trigger, spotAreas]) =>
-        spotAreas.reduce((acc, spotArea) => {
+        spotAreas.reduce((acc: { [id: string]: string[] }, spotArea) => {
           if (!acc[spotArea.schedulerId]) {
             acc[spotArea.schedulerId] = [];
           }
@@ -353,8 +353,8 @@ const customAreas = [
       return {
         id: customArea,
         scheduled: scheduled,
-        coordinates: native.coordinates,
-        schedulerId: native.schedulerId,
+        coordinates: native.coordinates as string,
+        schedulerId: native.schedulerId as string,
       };
     }),
   );
@@ -373,7 +373,7 @@ const cleanCustomAreas = [
   return new Stream(clean, {
     map: event => {
       return {
-        id: event.id,
+        id: event.id!,
         value: event.state.val,
       };
     },
@@ -388,7 +388,7 @@ const cleanCustomAreas = [
         );
       }),
       map(([_trigger, customAreas]) =>
-        customAreas.reduce((acc, customArea) => {
+        customAreas.reduce((acc: { [id: string]: string[] }, customArea) => {
           if (!acc[customArea.schedulerId]) {
             acc[customArea.schedulerId] = [];
           }

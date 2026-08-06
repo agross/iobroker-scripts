@@ -18,7 +18,11 @@ const config = {
   },
 };
 
-function check(enabledDataPoints: {}, id: string, expected: {}) {
+function check(
+  enabledDataPoints: { [id: string]: object },
+  id: string,
+  expected: {},
+) {
   const actual = enabledDataPoints[id];
   const actualShrunkDownToExpected = Utils.shrink(actual, expected);
 
@@ -60,7 +64,7 @@ function check(enabledDataPoints: {}, id: string, expected: {}) {
       id: id,
       options: expected,
     },
-    result => {
+    (result: any) => {
       if (result.error) {
         log(
           `${name}: Error fixing ${id}: ${JSON.stringify(result.error)}`,
@@ -78,7 +82,7 @@ sendTo(
   config.influxDbAdapterId,
   'getEnabledDPs',
   {},
-  (enabledDataPoints: {}) => {
+  (enabledDataPoints: { [id: string]: object }) => {
     zigbeeCommon(enabledDataPoints);
     zigbeeMotionSensors(enabledDataPoints);
     zigbeeDoorAndWindowContacts(enabledDataPoints);

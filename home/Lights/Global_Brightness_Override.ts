@@ -39,7 +39,7 @@ const roomsToLights = {
       ...{ lights: x.members.filter(x => lights.includes(x)) },
     }))
     .filter(x => x.lights.length > 0)
-    .reduce((acc, x) => {
+    .reduce((acc: { [id: string]: { name: string; lights: string[] } }, x) => {
       acc[x.id] = {
         name: x.name,
         lights: x.lights,
@@ -49,43 +49,50 @@ const roomsToLights = {
     }, {}),
 };
 
-const lightsToRooms: { [id: string]: string[] } = lights.reduce((acc, el) => {
-  acc[el] = [
-    'global',
-    ...rooms.filter(x => x.members.includes(el)).map(x => x.id),
-  ];
-  return acc;
-}, {});
+const lightsToRooms: { [id: string]: string[] } = lights.reduce(
+  (acc: { [id: string]: string[] }, el) => {
+    acc[el] = [
+      'global',
+      ...rooms.filter(x => x.members.includes(el)).map(x => x.id),
+    ];
+    return acc;
+  },
+  {},
+);
 
 function getObjectDefinition(): ObjectDefinitionRoot {
-  const template = (name: string) => ({
-    type: 'state',
-    common: {
-      name: name,
-      type: 'number',
-      def: 50,
-      read: true,
-      write: true,
-      role: 'level.dimmer',
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'input_number',
-          name: Lovelace.id(name),
-          min: 0,
-          max: 100,
-          step: 1,
-          attr_icon: 'mdi:lightbulb-on-outline',
+  const template = (name: string) =>
+    ({
+      type: 'state',
+      common: {
+        name: name,
+        type: 'number',
+        def: 50,
+        read: true,
+        write: true,
+        role: 'level.dimmer',
+        custom: {
+          [AdapterIds.lovelace]: {
+            enabled: true,
+            entity: 'input_number',
+            name: Lovelace.id(name),
+            min: 0,
+            max: 100,
+            step: 1,
+            attr_icon: 'mdi:lightbulb-on-outline',
+          },
         },
       },
-    } as iobJS.StateCommon,
-    native: {},
-  });
+      native: {},
+    }) as iobJS.PartialStateObject;
 
-  const overrides = Object.entries(roomsToLights).reduce((acc, [k, v]) => {
-    acc[k] = template(`${v.name} Brightness`);
-    return acc;
-  }, {});
+  const overrides = Object.entries(roomsToLights).reduce(
+    (acc: { [id: string]: iobJS.PartialStateObject }, [k, v]) => {
+      acc[k] = template(`${v.name} Brightness`);
+      return acc;
+    },
+    {},
+  );
 
   return {
     [config.override[1]]: {
@@ -200,7 +207,7 @@ const lightsTurnedOnByRoom = combineLatest(brightness$).pipe(
 );
 
 const commandsByRoom = Object.keys(
-  getObjectDefinition()[config.override[1]].nested,
+  getObjectDefinition()[config.override[1]].nested || {},
 ).map(roomId => {
   const commandState = `${config.override.join('.')}.${roomId}`;
 

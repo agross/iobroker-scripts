@@ -1,5 +1,4 @@
-export {};
-function defaultTransitionTime(deviceId) {
+function defaultTransitionTime(deviceId: string) {
   if (
     // Bathroom.
     deviceId === 'zigbee.0.001788010e377c5a' ||
@@ -25,6 +24,7 @@ const powerOnBehavior = $(
   'state[id=zigbee.*.power_on_behavior](functions=light)',
 );
 
+export {};
 await powerOnBehavior.setStateAsync('off');
 
 // https://www.zigbee2mqtt.io/devices/8718696449691.html#power-on-behavior

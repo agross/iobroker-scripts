@@ -76,7 +76,7 @@ async function runProcess(command: string): Promise<ProcessResult> {
       );
     }
 
-    return { error: undefined, message: message.join(`\n`) };
+    return { error: false, message: message.join(`\n`) };
   } catch (error) {
     const message = `\`${command}\` failed:\n\`\`\`\n${truncateString(
       JSON.stringify(error),
@@ -124,7 +124,7 @@ const replies = Notify.subscribeToCallbacks()
     }),
     filter(x => x.match !== undefined),
     tap(x => log(`Callback match: ${JSON.stringify(x)}`)),
-    tap(x => x.match.callbackReceived(x.adapter)),
+    tap(x => x.match!.callbackReceived(x.adapter)),
   )
   .subscribe();
 
@@ -154,7 +154,7 @@ const updates = new Stream<string>(config.indicator).stream
         return {
           text: `${base.text} ${adapter}`,
           callback_data: `${base.callback_data}${adapter}`,
-          callbackReceived: undefined,
+          callbackReceived: () => {},
         };
       });
 

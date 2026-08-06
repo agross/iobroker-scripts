@@ -131,7 +131,7 @@ const next = new Stream<NextState>(
     map: e => {
       const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
 
-      function reviver(_key, value) {
+      function reviver(_key: any, value: any) {
         if (typeof value === 'string' && dateFormat.test(value)) {
           return new Date(value);
         }

@@ -16,7 +16,7 @@ sendTo(
     device: config.device,
     payload: payload,
   },
-  result => {
+  (result?: any) => {
     log(result);
   },
 );

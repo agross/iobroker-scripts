@@ -24,7 +24,7 @@ function getConfig(id: string): AliasDeviceConfig {
 }
 
 function stateIdToPurpose(stateId: string) {
-  switch (stateId.match(/\.shelly25-(\d+)\./)[1]) {
+  switch (stateId.match(/\.shelly25-(\d+)\./)![1]) {
     case '1':
       return 'Living Room Shutters';
 

@@ -7,7 +7,7 @@ const config = {
 
 async function check(stateId: string, expected: Partial<iobJS.StateCommon>) {
   const state = await getObjectAsync(stateId);
-  const commonShrunkDownToExpected = Utils.shrink(state.common, expected);
+  const commonShrunkDownToExpected = Utils.shrink(state!.common, expected);
 
   if (
     commonShrunkDownToExpected &&
@@ -93,7 +93,7 @@ function zigbeeIcons() {
     .forEach(async deviceId => {
       const device = await getObjectAsync(deviceId);
 
-      if (device.common.icon && device.common.icon !== 'img/unknown.png') {
+      if (device?.common.icon !== 'img/unknown.png') {
         return;
       }
 
@@ -219,7 +219,7 @@ function zigbeeTemperatureHumidityAndPressureSensors() {
 
   $('state[id=zigbee.*.temperature]').each(async id => {
     const device = Device.id(id);
-    if (device && (await getObjectAsync(device)).common.type === 'RTCGQ11LM') {
+    if (device && (await getObjectAsync(device))!.common.type === 'RTCGQ11LM') {
       // Aqara Motion Sensor does not report temperature despite
       // iobroker.zigbee thinking it does.
       return;
@@ -453,8 +453,8 @@ function homeMaticPresenceDetectors() {
 
 function homeMaticVariables() {
   $('state[id=hm-rega.*][role=state]{TypeName=VARDP}').each(async id => {
-    let name = await (await getObjectAsync(id)).common.name;
-    let icon: string;
+    let name = await (await getObjectAsync(id))!.common.name;
+    let icon: string | undefined;
 
     switch (name) {
       case 'Presence':
@@ -523,7 +523,7 @@ function scripts() {
 
 function pingedMachines() {
   $('state[id=ping.*.iobroker.*][role=indicator.reachable]').each(async id => {
-    const aliveMachine = Utils.english((await getObjectAsync(id)).common.name);
+    const aliveMachine = Utils.english((await getObjectAsync(id))!.common.name);
     const machine = aliveMachine.replace(/^Alive\s+/, '');
     const name = `Ping ${machine}`;
 
@@ -565,7 +565,7 @@ function kodi() {
 
 function androidDebugBridge() {
   $('state[id=adb.*.*.connection]').each(async id => {
-    if ((await getObjectAsync(id.replace(/\.[^.]*$/, ''))).type !== 'device') {
+    if ((await getObjectAsync(id.replace(/\.[^.]*$/, '')))?.type !== 'device') {
       return;
     }
 

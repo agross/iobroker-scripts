@@ -7,7 +7,7 @@ class Utils {
     }
   }
 
-  public static shrink(object: {}, reference: {}): {} {
+  public static shrink(object: object, reference: object): {} {
     if (!object) {
       return object;
     }

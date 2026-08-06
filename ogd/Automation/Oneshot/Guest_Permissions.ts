@@ -52,7 +52,7 @@ async function setPermissions(
   expected: Partial<iobJS.StateACL>,
 ) {
   const object = await getObjectAsync(objectId);
-  const aclShrunkDownToExpected = Utils.shrink(object.acl, expected);
+  const aclShrunkDownToExpected = Utils.shrink(object!.acl!, expected);
 
   if (
     aclShrunkDownToExpected &&
@@ -309,7 +309,7 @@ function translate(str: string) {
 
     if (found) {
       const processed = result.substring(0, index);
-      const replacement = translations.get(found);
+      const replacement = translations.get(found)!;
       const rest = result.substring(processed.length + found.length);
 
       result = `${processed}${replacement}${rest}`;
@@ -360,7 +360,7 @@ async function copyCustomLovelaceConfigWithGermanTranslationOfExplicitFriendlyNa
   }
 
   const state = await getObjectAsync(objectId);
-  const template = state.common.custom?.[sourceInstance];
+  const template = state?.common.custom?.[sourceInstance];
 
   if (!template) {
     log(`${objectId} does not have ${sourceInstance} Lovelace config`, 'warn');
@@ -392,16 +392,16 @@ async function copyLovelaceLayout() {
   }
 
   const configuration = await getObjectAsync(`${sourceInstance}.configuration`);
-  const views = configuration.native.views;
+  const views: Record<string, any>[] = configuration?.native.views || [];
 
   views.forEach(view => {
-    const viewCards = view.cards as any[];
+    const viewCards = view.cards as Record<string, any>[];
     viewCards.forEach(viewCard => {
       if (!viewCard.cards) {
         return;
       }
 
-      const cards = viewCard.cards as any[];
+      const cards = viewCard.cards as Record<string, any>[];
       cards.forEach(card => {
         if (!card.title) {
           return;

@@ -22,8 +22,15 @@ interface Event {
 const config = { source: 'ical.0.data.table', channelRoot: '0_userdata.0.GW' };
 
 function getObjectDefinition(): ObjectDefinitionRoot {
-  const stateObjects: (channel: string) => ObjectDefinitionRoot = channel => {
-    const channelStates: { [id: string]: any } = {
+  const stateObjects = (channel: string) => {
+    const channelStates: {
+      [id: string]: {
+        name: string;
+        type: iobJS.CommonType;
+        device_class?: string;
+        script: { source: (event: Event) => void };
+      };
+    } = {
       summary: {
         name: 'Event Summary',
         type: 'string',
@@ -73,30 +80,33 @@ function getObjectDefinition(): ObjectDefinitionRoot {
       },
     };
 
-    return Object.entries(channelStates).reduce((acc, [stateId, def]) => {
-      acc[stateId] = {
-        type: 'state',
-        common: {
-          name: def.name,
-          read: true,
-          write: false,
-          role: 'value',
-          type: def.type as iobJS.CommonType,
-          custom: {
-            [AdapterIds.lovelace]: {
-              enabled: true,
-              entity: 'sensor',
-              name: Lovelace.id(`${channel} ${def.name}`),
-              attr_device_class: def.device_class,
+    return Object.entries(channelStates).reduce(
+      (acc: ObjectDefinitionRoot, [stateId, def]) => {
+        acc[stateId] = {
+          type: 'state',
+          common: {
+            name: def.name,
+            read: true,
+            write: false,
+            role: 'value',
+            type: def.type,
+            custom: {
+              [AdapterIds.lovelace]: {
+                enabled: true,
+                entity: 'sensor',
+                name: Lovelace.id(`${channel} ${def.name}`),
+                attr_device_class: def.device_class,
+              },
             },
           },
-        },
-        native: {},
-        script: def.script,
-      };
+          native: {},
+          script: def.script,
+        };
 
-      return acc;
-    }, {});
+        return acc;
+      },
+      {},
+    );
   };
 
   return {
@@ -131,7 +141,9 @@ function getObjectDefinition(): ObjectDefinitionRoot {
     },
     'Journey To Home': {
       type: 'channel',
-      common: { name: 'Next Journey To Home' },
+      common: {
+        name: 'Next Journey To Home',
+      },
       native: {},
       nested: stateObjects('Next Journey To Home'),
       script: {
@@ -165,7 +177,7 @@ const streams = Object.entries(objects).map(([channel, def]) => {
     tap(_ => {
       log(`No events for ${channel}, removing`);
 
-      Object.entries(def.nested).forEach(([state, def]) => {
+      Object.entries(def.nested || {}).forEach(([state, def]) => {
         const stateId = `${channelId(channel)}.${state}`;
         const type = (def.common as iobJS.StateCommon).type;
         let value = undefined;
@@ -216,7 +228,7 @@ const streams = Object.entries(objects).map(([channel, def]) => {
         );
       }),
       tap(event => {
-        Object.entries(def.nested).forEach(([state, def]) => {
+        Object.entries(def.nested || {}).forEach(([state, def]) => {
           if (!def.script?.source) {
             return;
           }

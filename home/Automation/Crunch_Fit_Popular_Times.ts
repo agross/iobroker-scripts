@@ -88,7 +88,7 @@ const update = timer(0, config.intervalInMs)
         ...d.populartimes.map(x => Math.max(...x.data)),
       );
 
-      const popularTimesToday = d.populartimes.find(x => x.name === dow).data;
+      const popularTimesToday = d.populartimes?.find(x => x.name === dow)?.data;
       if (!popularTimesToday) {
         throw new Error(
           `Could not find today's (${dow}) data in ${JSON.stringify(
