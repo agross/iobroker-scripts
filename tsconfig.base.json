@@ -1,15 +1,21 @@
 {
-  // https://github.com/ioBroker/ioBroker.javascript/blob/d6396dd33754152994585e982c68c8432cba96c1/lib/typescriptSettings.js#L9
+  // https://github.com/ioBroker/ioBroker.javascript/blob/bb0d2be8ca51c2132fd34cc3c10fecd141aabb3c/src/lib/typescriptSettings.ts#L21
   "compilerOptions": {
+    // Different from default settings, I want type safety.
+    "strict": true,
     "noEmitOnError": true,
     "declaration": true,
     "esModuleInterop": true,
     "useUnknownInCatchVariables": false,
-    "downlevelIteration": true,
-    "target": "ES2022",
+
+    // Cannot use commonjs from defaults, otherwise top-level await does not
+    // compile without transformation performed by adapter.
+    "module": "es2022",
+    "target": "es2022",
+    "useDefineForClassFields": false,
+    "ignoreDeprecations": "6.0",
     "lib": ["ES2022"],
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
+
     "sourceMap": false,
     "outDir": "dist",
     "types": ["node", "@iobroker/types"]
