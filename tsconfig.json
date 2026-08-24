@@ -54,6 +54,9 @@
       "path": "home/Automation/Oneshot/WOL_NAS.tsconfig.json"
     },
     {
+      "path": "home/Automation/Oneshot/Zigbee_OTA_Update.tsconfig.json"
+    },
+    {
       "path": "home/Automation/Presence.tsconfig.json"
     },
     {
