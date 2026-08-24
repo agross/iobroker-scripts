@@ -135,6 +135,9 @@
       "path": "ogd/Automation/Oneshot/Transform_Tasmota_Data.tsconfig.json"
     },
     {
+      "path": "ogd/Automation/Oneshot/Zigbee_OTA_Update.tsconfig.json"
+    },
+    {
       "path": "ogd/Automation/Presence.tsconfig.json"
     },
     {
