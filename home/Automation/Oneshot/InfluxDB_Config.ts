@@ -12,7 +12,10 @@ const config = {
     changesRelogInterval: 600,
     changesMinDelta: 0,
     storageType: false, // Automatic.
-    ignoreBelowNumber: '',
+    ignoreBelowNumber: null,
+    ignoreAboveNumber: null,
+    // Default value of 10000 is returned if set falsy in data point.
+    // round: null,
     disableSkippedValueLogging: false,
     enableDebugLogs: false,
   },

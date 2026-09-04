@@ -25,7 +25,7 @@ class Utils {
       if (referencePropertyNames.includes(prop)) {
         const value = dup[prop];
 
-        if (typeof value === 'object' && !Array.isArray(value)) {
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
           log(`Recurse ${prop}`, 'debug');
           dup[prop] = Utils.shrink(
             (value || {}) as {},
