@@ -3,16 +3,32 @@ const config = {
   scenes: {
     kitchen: {
       off: 'scene.0.Kitchen.Lights',
-      on: [
-        'scene.0.Kitchen.Lights_Dim',
-        'scene.0.Kitchen.Lights_Warm_White',
-        'scene.0.Kitchen.Lights_Cozy',
-        'scene.0.Kitchen.Lights_Downlight',
-        'scene.0.Kitchen.Lights_Downlight_+_Dining',
-        'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
-        'scene.0.Kitchen.Lights_Bright',
-      ],
-    },
+      on: () => {
+        const standard = [
+          'scene.0.Kitchen.Lights_Dim',
+          'scene.0.Kitchen.Lights_Warm_White',
+          'scene.0.Kitchen.Lights_Cozy',
+          'scene.0.Kitchen.Lights_Downlight',
+          'scene.0.Kitchen.Lights_Downlight_+_Dining',
+          'scene.0.Kitchen.Lights_Downlight_+_Kitchen',
+          'scene.0.Kitchen.Lights_Bright',
+        ];
+
+        const dow = new Date().getDay();
+
+        if (
+          dow >= 1 &&
+          dow <= 5 &&
+          compareTime('4:00', '8:00', 'between') &&
+          getState('ping.0.iobroker.mobile-phone-sonja').val === true
+        ) {
+          log("Kitchen: Sonja's weekday breakfast");
+          standard.unshift('scene.0.Kitchen.Lights_Cozy');
+        }
+
+        return standard;
+      },
+    } as Remotes.CycleConfig,
   },
 };
 
@@ -98,6 +114,7 @@ const remotes = [
           compareTime('23:00', '6:00', 'between') &&
           getState('scene.0.Lights.All_Lights_Off').val === true
         ) {
+          log("Kitchen: Sonja's breakfast");
           standard.unshift('scene.0.Living Room.Lights_Night');
         }
 
