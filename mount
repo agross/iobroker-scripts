@@ -16,7 +16,14 @@ local_dir="$script_dir/host"
 mkdir --parents "$local_dir"
 
 if [ $# = 0 ]; then
-  sshfs "$host:$remote_dir" "$local_dir" -o transform_symlinks
+  sshfs \
+    -o noappledouble \
+    -o noapplexattr \
+    -o transform_symlinks \
+    -o no_contain_symlinks \
+    -o reconnect \
+    -o Compression=no,ServerAliveInterval=15,ServerAliveCountMax=3 \
+   "$host:$remote_dir" "$local_dir"
 else
   if ! umount "$local_dir"; then
     hash diskutil 2> /dev/null && sudo diskutil unmount force "$local_dir"
