@@ -108,6 +108,7 @@ sendTo(
     alarm(enabledDataPoints);
     presence(enabledDataPoints);
 
+    smartMeterReader(enabledDataPoints);
     marstek(enabledDataPoints);
     solarPrediction(enabledDataPoints);
 
@@ -120,6 +121,20 @@ sendTo(
     });
   },
 );
+
+const numeric = {
+  ...config.default,
+  ...{
+    storageType: 'Number',
+  },
+};
+
+const boolean = {
+  ...config.default,
+  ...{
+    storageType: 'Boolean',
+  },
+};
 
 function zigbeeCommon(enabledDataPoints: {}) {
   $('state[id=zigbee.*.available]').each(id => {
@@ -566,22 +581,21 @@ function presence(enabledDataPoints: {}) {
   });
 }
 
+function smartMeterReader(enabledDataPoints: {}) {
+  $('state[id=alias.0.mqtt.0.*.*.*.smart-meter-reader.*]').each(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: getObject(id).common.name,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+}
+
 function marstek(enabledDataPoints: {}) {
   const name = 'Marstek Venus A';
-
-  const numeric = {
-    ...config.default,
-    ...{
-      storageType: 'Number',
-    },
-  };
-
-  const boolean = {
-    ...config.default,
-    ...{
-      storageType: 'Boolean',
-    },
-  };
 
   $('state[id=marstek-venus.*.battery.capacity]').each(id => {
     const expect = {
@@ -722,7 +736,7 @@ function marstek(enabledDataPoints: {}) {
     const expect = {
       ...numeric,
       ...{
-        aliasId: `${name} L${index} Grid Power Usage`,
+        aliasId: `Smart Meter L${index} Power`,
       },
     };
 
@@ -733,7 +747,7 @@ function marstek(enabledDataPoints: {}) {
     const expect = {
       ...numeric,
       ...{
-        aliasId: `${name} Grid Power Usage`,
+        aliasId: `Smart Meter Live Consumption`,
       },
     };
 
