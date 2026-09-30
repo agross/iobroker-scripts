@@ -1,398 +1,312 @@
 import got from 'got';
 
-type Result<T> = { ok: true; value: T } | { ok: false; error: unknown };
+type DeviceType = 'plug' | 'smart-meter' | 'shutter';
 
 type DeviceInfo = {
   deviceId: string;
-  powerStateId: string;
   deviceName: string;
+  sensorStateId: string;
   lovelace: { icon?: string; name?: string };
 };
 
-type DeviceStates = { [id: string]: iobJS.StateCommon };
+type DeviceStates = Record<string, iobJS.StateCommon>;
 
-type DeviceConfig = {
-  states: string[];
-  deviceStates: (info: DeviceInfo, stateId: string) => DeviceStates;
-};
+const plugModules = [/^Gosund SP111/, /^NOUS A1T/, /^NOUS B2T/];
 
-function entityType(stateId: string, type: 'Power' | string) {
-  if (type === 'Power') {
-    return 'switch';
-  }
+function deviceType(module: string): DeviceType | undefined {
+  if (plugModules.some(pattern => pattern.test(module))) return 'plug';
+  if (module === 'bitShake SmartMeterReader') return 'smart-meter';
+  if (module === 'Shelly 2.5 PM') return 'shutter';
+}
 
-  if (
-    ObjectCreator.getEnumIds(stateId, 'functions').includes(
-      'enum.functions.light',
-    )
-  ) {
-    return 'light';
-  }
+function entityType(info: DeviceInfo, type: string): string {
+  if (type === 'Power') return 'switch';
 
-  return 'sensor';
+  return ObjectCreator.getEnumIds(info.sensorStateId, 'functions').includes(
+    'enum.functions.light',
+  )
+    ? 'light'
+    : 'sensor';
 }
 
 function lovelaceConfig(
   info: DeviceInfo,
-  type: 'Power' | 'Power Usage' | string,
-  attributes: Record<string, string> = { attr_device_class: 'outlet' },
+  type: string,
+  attributes: Record<string, string>,
 ): {} {
-  const base = {
-    entity: entityType(info.powerStateId, type),
+  return {
+    entity: entityType(info, type),
     name: Lovelace.id(`${info.deviceName} ${type}`),
     ...attributes,
+    ...(info.lovelace.icon == null ? {} : { attr_icon: info.lovelace.icon }),
+    ...(info.lovelace.name == null
+      ? {}
+      : {
+          attr_friendly_name:
+            type === 'Power'
+              ? info.lovelace.name
+              : `${info.lovelace.name} ${type}`,
+        }),
   };
+}
 
-  const icon = {
-    attr_icon: info.lovelace.icon,
+function measurement(
+  info: DeviceInfo,
+  id: string,
+  name: string,
+  read: string,
+  role: string,
+  unit: string,
+  attributes: Record<string, string>,
+): DeviceStates {
+  return {
+    [id]: {
+      alias: { id: info.sensorStateId, read },
+      role,
+      type: 'number',
+      unit,
+      read: true,
+      write: false,
+      name: `${info.deviceName} ${name}`,
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          ...lovelaceConfig(info, name, attributes),
+        },
+      },
+    },
   };
+}
 
-  const name = {
-    attr_friendly_name:
-      type === 'Power' ? info.lovelace.name : `${info.lovelace.name} ${type}`,
+function energyStates(info: DeviceInfo, powerRead: string): DeviceStates {
+  return {
+    ...measurement(
+      info,
+      'power',
+      'Power Usage',
+      powerRead,
+      'value.power.consumption',
+      'W',
+      { attr_device_class: 'power', attr_state_class: 'measurement' },
+    ),
+    ...measurement(
+      info,
+      'consumption',
+      'Consumption',
+      'JSON.parse(val)?.ENERGY?.Total ?? null',
+      'value.energy',
+      'kWh',
+      { attr_device_class: 'energy', attr_state_class: 'total_increasing' },
+    ),
   };
+}
+
+function plugStates(info: DeviceInfo): DeviceStates {
+  const parts = info.sensorStateId.split('.');
+  const stateId = (transport: 'cmnd' | 'stat') =>
+    parts
+      .map((part, index) =>
+        index === parts.length - 1
+          ? 'POWER'
+          : part === 'tele'
+            ? transport
+            : part,
+      )
+      .join('.');
+  const commandStateId = stateId('cmnd');
+  const reportedPowerStateId = stateId('stat');
 
   return {
-    ...base,
-    ...(info.lovelace.icon != null ? icon : {}),
-    ...(info.lovelace.name != null ? name : {}),
+    ...energyStates(info, 'JSON.parse(val)?.ENERGY?.Power ?? null'),
+    state: {
+      alias: {
+        id: { read: reportedPowerStateId, write: commandStateId },
+        read: 'val === "ON"',
+        write: 'val === true ? "ON" : "OFF"',
+      },
+      role: 'switch',
+      type: 'boolean',
+      read: true,
+      write: true,
+      name: `${info.deviceName} Power`,
+      custom: {
+        [AdapterIds.lovelace]: {
+          enabled: true,
+          ...lovelaceConfig(info, 'Power', { attr_device_class: 'outlet' }),
+        },
+      },
+    },
+    'negated-state': {
+      alias: {
+        id: { read: reportedPowerStateId, write: commandStateId },
+        read: 'val !== "ON"',
+        write: 'val !== true ? "ON" : "OFF"',
+      },
+      role: 'indicator.state',
+      type: 'boolean',
+      read: true,
+      write: true,
+      name: `${info.deviceName} Power (negated for easier toggling in scenes)`,
+    },
   };
 }
 
-const config: { devices: DeviceConfig[] } = {
-  devices: [
-    {
-      states: [
-        ...$('state[id=mqtt.*.cmnd.gosund-sp111-*.POWER]'),
-        ...$('state[id=mqtt.*.cmnd.nous-a1t-*.POWER]'),
-        ...$('state[id=mqtt.*.cmnd.nous-b2t-*.POWER]'),
-      ],
-      deviceStates: (info, stateId) => ({
-        power: {
-          alias: {
-            id: stateId
-              .replace('.cmnd.', '.tele.')
-              .replace(/\.POWER$/, '.SENSOR'),
-            read: 'JSON.parse(val)?.ENERGY?.Power ?? null',
-            // No write function makes this read-only.
-          },
-          role: 'value.power.consumption',
-          type: 'number',
-          unit: 'W',
-          read: true,
-          write: false,
-          name: `${info.deviceName} Power Usage`,
-          custom: {
-            [AdapterIds.lovelace]: {
-              enabled: true,
-              ...lovelaceConfig(info, 'Power Usage', {
-                attr_device_class: 'power',
-                attr_state_class: 'measurement',
-              }),
-            },
-          },
-        },
-        consumption: {
-          alias: {
-            id: stateId
-              .replace('.cmnd.', '.tele.')
-              .replace(/\.POWER$/, '.SENSOR'),
-            read: 'JSON.parse(val)?.ENERGY?.Total ?? null',
-            // No write function makes this read-only.
-          },
-          role: 'value.energy',
-          type: 'number',
-          unit: 'kWh',
-          read: true,
-          write: false,
-          name: `${info.deviceName} Consumption`,
-          custom: {
-            [AdapterIds.lovelace]: {
-              enabled: true,
-              ...lovelaceConfig(info, 'Consumption', {
-                attr_device_class: 'energy',
-                attr_state_class: 'total_increasing',
-              }),
-            },
-          },
-        },
-        'negated-state': {
-          alias: {
-            id: {
-              read: stateId.replace('.cmnd.', '.stat.'),
-              write: stateId,
-            },
-            read: 'val !== "ON"',
-            write: 'val !== true ? "ON" : "OFF"',
-          },
-          role: 'indicator.state',
-          type: 'boolean',
-          read: true,
-          write: true,
-          name: `${info.deviceName} Power (negated for easier toggling in scenes)`,
-        },
-        state: {
-          alias: {
-            id: { read: stateId.replace('.cmnd.', '.stat.'), write: stateId },
-            read: 'val === "ON"',
-            write: 'val === true ? "ON" : "OFF"',
-          },
-          role: 'switch',
-          type: 'boolean',
-          read: true,
-          write: true,
-          name: `${info.deviceName} Power`,
-          custom: {
-            [AdapterIds.lovelace]: {
-              enabled: true,
-              ...lovelaceConfig(info, 'Power'),
-            },
-          },
-        },
-      }),
-    },
-    {
-      states: [...$('state[id=mqtt.*.tele.smart-meter-reader.STATE]')],
-      // Smart meters expose several measurements from their MQTT JSON payload.
-      // Add their aliases here; they do not have the plug state aliases above.
-      deviceStates: (info, stateId) => ({
-        consumption: {
-          alias: {
-            id: stateId.replace(/\.STATE$/, '.SENSOR'),
-            read: 'JSON.parse(val)?.Meter.Consumption ?? null',
-            // No write function makes this read-only.
-          },
-          role: 'value.energy',
-          type: 'number',
-          unit: 'kWh',
-          read: true,
-          write: false,
-          name: `${info.deviceName} Consumption`,
-          custom: {
-            [AdapterIds.lovelace]: {
-              enabled: true,
-              ...lovelaceConfig(info, 'Consumption', {
-                attr_device_class: 'energy',
-                attr_state_class: 'total_increasing',
-              }),
-            },
-          },
-        },
-        'live-consumption': {
-          alias: {
-            id: stateId.replace(/\.STATE$/, '.SENSOR'),
-            read: 'JSON.parse(val)?.Meter["Live Consumption"] ?? null',
-            // No write function makes this read-only.
-          },
-          role: 'value.power.consumption',
-          type: 'number',
-          unit: 'W',
-          read: true,
-          write: false,
-          name: `${info.deviceName} Live Consumption`,
-          custom: {
-            [AdapterIds.lovelace]: {
-              enabled: true,
-              ...lovelaceConfig(info, 'Live Consumption', {
-                attr_device_class: 'power',
-                attr_state_class: 'measurement',
-              }),
-            },
-          },
-        },
-        'grid-frequency': {
-          alias: {
-            id: stateId.replace(/\.STATE$/, '.SENSOR'),
-            read: 'JSON.parse(val)?.Meter["Grid Frequency"] ?? null',
-            // No write function makes this read-only.
-          },
-          role: 'value',
-          type: 'number',
-          unit: 'Hz',
-          read: true,
-          write: false,
-          name: `${info.deviceName} Grid Frequency`,
-          custom: {
-            [AdapterIds.lovelace]: {
-              enabled: true,
-              ...lovelaceConfig(info, 'Grid Frequency', {
-                attr_device_class: 'frequency',
-              }),
-            },
-          },
-        },
-        ...Object.assign(
-          {},
-          ...[1, 2, 3].map(phase => {
-            const label = `L${phase}`;
-            const sensorStateId = stateId.replace(/\.STATE$/, '.SENSOR');
+function smartMeterStates(info: DeviceInfo): DeviceStates {
+  const states = {
+    ...measurement(
+      info,
+      'consumption',
+      'Consumption',
+      'JSON.parse(val)?.Meter?.Consumption ?? null',
+      'value.energy',
+      'kWh',
+      { attr_device_class: 'energy', attr_state_class: 'total_increasing' },
+    ),
+    ...measurement(
+      info,
+      'live-consumption',
+      'Live Consumption',
+      'JSON.parse(val)?.Meter?.["Live Consumption"] ?? null',
+      'value.power.consumption',
+      'W',
+      { attr_device_class: 'power', attr_state_class: 'measurement' },
+    ),
+    ...measurement(
+      info,
+      'grid-frequency',
+      'Grid Frequency',
+      'JSON.parse(val)?.Meter?.["Grid Frequency"] ?? null',
+      'value',
+      'Hz',
+      { attr_device_class: 'frequency' },
+    ),
+  };
 
-            return {
-              [`l${phase}-power`]: {
-                alias: {
-                  id: sensorStateId,
-                  read: `JSON.parse(val)?.Meter["${label} Power"] ?? null`,
-                  // No write function makes this read-only.
-                },
-                role: 'value.power.consumption',
-                type: 'number',
-                unit: 'W',
-                read: true,
-                write: false,
-                name: `${info.deviceName} ${label} Power`,
-                custom: {
-                  [AdapterIds.lovelace]: {
-                    enabled: true,
-                    ...lovelaceConfig(info, `${label} Power`, {
-                      attr_device_class: 'power',
-                      attr_state_class: 'measurement',
-                    }),
-                  },
-                },
-              },
-              [`l${phase}-voltage`]: {
-                alias: {
-                  id: sensorStateId,
-                  read: `JSON.parse(val)?.Meter["${label} Voltage"] ?? null`,
-                  // No write function makes this read-only.
-                },
-                role: 'value.voltage',
-                type: 'number',
-                unit: 'V',
-                read: true,
-                write: false,
-                name: `${info.deviceName} ${label} Voltage`,
-                custom: {
-                  [AdapterIds.lovelace]: {
-                    enabled: true,
-                    ...lovelaceConfig(info, `${label} Voltage`, {
-                      attr_device_class: 'voltage',
-                      attr_state_class: 'measurement',
-                    }),
-                  },
-                },
-              },
-              [`l${phase}-current`]: {
-                alias: {
-                  id: sensorStateId,
-                  read: `JSON.parse(val)?.Meter["${label} Current"] ?? null`,
-                  // No write function makes this read-only.
-                },
-                role: 'value.current',
-                type: 'number',
-                unit: 'A',
-                read: true,
-                write: false,
-                name: `${info.deviceName} ${label} Current`,
-                custom: {
-                  [AdapterIds.lovelace]: {
-                    enabled: true,
-                    ...lovelaceConfig(info, `${label} Current`, {
-                      attr_device_class: 'current',
-                      attr_state_class: 'measurement',
-                    }),
-                  },
-                },
-              },
-            };
-          }),
-        ),
-      }),
-    },
-  ],
-};
-
-async function toResult<T>(promise: Promise<T>): Promise<Result<T>> {
-  try {
-    return { ok: true, value: await promise };
-  } catch (error) {
-    return { ok: false, error };
-  }
+  return [1, 2, 3].reduce((all, phase) => {
+    const label = `L${phase}`;
+    return {
+      ...all,
+      ...measurement(
+        info,
+        `l${phase}-power`,
+        `${label} Power`,
+        `JSON.parse(val)?.Meter?.["${label} Power"] ?? null`,
+        'value.power.consumption',
+        'W',
+        { attr_device_class: 'power', attr_state_class: 'measurement' },
+      ),
+      ...measurement(
+        info,
+        `l${phase}-voltage`,
+        `${label} Voltage`,
+        `JSON.parse(val)?.Meter?.["${label} Voltage"] ?? null`,
+        'value.voltage',
+        'V',
+        { attr_device_class: 'voltage', attr_state_class: 'measurement' },
+      ),
+      ...measurement(
+        info,
+        `l${phase}-current`,
+        `${label} Current`,
+        `JSON.parse(val)?.Meter?.["${label} Current"] ?? null`,
+        'value.current',
+        'A',
+        { attr_device_class: 'current', attr_state_class: 'measurement' },
+      ),
+    };
+  }, states);
 }
 
-async function deviceInfo(stateId: string): Promise<DeviceInfo> {
-  const teleState = stateId
-    .replace('.cmnd.', '.tele.')
-    .replace(/\.POWER$/, '.STATE');
-  const tele = JSON.parse(getState(teleState).val);
-
+async function deviceInfo(sensorStateId: string): Promise<DeviceInfo> {
+  const parts = sensorStateId.split('.');
+  const transportIndex = parts.indexOf('tele');
+  const deviceId = [
+    ...parts.slice(0, transportIndex),
+    ...parts.slice(transportIndex + 1, -1),
+  ].join('.');
+  const stateId = [...parts.slice(0, -1), 'STATE'].join('.');
+  const tele = JSON.parse(String(getState(stateId).val));
   const status: any = await got
-    .get(`http://${tele.IPAddress}/cm`, {
-      searchParams: { cmnd: 'Status' },
-    })
+    .get(`http://${tele.IPAddress}/cm`, { searchParams: { cmnd: 'Status' } })
     .json();
-
   const friendlyNames: { [key: string]: string } = await got
     .get(`http://${tele.IPAddress}/cm`, {
       searchParams: { cmnd: 'FriendlyName' },
     })
     .json();
-
-  const deviceName = status.Status.DeviceName;
-
-  function undefinedIfDefault(str: string) {
-    if (str.match(/^(Tasmota|bitShakeSMR)\d$/)) {
-      return undefined;
-    }
-
-    return str;
-  }
-  const icon = undefinedIfDefault(friendlyNames.FriendlyName1);
-  const name = undefinedIfDefault(friendlyNames.FriendlyName2);
-  const customDeviceName = undefinedIfDefault(friendlyNames.FriendlyName3);
+  const undefinedIfDefault = (name: string) =>
+    /^(Tasmota|bitShakeSMR)\d$/.test(name) ? undefined : name;
 
   return {
-    deviceId: stateId
-      .replace(/\.[^.]*$/, '')
-      .replace(/\.(cmnd|tele|stat)\./, '.'),
-    powerStateId: stateId,
-    deviceName: customDeviceName || deviceName,
-    lovelace: { icon, name },
+    deviceId,
+    deviceName:
+      undefinedIfDefault(friendlyNames.FriendlyName3) ||
+      status.Status.DeviceName,
+    sensorStateId,
+    lovelace: {
+      icon: undefinedIfDefault(friendlyNames.FriendlyName1),
+      name: undefinedIfDefault(friendlyNames.FriendlyName2),
+    },
   };
 }
 
-const deviceInfos = await Promise.all(
-  config.devices.flatMap(device =>
-    device.states.map(async state => ({
-      state,
-      config: device,
-      info: await toResult(deviceInfo(state)),
-    })),
-  ),
-);
+async function getObjectDefinition(): Promise<ObjectDefinitionRoot> {
+  const definitions: ObjectDefinitionRoot = {};
 
-function getObjectDefinition(): ObjectDefinitionRoot {
-  return deviceInfos.reduce((acc, device) => {
-    const stateId = device.state;
-    const info = device.info;
+  for (const sensorStateId of [...$('state[id=mqtt.*.tele.*.SENSOR]')]) {
+    const infoStateId = `${sensorStateId.slice(0, -'SENSOR'.length)}INFO1`;
+    const infoValue = getState(infoStateId)?.val;
+    let module: unknown;
 
-    if (!info.ok) {
+    try {
+      module = JSON.parse(String(infoValue))?.Info1?.Module;
+    } catch {
+      module = undefined;
+    }
+    const type = typeof module === 'string' ? deviceType(module) : undefined;
+
+    if (type == null) {
       log(
-        `Could not determine information from ${device.state}, skipping: ${(info as any).error}`,
-        'warn',
+        `Ignoring ${sensorStateId}: unsupported module ${String(module)}`,
+        'info',
       );
-      return acc;
+      continue;
     }
 
-    const deviceStates = device.config.deviceStates(info.value, stateId);
+    let info: DeviceInfo;
+    try {
+      info = await deviceInfo(sensorStateId);
+    } catch (error) {
+      log(
+        `Could not determine information from ${sensorStateId}: ${error}`,
+        'warn',
+      );
+      continue;
+    }
+    const states =
+      type === 'plug'
+        ? plugStates(info)
+        : type === 'shutter'
+          ? energyStates(info, 'JSON.parse(val)?.ENERGY?.PowerTotal ?? null')
+          : smartMeterStates(info);
 
-    acc[info.value.deviceId] = {
+    definitions[info.deviceId] = {
       type: 'device',
       native: {},
-      common: { name: info.value.deviceName, role: 'device' },
-      enumIds: ObjectCreator.getEnumIds(stateId, 'rooms', 'functions'),
-      nested: Object.entries(deviceStates).reduce((acc, [id, common]) => {
-        acc[id] = { type: 'state', native: {}, common: common };
-        return acc;
+      common: { name: info.deviceName, role: 'device' },
+      enumIds: ObjectCreator.getEnumIds(sensorStateId, 'rooms', 'functions'),
+      nested: Object.entries(states).reduce((nested, [id, common]) => {
+        nested[id] = { type: 'state', native: {}, common };
+        return nested;
       }, {} as ObjectDefinitionRoot),
     };
+  }
 
-    return acc;
-  }, {} as ObjectDefinitionRoot);
+  return definitions;
 }
 
 // https://github.com/ioBroker/ioBroker.javascript/issues/694#issuecomment-721675742
 export {};
-await ObjectCreator.create(getObjectDefinition(), 'alias.0');
+await ObjectCreator.create(await getObjectDefinition(), 'alias.0');
 
 stopScript(undefined);
