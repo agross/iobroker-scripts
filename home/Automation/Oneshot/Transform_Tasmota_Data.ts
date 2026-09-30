@@ -76,7 +76,7 @@ const config: { devices: DeviceConfig[] } = {
             read: 'JSON.parse(val)?.ENERGY?.Power ?? null',
             // No write function makes this read-only.
           },
-          role: 'value',
+          role: 'value.power.consumption',
           type: 'number',
           unit: 'W',
           read: true,
@@ -88,6 +88,30 @@ const config: { devices: DeviceConfig[] } = {
               ...lovelaceConfig(info, 'Power Usage', {
                 attr_device_class: 'power',
                 attr_state_class: 'measurement',
+              }),
+            },
+          },
+        },
+        consumption: {
+          alias: {
+            id: stateId
+              .replace('.cmnd.', '.tele.')
+              .replace(/\.POWER$/, '.SENSOR'),
+            read: 'JSON.parse(val)?.ENERGY?.Total ?? null',
+            // No write function makes this read-only.
+          },
+          role: 'value.energy',
+          type: 'number',
+          unit: 'kWh',
+          read: true,
+          write: false,
+          name: `${info.deviceName} Consumption`,
+          custom: {
+            [AdapterIds.lovelace]: {
+              enabled: true,
+              ...lovelaceConfig(info, 'Consumption', {
+                attr_device_class: 'energy',
+                attr_state_class: 'total_increasing',
               }),
             },
           },
