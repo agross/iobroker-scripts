@@ -86,6 +86,8 @@ sendTo(
   'getEnabledDPs',
   {},
   (enabledDataPoints: { [id: string]: object }) => {
+    wifiSignal(enabledDataPoints);
+
     zigbeeCommon(enabledDataPoints);
     zigbeeMotionSensors(enabledDataPoints);
     zigbeeDoorAndWindowContacts(enabledDataPoints);
@@ -135,6 +137,19 @@ const boolean = {
     storageType: 'Boolean',
   },
 };
+
+function wifiSignal(enabledDataPoints: {}) {
+  [...$('state[id=*.wifi-signal][role=value.signal]')].forEach(id => {
+    const expect = {
+      ...numeric,
+      ...{
+        aliasId: getObject(id).common.name,
+      },
+    };
+
+    check(enabledDataPoints, id, expect);
+  });
+}
 
 function zigbeeCommon(enabledDataPoints: {}) {
   $('state[id=zigbee.*.available]').each(id => {

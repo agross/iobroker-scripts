@@ -1,11 +1,12 @@
 import got from 'got';
 
-type DeviceType = 'plug' | 'smart-meter' | 'shutter';
+type DeviceType = 'plug' | 'smart-meter' | 'shutter' | 'wifi-only';
 
 type DeviceInfo = {
   deviceId: string;
   deviceName: string;
   sensorStateId: string;
+  stateStateId: string;
   lovelace: { icon?: string; name?: string };
 };
 
@@ -17,6 +18,7 @@ function deviceType(module: string): DeviceType | undefined {
   if (plugModules.some(pattern => pattern.test(module))) return 'plug';
   if (module === 'bitShake SmartMeterReader') return 'smart-meter';
   if (module === 'Shelly 2.5 PM') return 'shutter';
+  if (module.startsWith('Shelly 1 ')) return 'wifi-only';
 }
 
 function entityType(info: DeviceInfo, type: string): string {
@@ -58,10 +60,11 @@ function measurement(
   role: string,
   unit: string,
   attributes: Record<string, string>,
+  sourceStateId = info.sensorStateId,
 ): DeviceStates {
   return {
     [id]: {
-      alias: { id: info.sensorStateId, read },
+      alias: { id: sourceStateId, read },
       role,
       type: 'number',
       unit,
@@ -149,6 +152,19 @@ function plugStates(info: DeviceInfo): DeviceStates {
       name: `${info.deviceName} Power (negated for easier toggling in scenes)`,
     },
   };
+}
+
+function wifiStates(info: DeviceInfo): DeviceStates {
+  return measurement(
+    info,
+    'wifi-signal',
+    'WiFi Signal',
+    'JSON.parse(val)?.Wifi?.Signal ?? null',
+    'value.signal',
+    'dBm',
+    { attr_device_class: 'signal_strength', attr_state_class: 'measurement' },
+    info.stateStateId,
+  );
 }
 
 function smartMeterStates(info: DeviceInfo): DeviceStates {
@@ -243,6 +259,7 @@ async function deviceInfo(sensorStateId: string): Promise<DeviceInfo> {
       undefinedIfDefault(friendlyNames.FriendlyName3) ||
       status.Status.DeviceName,
     sensorStateId,
+    stateStateId: stateId,
     lovelace: {
       icon: undefinedIfDefault(friendlyNames.FriendlyName1),
       name: undefinedIfDefault(friendlyNames.FriendlyName2),
@@ -288,7 +305,11 @@ async function getObjectDefinition(): Promise<ObjectDefinitionRoot> {
         ? plugStates(info)
         : type === 'shutter'
           ? energyStates(info, 'JSON.parse(val)?.ENERGY?.PowerTotal ?? null')
-          : smartMeterStates(info);
+          : type === 'smart-meter'
+            ? smartMeterStates(info)
+            : {};
+
+    Object.assign(states, wifiStates(info));
 
     definitions[info.deviceId] = {
       type: 'device',
