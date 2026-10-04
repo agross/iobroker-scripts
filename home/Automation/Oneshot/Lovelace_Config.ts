@@ -608,20 +608,27 @@ function maxDayTemperature() {
 }
 
 function ecovacsDeebot() {
-  $('state[id=ecovacs-deebot.*.status.device]').each(async id => {
+  const deebots = $('state[id=ecovacs-deebot.*.status.device]');
+  deebots.each(async id => {
     const device = id.replace(/\.status\.device$/, '');
 
     const name = getState(`${device}.info.deviceName`).val;
 
-    const currentMapId = getState(`${device}.map.currentMapMID`).val;
-    setState(`${device}.map.${currentMapId}.loadMapImage`, true, err => {
-      if (err) {
-        log(
-          `Could not load map image for ${device}, needs activation in device adapter settings: ${err}`,
-          'error',
-        );
-      }
-    });
+    // Map loading is broken.
+    // https://github.com/mrbungle64/ioBroker.ecovacs-deebot/issues/858
+    try {
+      const currentMapId = getState(`${device}.map.currentMapMID`).val;
+      setState(`${device}.map.${currentMapId}.loadMapImage`, true, err => {
+        if (err) {
+          log(
+            `Could not load map image for ${device}, needs activation in device adapter settings: ${err}`,
+            'error',
+          );
+        }
+      });
+    } catch (err) {
+      log(`Could not load map image for ${device}: ${err}`, 'warn');
+    }
 
     const expect: Partial<iobJS.StateCommon> = {
       custom: {
@@ -634,12 +641,49 @@ function ecovacsDeebot() {
           state_POWER: `${device}.control.clean`,
           state_PAUSE: `${device}.control.pause`,
           state_BATTERY: `${device}.info.battery`,
-          // Prefer device image:
-          // state_MAP: `${device}.map.${currentMapId}.map64`,
+          state_WORK_MODE: `${device}.control.cleanSpeed`,
+          // Prefer device image.
           state_MAP: `${device}.info.deviceImageURL`,
         },
       },
     };
+
+    const currentMapId = getState(`${device}.map.currentMapMID`).val;
+    const rooms = $(
+      `state[id=${device}.map.${currentMapId}.spotAreas.*.spotAreaID]`,
+    );
+    rooms.each(async idState => {
+      const areaId = (getState(idState).val ?? '').toString();
+      const nameState = idState.replace(/\.spotAreaID$/, '.spotAreaName');
+      const area = getState(nameState).val as string;
+      const id = `${device}.control.spotArea_${areaId}`;
+      if (!areaId || !existsState(id)) {
+        return;
+      }
+
+      if (typeof area !== 'string' || area.length <= 1) {
+        log(
+          `Spot area ${id} named ${area} has not been configured by the user`,
+          'warn',
+        );
+        return;
+      }
+
+      const expect: Partial<iobJS.StateCommon> = {
+        custom: {
+          [AdapterIds.lovelace]: {
+            enabled: true,
+            entity: 'switch',
+            name: Lovelace.id(`Clean ${area}`),
+            attr_device_class: 'switch',
+            attr_icon: 'mdi:broom',
+            attr_friendly_name: `Clean ${area}`,
+          },
+        },
+      };
+
+      await check(id, expect);
+    });
 
     await check(id, expect);
   });
@@ -671,37 +715,6 @@ function ecovacsDeebot() {
           attr_device_class: 'switch',
           attr_icon: 'mdi:ev-station',
           attr_friendly_name: 'Return To Charge',
-        },
-      },
-    };
-
-    await check(id, expect);
-  });
-
-  $('state[id=ecovacs-deebot.*.control.spotArea_*]').each(async id => {
-    if (!id.match(/\d$/)) {
-      return;
-    }
-
-    const area = Utils.english((await getObjectAsync(id))!.common.name);
-
-    if (area.length === 1) {
-      log(
-        `Spot area ${id} named ${area} has not been configured by the user`,
-        'warn',
-      );
-      return;
-    }
-
-    const expect: Partial<iobJS.StateCommon> = {
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'switch',
-          name: Lovelace.id(`Clean ${area}`),
-          attr_device_class: 'switch',
-          attr_icon: 'mdi:broom',
-          attr_friendly_name: `Clean ${area}`,
         },
       },
     };

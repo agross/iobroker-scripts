@@ -12,7 +12,7 @@ const config = { adapter: 'ecovacs-deebot.*' };
 const deebots = [
   ...new Set(
     [...$(`channel[id=${config.adapter}][state.id=*.status.device]`)].map(x =>
-      x.replace(/^([\w-]+\.\d+)\..*/, '$1'),
+      x.replace(/\.status\.device$/, ''),
     ),
   ),
 ].map(root => {
@@ -23,17 +23,32 @@ const deebots = [
 });
 
 const deebotUserStates = deebots.reduce((acc, deebot) => {
+  const currentMapId = getState(`${deebot.root}.map.currentMapMID`).val;
   const spotAreas = [
-    ...$(`state[id=${deebot.root}.control.spotArea_*][role=button]`),
+    ...$(`state[id=${deebot.root}.map.${currentMapId}.spotAreas.*.spotAreaID]`),
   ]
-    .map(spotAreaId => ({
-      spotAreaId: spotAreaId,
-      schedulerId: spotAreaId.replace(/_\d+$/, ''),
-      object: getObject(spotAreaId),
-    }))
-    .filter(spotArea => Utils.english(spotArea.object.common.name).length > 1)
+    .map(idState => {
+      const areaId = (getState(idState).val ?? '').toString();
+      const areaName = getState(
+        idState.replace(/\.spotAreaID$/, '.spotAreaName'),
+      ).val as string;
+
+      return {
+        areaId,
+        areaName,
+        spotAreaId: `${deebot.root}.control.spotArea_${areaId}`,
+        schedulerId: `${deebot.root}.control.spotArea`,
+      };
+    })
+    .filter(
+      spotArea =>
+        spotArea.areaId.length > 0 &&
+        typeof spotArea.areaName === 'string' &&
+        spotArea.areaName.length > 1 &&
+        existsState(spotArea.spotAreaId),
+    )
     .reduce((acc, spotArea) => {
-      const areaName = Utils.english(spotArea.object.common.name);
+      const areaName = spotArea.areaName;
 
       acc[areaName] = {
         type: 'state',
@@ -57,7 +72,7 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
         native: {
           sourcedFrom: spotArea.spotAreaId,
           schedulerId: spotArea.schedulerId,
-          areaIndex: spotArea.spotAreaId.match(/spotArea_(\d)+$/)![1],
+          areaId: spotArea.areaId,
         },
       };
 
@@ -256,162 +271,170 @@ const deebotUserStates = deebots.reduce((acc, deebot) => {
 
 await ObjectCreator.create(deebotUserStates, '0_userdata.0');
 
-const acknowledge = [
-  ...$(`state[id=0_userdata.0.${config.adapter}.Scheduled Spot Areas.*]`),
-  ...$(`state[id=0_userdata.0.${config.adapter}.clean-scheduled-spot-areas]`),
-  ...$(`state[id=0_userdata.0.${config.adapter}.Scheduled Custom Areas.*]`),
-  ...$(`state[id=0_userdata.0.${config.adapter}.clean-scheduled-custom-areas]`),
-].map(area => {
-  return new Stream<any>(
-    { id: area, ack: false },
-    { map: event => event.state.val },
-  ).stream
-    .pipe(tap(state => setState(area, state, true)))
-    .subscribe();
-});
+const acknowledge = deebots
+  .flatMap(deebot => [
+    ...$(`state[id=0_userdata.0.${deebot.root}.Scheduled Spot Areas.*]`),
+    ...$(`state[id=0_userdata.0.${deebot.root}.clean-scheduled-spot-areas]`),
+    ...$(`state[id=0_userdata.0.${deebot.root}.Scheduled Custom Areas.*]`),
+    ...$(`state[id=0_userdata.0.${deebot.root}.clean-scheduled-custom-areas]`),
+  ])
+  .map(area => {
+    return new Stream<any>(
+      { id: area, ack: false },
+      { map: event => event.state.val },
+    ).stream
+      .pipe(tap(state => setState(area, state, true)))
+      .subscribe();
+  });
 
-const spotAreas = [
-  ...$(`state[id=0_userdata.0.${config.adapter}.Scheduled Spot Areas.*]`),
-].map(spotArea => {
-  log(`Subscribing to scheduled spot area: ${spotArea}`);
+const cleaning = deebots.flatMap(deebot => {
+  const userRoot = `0_userdata.0.${deebot.root}`;
 
-  return new Stream<boolean>(spotArea).stream.pipe(
-    distinctUntilChanged(),
-    map(scheduled => {
-      const native = getObject(spotArea).native;
+  const spotAreas = [...$(`state[id=${userRoot}.Scheduled Spot Areas.*]`)].map(
+    spotArea => {
+      log(`Subscribing to scheduled spot area: ${spotArea}`);
 
-      return {
-        id: spotArea,
-        scheduled: scheduled,
-        scheduleAreaIndex: native.areaIndex as string,
-        schedulerId: native.schedulerId as string,
-      };
-    }),
-  );
-});
+      return new Stream<boolean>(spotArea).stream.pipe(
+        distinctUntilChanged(),
+        map(scheduled => {
+          const native = getObject(spotArea).native;
 
-const scheduledSpotAreas = combineLatest(spotAreas).pipe(
-  map(spotAreas => spotAreas.filter(spotArea => spotArea.scheduled)),
-  tap(spotAreas =>
-    log(`Scheduled spot areas: ${spotAreas.map(s => s.id).join(', ')}`),
-  ),
-);
-
-const cleanSpotAreas = [
-  ...$(`state[id=0_userdata.0.${config.adapter}.clean-scheduled-spot-areas]`),
-].map(clean => {
-  return new Stream(clean, {
-    map: event => {
-      return {
-        id: event.id,
-        value: event.state.val,
-      };
+          return {
+            id: spotArea,
+            scheduled: scheduled,
+            scheduledAreaId: native.areaId as string,
+            schedulerId: native.schedulerId as string,
+          };
+        }),
+      );
     },
-  }).stream
-    .pipe(
-      filter(x => x.value === true),
-      withLatestFrom(scheduledSpotAreas),
-      tap(([trigger, spotAreas]) => {
-        // Reset schedule.
-        [trigger.id, ...spotAreas.map(s => s.id)].forEach(id =>
-          setState(id!, false, true),
-        );
-      }),
-      map(([_trigger, spotAreas]) =>
-        spotAreas.reduce((acc: { [id: string]: string[] }, spotArea) => {
-          if (!acc[spotArea.schedulerId]) {
-            acc[spotArea.schedulerId] = [];
-          }
-
-          acc[spotArea.schedulerId].push(spotArea.scheduleAreaIndex);
-
-          return acc;
-        }, {}),
-      ),
-      tap(targets => {
-        for (const target in targets) {
-          const areaIds = targets[target].sort().join(',');
-
-          console.log(`Scheduling ${target} with areas ${areaIds}`);
-          setState(target, areaIds);
-        }
-      }),
-    )
-    .subscribe();
-});
-
-const customAreas = [
-  ...$(`state[id=0_userdata.0.${config.adapter}.Scheduled Custom Areas.*]`),
-].map(customArea => {
-  log(`Subscribing to scheduled custom area: ${customArea}`);
-
-  return new Stream<boolean>(customArea).stream.pipe(
-    distinctUntilChanged(),
-    map(scheduled => {
-      const native = getObject(customArea).native;
-
-      return {
-        id: customArea,
-        scheduled: scheduled,
-        coordinates: native.coordinates as string,
-        schedulerId: native.schedulerId as string,
-      };
-    }),
   );
-});
 
-const scheduledCustomAreas = combineLatest(customAreas).pipe(
-  map(customAreas => customAreas.filter(customArea => customArea.scheduled)),
-  tap(customAreas =>
-    log(`Scheduled custom areas: ${customAreas.map(s => s.id).join(', ')}`),
-  ),
-);
+  const scheduledSpotAreas = combineLatest(spotAreas).pipe(
+    map(spotAreas => spotAreas.filter(spotArea => spotArea.scheduled)),
+    tap(spotAreas =>
+      log(`Scheduled spot areas: ${spotAreas.map(s => s.id).join(', ')}`),
+    ),
+  );
 
-const cleanCustomAreas = [
-  ...$(`state[id=0_userdata.0.${config.adapter}.clean-scheduled-custom-areas]`),
-].map(clean => {
-  return new Stream(clean, {
-    map: event => {
-      return {
-        id: event.id!,
-        value: event.state.val,
-      };
-    },
-  }).stream
-    .pipe(
-      filter(x => x.value === true),
-      withLatestFrom(scheduledCustomAreas),
-      tap(([trigger, customAreas]) => {
-        // Reset schedule.
-        [trigger.id, ...customAreas.map(s => s.id)].forEach(id =>
-          setState(id, false, true),
-        );
-      }),
-      map(([_trigger, customAreas]) =>
-        customAreas.reduce((acc: { [id: string]: string[] }, customArea) => {
-          if (!acc[customArea.schedulerId]) {
-            acc[customArea.schedulerId] = [];
+  const cleanSpotAreas = [
+    ...$(`state[id=${userRoot}.clean-scheduled-spot-areas]`),
+  ].map(clean => {
+    return new Stream(clean, {
+      map: event => {
+        return {
+          id: event.id,
+          value: event.state.val,
+        };
+      },
+    }).stream
+      .pipe(
+        filter(x => x.value === true),
+        withLatestFrom(scheduledSpotAreas),
+        tap(([trigger, spotAreas]) => {
+          // Reset schedule.
+          [trigger.id, ...spotAreas.map(s => s.id)].forEach(id =>
+            setState(id!, false, true),
+          );
+        }),
+        map(([_trigger, spotAreas]) =>
+          spotAreas.reduce((acc: { [id: string]: string[] }, spotArea) => {
+            if (!acc[spotArea.schedulerId]) {
+              acc[spotArea.schedulerId] = [];
+            }
+
+            acc[spotArea.schedulerId].push(spotArea.scheduledAreaId);
+
+            return acc;
+          }, {}),
+        ),
+        tap(targets => {
+          for (const target in targets) {
+            const areaIds = targets[target].sort().join(',');
+
+            console.log(`Scheduling ${target} with areas ${areaIds}`);
+            setState(target, areaIds);
           }
+        }),
+      )
+      .subscribe();
+  });
 
-          acc[customArea.schedulerId].push(customArea.coordinates);
+  const customAreas = [
+    ...$(`state[id=${userRoot}.Scheduled Custom Areas.*]`),
+  ].map(customArea => {
+    log(`Subscribing to scheduled custom area: ${customArea}`);
 
-          return acc;
-        }, {}),
-      ),
-      tap(targets => {
-        for (const target in targets) {
-          const coordinates = targets[target].join(';');
+    return new Stream<boolean>(customArea).stream.pipe(
+      distinctUntilChanged(),
+      map(scheduled => {
+        const native = getObject(customArea).native;
 
-          console.log(`Scheduling ${target} with coordinates ${coordinates}`);
-          setState(target, coordinates);
-        }
+        return {
+          id: customArea,
+          scheduled: scheduled,
+          coordinates: native.coordinates as string,
+          schedulerId: native.schedulerId as string,
+        };
       }),
-    )
-    .subscribe();
+    );
+  });
+
+  const scheduledCustomAreas = combineLatest(customAreas).pipe(
+    map(customAreas => customAreas.filter(customArea => customArea.scheduled)),
+    tap(customAreas =>
+      log(`Scheduled custom areas: ${customAreas.map(s => s.id).join(', ')}`),
+    ),
+  );
+
+  const cleanCustomAreas = [
+    ...$(`state[id=${userRoot}.clean-scheduled-custom-areas]`),
+  ].map(clean => {
+    return new Stream(clean, {
+      map: event => {
+        return {
+          id: event.id!,
+          value: event.state.val,
+        };
+      },
+    }).stream
+      .pipe(
+        filter(x => x.value === true),
+        withLatestFrom(scheduledCustomAreas),
+        tap(([trigger, customAreas]) => {
+          // Reset schedule.
+          [trigger.id, ...customAreas.map(s => s.id)].forEach(id =>
+            setState(id, false, true),
+          );
+        }),
+        map(([_trigger, customAreas]) =>
+          customAreas.reduce((acc: { [id: string]: string[] }, customArea) => {
+            if (!acc[customArea.schedulerId]) {
+              acc[customArea.schedulerId] = [];
+            }
+
+            acc[customArea.schedulerId].push(customArea.coordinates);
+
+            return acc;
+          }, {}),
+        ),
+        tap(targets => {
+          for (const target in targets) {
+            const coordinates = targets[target].join(';');
+
+            console.log(`Scheduling ${target} with coordinates ${coordinates}`);
+            setState(target, coordinates);
+          }
+        }),
+      )
+      .subscribe();
+  });
+
+  return [...cleanSpotAreas, ...cleanCustomAreas];
 });
 
 onStop(() =>
-  [...acknowledge, ...cleanSpotAreas, ...cleanCustomAreas].forEach(
-    subscription => subscription.unsubscribe(),
+  [...acknowledge, ...cleaning].forEach(subscription =>
+    subscription.unsubscribe(),
   ),
 );
