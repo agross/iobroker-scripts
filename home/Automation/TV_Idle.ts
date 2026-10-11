@@ -10,6 +10,7 @@ import {
   distinctUntilKeyChanged,
   share,
 } from 'rxjs/operators';
+import { Temporal } from 'temporal-polyfill';
 
 const config = {
   activityIndicators: [
@@ -66,14 +67,14 @@ const config = {
     'tagesschau',
     'youtube.leanback.v4',
   ],
-  turnOffAfter: 20,
-  timeoutPopups: [10, 5, 1],
+  turnOffAfter: Temporal.Duration.from({ minutes: 20 }),
+  timeoutPopups: [
+    Temporal.Duration.from({ minutes: 10 }),
+    Temporal.Duration.from({ minutes: 5 }),
+    Temporal.Duration.from({ minutes: 1 }),
+  ],
   debugSpeedUp: 1, // 30,
 };
-
-function minutesToMs(val: number): number {
-  return (val * 60 * 1000) / config.debugSpeedUp;
-}
 
 type StateWithId = Pick<iobJS.ChangedStateObject<any, any>, 'id' | 'state'>;
 
@@ -263,7 +264,10 @@ const activityLog = activity
 const timeoutNotifications = config.timeoutPopups.map(left => {
   return activity
     .pipe(
-      debounceTime(minutesToMs(config.turnOffAfter - left)),
+      debounceTime(
+        config.turnOffAfter.subtract(left).total('milliseconds') /
+          config.debugSpeedUp,
+      ),
       withLatestFrom(timerDisabled),
       filter(([_state, disabled]) => !disabled.disabled),
       withLatestFrom(tv.stream),
@@ -271,7 +275,8 @@ const timeoutNotifications = config.timeoutPopups.map(left => {
       map(([state, _tvOn]) => state),
       tap(_ => log(`Time left: ${left}`)),
       tap(_ => {
-        const message = `Turning off in ${left} minute${left > 1 ? 's' : ''}`;
+        const minutesLeft = left.total('minutes');
+        const message = `Turning off in ${minutesLeft} minute${minutesLeft > 1 ? 's' : ''}`;
 
         tv.message(message);
       }),
@@ -281,7 +286,9 @@ const timeoutNotifications = config.timeoutPopups.map(left => {
 
 const turnOff = activity
   .pipe(
-    debounceTime(minutesToMs(config.turnOffAfter)),
+    debounceTime(
+      config.turnOffAfter.total('milliseconds') / config.debugSpeedUp,
+    ),
     withLatestFrom(timerDisabled),
     filter(([_state, disabled]) => !disabled.disabled),
     withLatestFrom(tv.stream),

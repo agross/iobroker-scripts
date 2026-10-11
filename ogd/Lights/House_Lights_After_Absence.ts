@@ -1,8 +1,9 @@
 import { filter, tap, withLatestFrom, bufferCount, map } from 'rxjs/operators';
+import { Temporal } from 'temporal-polyfill';
 
 const config = {
   presence: '0_userdata.0.presence',
-  absentForAtLeastMinutes: 15,
+  absentForAtLeast: Temporal.Duration.from({ minutes: 15 }),
   houseLightsOff: 'scene.0.House.Lights_Off',
   activate: 'scene.0.House.Lights_Cozy',
   callbacks: [
@@ -50,7 +51,7 @@ const returned = new Stream<{ present: boolean; timestamp: Date }>(
     filter(
       ([x, y]) =>
         (y.timestamp.valueOf() - x.timestamp.valueOf()) / 60000 >
-        config.absentForAtLeastMinutes,
+        config.absentForAtLeast.total('minutes'),
     ),
     filter(_ => atNight()),
     withLatestFrom(houseLightsOff),
@@ -58,9 +59,7 @@ const returned = new Stream<{ present: boolean; timestamp: Date }>(
     tap(([leftAndReturned, _]) => {
       const [left, returned] = leftAndReturned;
       log(
-        `Returned at night after being absent for ${
-          config.absentForAtLeastMinutes
-        } min (from ${Format.dateTime(left.timestamp)} to ${Format.dateTime(
+        `Returned at night after being absent for ${config.absentForAtLeast.toString()} (from ${Format.dateTime(left.timestamp)} to ${Format.dateTime(
           returned.timestamp,
         )}) with no lights on, activating ${config.activate}`,
       );

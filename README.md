@@ -8,12 +8,22 @@ You need to install the following dependencies in your ioBroker.javascript insta
 
 * `rxjs@6`
 * `got@16`
+* `temporal-polyfill@1`
+* `temporal-spec@1`
 
 Syntax help may be added for the following npm modules:
 
 * `rxjs`
 * `rxjs/operators`
 * `got`
+* `temporal-polyfill`
+* `temporal-spec`
+
+Both `temporal-spec` entries are technically not necessary, but the ioBroker
+people decided to invent their own module loader. This not only causes
+[ongoing](https://github.com/ioBroker/ioBroker.javascript/issues/928)
+[issues](https://github.com/ioBroker/ioBroker.javascript/issues/2341) but makes
+the runtime environment very hard to mimic with TypeScript tools.
 
 ## Settings for the `iobroker.javascript` instance
 

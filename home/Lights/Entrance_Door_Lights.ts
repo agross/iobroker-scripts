@@ -1,3 +1,5 @@
+import { Temporal } from 'temporal-polyfill';
+
 const config = {
   // Entrance Door Contact
   sensor: AdapterId.build(AdapterIds.zigbee, '00158d00045bedc5.opened'),
@@ -6,7 +8,7 @@ const config = {
   // Bathroom Presence Detector
   brightness: 'hm-rpc.1.000C1A49A87471.1.ILLUMINATION',
   presence: '0_userdata.0.presence',
-  ignoreIfPresentLongerThan: 5 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
+  ignoreIfPresentLongerThan: Temporal.Duration.from({ minutes: 5 }),
 };
 
 function atNight() {
@@ -40,7 +42,9 @@ on({ id: config.sensor, val: true, ack: true }, _event => {
   if (
     presence.notExist !== true &&
     presence.val === true &&
-    presence.lc <= new Date().valueOf() - config.ignoreIfPresentLongerThan
+    presence.lc <=
+      new Date().valueOf() -
+        config.ignoreIfPresentLongerThan.total('milliseconds')
   ) {
     log('Present for longer, skipping');
     return;

@@ -1,10 +1,11 @@
 import got from 'got';
 import { timer } from 'rxjs';
 import { filter, map, tap } from 'rxjs/operators';
+import { Temporal } from 'temporal-polyfill';
 
 const config = {
   stateId: ['0_userdata.0', 'crunch-fit-popular-times'],
-  intervalInMs: 3600000 / 3, // 20 min
+  interval: Temporal.Duration.from({ minutes: 20 }),
   query: 'http://crunchfit:5000/',
 };
 
@@ -35,7 +36,7 @@ await ObjectCreator.create(
 
 const stateId = config.stateId.join('.');
 
-const update = timer(0, config.intervalInMs)
+const update = timer(0, config.interval.total('milliseconds'))
   .pipe(
     filter(_ => !compareTime('0:30', '5:30', 'between')),
     map(async _ => (await got(config.query).json()) as any),
