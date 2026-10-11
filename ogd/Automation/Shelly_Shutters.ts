@@ -26,7 +26,7 @@ function getConfig(id: string): AliasDeviceConfig {
 function stateIdToPurpose(stateId: string) {
   switch (stateId.match(/\.shelly25-(\d+)\./)![1]) {
     case '1':
-      return 'Living Room Shutters';
+      return 'Living Room Shutter';
 
     default:
       throw new Error(`No mapping from ${stateId} to purpose`);
