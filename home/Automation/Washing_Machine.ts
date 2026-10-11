@@ -1,5 +1,6 @@
 import { EMPTY, of, timer } from 'rxjs';
 import { filter, first, map, scan, switchMap, tap } from 'rxjs/operators';
+import { Temporal } from 'temporal-polyfill';
 
 type Config = {
   workingThreshold: number;
@@ -16,8 +17,7 @@ const config: Config = {
   finishedThreshold: 18,
   powerMonitor: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.power',
   powerState: 'alias.0.mqtt.0.home.bathroom.power.gosund-sp111-3.state',
-  repowerTimeout:
-    8 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000 /* ms */,
+  repowerTimeout: Temporal.Duration.from({ hours: 8 }).total('milliseconds'),
   repowerState: ['0_userdata.0', 'repower-washing-machine'],
   callbacks: [
     {

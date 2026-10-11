@@ -10,7 +10,8 @@
   ],
   "dependencies": {
     "got": "^16.0.0",
-    "rxjs": "^6.6.7"
+    "rxjs": "^6.6.7",
+    "temporal-polyfill": "^1.0.5"
   },
   "// devDependencies": [
     "@types/wake_on_lan: types for library included in iobroker.javascript",

@@ -7,11 +7,12 @@ import {
   map,
   withLatestFrom,
 } from 'rxjs/operators';
+import { Temporal } from 'temporal-polyfill';
 
 const config = {
   delay: {
-    absence: 5,
-    presence: 0,
+    absence: Temporal.Duration.from({ minutes: 5 }),
+    presence: Temporal.Duration.from({ minutes: 0 }),
   },
   alarmEnabled: AlarmConfig.alarmState,
   presence: PresenceConfig.presenceState,
@@ -19,10 +20,6 @@ const config = {
   triggerAlarmOn: AlarmConfig.triggerAlarmOn,
   alarmEnabledChanged: AlarmConfig.alarmEnabledChanged,
 };
-
-function minToMs(min: number): number {
-  return min * 60 * 1000;
-}
 
 await ObjectCreator.create(
   {
@@ -68,14 +65,14 @@ const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
       const delay = present ? config.delay.presence : config.delay.absence;
 
       log(
-        `Setting alarm=${!present} and HomeMatic presence=${present} in ${delay} min`,
+        `Setting alarm=${!present} and HomeMatic presence=${present} in ${delay}`,
       );
 
       if (config.homematicPresence) {
         setStateDelayed(
           config.homematicPresence,
           present,
-          minToMs(delay),
+          delay.total('milliseconds'),
           true,
           err => {
             if (err) {
@@ -94,7 +91,7 @@ const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
         config.alarmEnabled.join('.'),
         !present,
         true,
-        minToMs(delay),
+        delay.total('milliseconds'),
         true,
         err => {
           if (err) {

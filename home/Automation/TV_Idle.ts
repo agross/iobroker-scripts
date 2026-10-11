@@ -10,6 +10,7 @@ import {
   distinctUntilKeyChanged,
   share,
 } from 'rxjs/operators';
+import { Temporal } from 'temporal-polyfill';
 
 const config = {
   activityIndicators: [
@@ -66,14 +67,14 @@ const config = {
     'tagesschau',
     'youtube.leanback.v4',
   ],
-  turnOffAfter: 20,
-  timeoutPopups: [10, 5, 1],
+  turnOffAfter: Temporal.Duration.from({ minutes: 20 }),
+  timeoutPopups: [
+    Temporal.Duration.from({ minutes: 10 }),
+    Temporal.Duration.from({ minutes: 5 }),
+    Temporal.Duration.from({ minutes: 1 }),
+  ],
   debugSpeedUp: 1, // 30,
 };
-
-function minutesToMs(val: number): number {
-  return (val * 60 * 1000) / config.debugSpeedUp;
-}
 
 type StateWithId = Pick<iobJS.ChangedStateObject<any, any>, 'id' | 'state'>;
 
@@ -227,20 +228,23 @@ const timerDisabledNotifications = timerDisabled
 const activity = new ActivityIndicator(...config.activityIndicators).stream;
 
 function throttleDistinct<T>(
-  duration: number,
+  duration: Temporal.Duration,
   equals: (a: T, b: T) => boolean = (a, b) => a === b,
 ) {
   return (source: Observable<T>) => {
     return source.pipe(
       map(x => {
-        const obj = { val: x, time: Date.now(), keep: true };
+        const obj = { val: x, time: Temporal.Now.instant(), keep: true };
         return obj;
       }),
       scan((acc, cur) => {
-        const diff = cur.time - acc.time;
+        const comparison = Temporal.Duration.compare(
+          cur.time.since(acc.time),
+          duration,
+        );
 
         const isSame = equals(acc.val, cur.val);
-        return diff > duration || (diff < duration && !isSame)
+        return comparison > 0 || (comparison < 0 && !isSame)
           ? { ...cur, keep: true }
           : { ...acc, keep: false };
       }),
@@ -255,7 +259,7 @@ const activityLog = activity
     withLatestFrom(tv.stream),
     filter(([_state, tvOn]) => tvOn),
     map(([state, _tvOn]) => state.id),
-    throttleDistinct(60 * 1000),
+    throttleDistinct(Temporal.Duration.from({ minutes: 1 })),
     tap(x => log(`Activity: ${x}`)),
   )
   .subscribe();
@@ -263,7 +267,10 @@ const activityLog = activity
 const timeoutNotifications = config.timeoutPopups.map(left => {
   return activity
     .pipe(
-      debounceTime(minutesToMs(config.turnOffAfter - left)),
+      debounceTime(
+        config.turnOffAfter.subtract(left).total('milliseconds') /
+          config.debugSpeedUp,
+      ),
       withLatestFrom(timerDisabled),
       filter(([_state, disabled]) => !disabled.disabled),
       withLatestFrom(tv.stream),
@@ -271,7 +278,8 @@ const timeoutNotifications = config.timeoutPopups.map(left => {
       map(([state, _tvOn]) => state),
       tap(_ => log(`Time left: ${left}`)),
       tap(_ => {
-        const message = `Turning off in ${left} minute${left > 1 ? 's' : ''}`;
+        const minutesLeft = left.total('minutes');
+        const message = `Turning off in ${minutesLeft} minute${minutesLeft > 1 ? 's' : ''}`;
 
         tv.message(message);
       }),
@@ -281,7 +289,9 @@ const timeoutNotifications = config.timeoutPopups.map(left => {
 
 const turnOff = activity
   .pipe(
-    debounceTime(minutesToMs(config.turnOffAfter)),
+    debounceTime(
+      config.turnOffAfter.total('milliseconds') / config.debugSpeedUp,
+    ),
     withLatestFrom(timerDisabled),
     filter(([_state, disabled]) => !disabled.disabled),
     withLatestFrom(tv.stream),
