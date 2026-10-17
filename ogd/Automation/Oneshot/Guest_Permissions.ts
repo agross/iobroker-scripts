@@ -254,6 +254,7 @@ function translate(str: string) {
     ['Light', 'Licht'],
     ['Door', 'Tür'],
     ['Shutters', 'Rollladen'],
+    ['Shutter', 'Rollladen'],
     ['Level of Shutters', 'Behanghöhe'],
     ['Roof', 'Dachschräge'],
 
