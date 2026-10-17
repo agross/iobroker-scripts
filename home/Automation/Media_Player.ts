@@ -7,7 +7,7 @@ import {
   map,
   tap,
 } from 'rxjs/operators';
-import util from 'util';
+import * as util from 'node:util';
 
 const config = {
   tv: 'lgtv.0',

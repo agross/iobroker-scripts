@@ -1,4 +1,4 @@
-import util from 'util';
+import * as util from 'node:util';
 import { tap } from 'rxjs/operators';
 
 const config = {

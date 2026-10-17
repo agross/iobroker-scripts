@@ -1,4 +1,4 @@
-import util from 'util';
+import * as util from 'node:util';
 
 const config = {
   dryRun: false,

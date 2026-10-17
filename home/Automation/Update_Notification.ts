@@ -48,7 +48,7 @@ function truncateString(string: string, maxLength: number = 1000) {
   return truncated.trim();
 }
 
-import util from 'util';
+import * as util from 'node:util';
 import { exec } from 'child_process';
 const execAsync = util.promisify(exec);
 

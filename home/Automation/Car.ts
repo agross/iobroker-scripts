@@ -7,7 +7,7 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import util from 'util';
+import * as util from 'node:util';
 
 const adapter = 'vw-connect.0.';
 
