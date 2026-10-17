@@ -465,6 +465,18 @@ function powerPlugs(enabledDataPoints: {}) {
 
     check(enabledDataPoints, id, expect);
   });
+
+  [
+    ...$('state[id=alias.0.mqtt.*.gosund-sp111-*.consumption]'),
+    ...$('state[id=alias.0.mqtt.*.nous-a1t-*.consumption]'),
+    ...$('state[id=alias.0.mqtt.*.nous-b2t-*.consumption]'),
+  ].forEach(id => {
+    const expect = Object.assign({}, config.default, {
+      aliasId: `${Device.deviceName(id)} Power Consumption`,
+    });
+
+    check(enabledDataPoints, id, expect);
+  });
 }
 
 function mqttDevicesWithTemperature(enabledDataPoints: {}) {
