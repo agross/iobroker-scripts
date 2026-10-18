@@ -8,6 +8,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs/operators';
+import { Temporal } from 'temporal-polyfill';
 
 const config = {
   presence: 'hm-rpc.1.000C1A49A87471.1.PRESENCE_DETECTION_STATE',
@@ -16,18 +17,35 @@ const config = {
   illuminationThreshold: 20,
   turnOff: 'scene.0.Bathroom.Lights',
   determineScene: () => {
-    let scene = 'scene.0.Bathroom.Lights_Default';
+    const day = 'scene.0.Bathroom.Lights_Default';
+    const dim = 'scene.0.Bathroom.Lights_Dim';
+    const night = 'scene.0.Bathroom.Lights_Ultra_Dim';
 
     if (compareTime('23:00', '6:00', 'between')) {
-      scene = 'scene.0.Bathroom.Lights_Ultra_Dim';
-
       // If any light is on, use a brighter scene.
       if (getState('scene.0.Lights.All_Lights_Off').val !== true) {
-        scene = 'scene.0.Bathroom.Lights_Dim';
+        return dim;
       }
+
+      return night;
     }
 
-    return scene;
+    // Before daylight between 6 and 7:30 AM, use dim unless Sonja is home on a weekday.
+    if (compareTime('6:00', '7:30', 'between') && !isAstroDay()) {
+      const dow = Temporal.Now.zonedDateTimeISO('Europe/Berlin').dayOfWeek;
+      if (
+        dow >= 1 &&
+        dow <= 5 &&
+        getState('ping.0.iobroker.mobile-phone-sonja').val === true
+      ) {
+        log("Bathroom: Sonja's morning routine");
+        return day;
+      }
+
+      return dim;
+    }
+
+    return day;
   },
 };
 

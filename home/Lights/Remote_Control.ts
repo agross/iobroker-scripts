@@ -1,3 +1,5 @@
+import { Temporal } from 'temporal-polyfill';
+
 const config = {
   brightnessChange: 5,
   scenes: {
@@ -14,7 +16,7 @@ const config = {
           'scene.0.Kitchen.Lights_Bright',
         ];
 
-        const dow = new Date().getDay();
+        const dow = Temporal.Now.zonedDateTimeISO('Europe/Berlin').dayOfWeek;
 
         if (
           dow >= 1 &&
