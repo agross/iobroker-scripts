@@ -3,7 +3,7 @@ import { first, map, switchMap, tap } from 'rxjs/operators';
 
 const config = {
   returningHomeAt: '0_userdata.0.GW.Journey To Home.end',
-  presence: 'hm-rega.0.950',
+  presence: PresenceConfig.presenceState,
 };
 
 const arrivingAtHome = new Stream<string>(config.returningHomeAt).stream;

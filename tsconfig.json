@@ -21,10 +21,10 @@
       "path": "home/Automation/Ecovacs_Deebot.tsconfig.json"
     },
     {
-      "path": "home/Automation/Heating_Period.tsconfig.json"
+      "path": "home/Automation/Heating_Automation.tsconfig.json"
     },
     {
-      "path": "home/Automation/Heating_Profile.tsconfig.json"
+      "path": "home/Automation/Heating_Period.tsconfig.json"
     },
     {
       "path": "home/Automation/HomeMatic_Shutters.tsconfig.json"

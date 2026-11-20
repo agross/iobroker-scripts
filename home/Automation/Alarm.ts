@@ -16,7 +16,6 @@ const config = {
   },
   alarmEnabled: AlarmConfig.alarmState,
   presence: PresenceConfig.presenceState,
-  homematicPresence: PresenceConfig.homematicPresenceState,
   triggerAlarmOn: AlarmConfig.triggerAlarmOn,
   alarmEnabledChanged: AlarmConfig.alarmEnabledChanged,
 };
@@ -64,28 +63,7 @@ const presenceForAlarmAndHeating = new Stream<boolean>(config.presence).stream
     tap(present => {
       const delay = present ? config.delay.presence : config.delay.absence;
 
-      log(
-        `Setting alarm=${!present} and HomeMatic presence=${present} in ${delay}`,
-      );
-
-      if (config.homematicPresence) {
-        setStateDelayed(
-          config.homematicPresence,
-          present,
-          delay.total('milliseconds'),
-          true,
-          err => {
-            if (err) {
-              log(
-                `Could not set HomeMatic presence to ${present}: ${err}`,
-                'error',
-              );
-            } else {
-              log(`Set HomeMatic presence to ${present}`);
-            }
-          },
-        );
-      }
+      log(`Setting alarm=${!present} in ${delay}`);
 
       setStateDelayed(
         config.alarmEnabled.join('.'),

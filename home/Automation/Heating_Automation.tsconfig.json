@@ -16,7 +16,7 @@
     "../global/Shared/Utils.ts",
     "../global/ShutterConfig.ts",
     "../global/Site.ts",
-    "Heating_Profile.ts"
+    "Heating_Automation.ts"
   ],
   "compilerOptions": {
     "composite": true,

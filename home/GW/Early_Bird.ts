@@ -2,7 +2,7 @@ import { combineLatest, EMPTY, timer } from 'rxjs';
 import { first, map, switchMap, tap } from 'rxjs/operators';
 
 const config = {
-  heatingPeriod: 'hm-rega.0.2322',
+  heatingPeriod: '0_userdata.0.Heating.period',
   departureAt: '0_userdata.0.GW.Journey From Home.start',
   heatingStartsAt: (departure: Date) => {
     const r = new Date(departure);
@@ -17,8 +17,11 @@ const departures = new Stream<string>(config.departureAt).stream;
 
 const subscription = combineLatest([departures, heatingPeriod])
   .pipe(
-    map(([departure, _heatingPeriod]) => departure),
-    switchMap(date => {
+    switchMap(([date, heatingPeriod]) => {
+      if (!heatingPeriod) {
+        return EMPTY;
+      }
+
       if (!date) {
         Notify.mobile('No scheduled departure');
 

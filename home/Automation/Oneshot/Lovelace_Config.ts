@@ -50,8 +50,6 @@ scenes();
 homeMaticThermostats();
 homeMaticPresenceDetectors();
 
-homeMaticVariables();
-
 scripts();
 
 pingedMachines();
@@ -442,43 +440,6 @@ function homeMaticPresenceDetectors() {
           entity: 'binary_sensor',
           name: Lovelace.id(name),
           attr_device_class: 'motion',
-          attr_friendly_name: name,
-        },
-      },
-    };
-
-    await check(id, expect);
-  });
-}
-
-function homeMaticVariables() {
-  $('state[id=hm-rega.*][role=state]{TypeName=VARDP}').each(async id => {
-    let name = await (await getObjectAsync(id))!.common.name;
-    let icon: string | undefined;
-
-    switch (name) {
-      case 'Presence':
-        name = 'HomeMatic Presence';
-        icon = 'mdi:location-enter';
-        break;
-
-      case 'Heating Period':
-        icon = 'mdi:radiator';
-      // Fall through to default.
-
-      default:
-        name = `HomeMatic ${name}`;
-        break;
-    }
-
-    const expect: Partial<iobJS.StateCommon> = {
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'switch',
-          name: Lovelace.id(name),
-          attr_device_class: 'switch',
-          attr_icon: icon,
           attr_friendly_name: name,
         },
       },
