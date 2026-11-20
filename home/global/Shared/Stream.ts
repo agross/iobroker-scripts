@@ -33,7 +33,7 @@ export class Stream<T> {
     if (typeof stateOrSubscribeOptions === 'string') {
       this._stream = concat(
         this.initialValue(stateOrSubscribeOptions, map),
-        this.stateChanges(stateOrSubscribeOptions, map),
+        this.changes({ id: stateOrSubscribeOptions, ack: true }, map),
       );
     } else {
       this._stream = this.changes(stateOrSubscribeOptions, map);
@@ -72,25 +72,18 @@ export class Stream<T> {
     return of(eventMapper(currentAsEvent));
   }
 
-  private stateChanges(
-    state: string,
-    eventMapper: EventMapper<T>,
-  ): Observable<T> {
-    return new Observable<T>(observer => {
-      on({ id: state, ack: true }, event => {
-        observer.next(eventMapper(event));
-      });
-    }).pipe(share());
-  }
-
   private changes(
     subscribeOptions: iobJS.SubscribeOptions,
     eventMapper: EventMapper<T>,
   ): Observable<T> {
     return new Observable<T>(observer => {
-      on(subscribeOptions, event => {
+      const subscription = on(subscribeOptions, event => {
         observer.next(eventMapper(event));
       });
+
+      return () => {
+        unsubscribe(subscription);
+      };
     }).pipe(share());
   }
 }
