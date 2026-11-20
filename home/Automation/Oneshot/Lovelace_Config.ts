@@ -334,79 +334,147 @@ function scenes() {
   });
 }
 
+async function checkThermostatAlias(id: string, common: iobJS.StateCommon) {
+  if (existsObject(id)) {
+    await check(id, common);
+  } else if (config.dryRun) {
+    log(`Would create thermostat alias ${id}`, 'info');
+  } else {
+    await setObjectAsync(id, { type: 'state', common, native: {} });
+  }
+}
+
+async function thermostatModeAlias(
+  deviceId: string,
+  name: string,
+  setpointId: string,
+): Promise<string | null> {
+  const controlId = `${deviceId}.1.CONTROL_MODE`;
+  if (!existsState(controlId)) {
+    return null;
+  }
+
+  const aliasId = `alias.0.${deviceId}.mode`;
+  const aliasObject = await getObjectAsync(aliasId);
+  const alias = aliasObject?.type === 'state' ? aliasObject : undefined;
+  if (aliasObject && !alias) {
+    throw new Error(`Expected a mode state at ${aliasId}`);
+  }
+  const common: iobJS.StateCommon = {
+    ...alias?.common,
+    name: `${name} mode`,
+    type: 'mixed',
+    role: 'level.mode.thermostat',
+    read: true,
+    write: true,
+    states: { 0: 'auto' },
+    alias: {
+      id: { read: setpointId, write: controlId },
+      read: 'val == null ? null : (val === 4.5 ? "off" : 0)',
+      write: '0',
+    },
+  };
+  // Off is a readback from the target temperature. Auto is the only mode command.
+  if (!config.dryRun && !util.isDeepStrictEqual(alias?.common, common)) {
+    await setObjectAsync(aliasId, {
+      ...alias,
+      type: 'state',
+      common,
+      native: alias?.native ?? {},
+    });
+  }
+  return aliasId;
+}
+
 function homeMaticThermostats() {
-  $('state[id=hm-rpc.1.*.1.ACTIVE_PROFILE]').each(async id => {
-    const name = `${Device.deviceName(id)} Active Profile`;
+  $('state[id=hm-rpc.1.*.1.SET_POINT_TEMPERATURE]').each(async id => {
+    const channelId = id.replace(/\.SET_POINT_TEMPERATURE$/, '');
+    const deviceId = channelId.replace(/\.1$/, '');
+    const profileId = `${channelId}.ACTIVE_PROFILE`;
+    const valveStateId = `${deviceId}.10.STATE`;
+    const binaryValve = existsState(valveStateId);
+    const valveId = binaryValve ? valveStateId : `${channelId}.LEVEL`;
+    const attributes = [
+      {
+        attribute: 'active_profile',
+        state: profileId,
+        format: 'val == null ? null : "Profile " + val',
+      },
+      {
+        attribute: 'valve_open',
+        state: valveId,
+        format: binaryValve
+          ? 'val == null ? null : (val ? "Valve open" : "Valve closed")'
+          : 'val == null ? null : "Valve " + Math.round(val * 100) + "%"',
+      },
+    ].filter(({ state }) => existsState(state));
 
-    const expect: Partial<iobJS.StateCommon> = {
+    if (attributes.length === 0) {
+      return;
+    }
+
+    const aliasDeviceId = `alias.0.${deviceId}`;
+    const common = { name: getObject(deviceId).common.name };
+    const name = Device.english(common.name);
+    if (existsObject(aliasDeviceId)) {
+      await check(aliasDeviceId, common);
+    } else if (config.dryRun) {
+      log(`Would create thermostat alias device ${aliasDeviceId}`, 'info');
+    } else {
+      await setObjectAsync(aliasDeviceId, {
+        type: 'device',
+        common,
+        native: {},
+      });
+    }
+
+    const labels = await Promise.all(
+      attributes.map(async ({ attribute, state, format }) => {
+        const label = `${attribute}_label`;
+        const aliasId = `${aliasDeviceId}.${label}`;
+        await checkThermostatAlias(aliasId, {
+          name: `${name} ${label.replace(/_/g, ' ')}`,
+          type: 'string',
+          role: 'text',
+          read: true,
+          write: false,
+          alias: { id: state, read: format },
+        });
+
+        return { attribute: label, state: aliasId };
+      }),
+    );
+
+    const modeId = await thermostatModeAlias(deviceId, name, id);
+
+    const climateStates = Object.fromEntries(
+      Object.entries({
+        state_ACTUAL: `${channelId}.ACTUAL_TEMPERATURE`,
+        state_HUMIDITY: `${channelId}.HUMIDITY`,
+        state_BOOST: `${channelId}.BOOST_MODE`,
+      }).filter(([, state]) => existsState(state)),
+    );
+
+    // Lovelace stores manual climate settings on the setpoint state.
+    await check(id, {
       custom: {
         [AdapterIds.lovelace]: {
           enabled: true,
-          entity: 'input_number',
+          entity: 'climate',
           name: Lovelace.id(name),
-          attr_mode: 'slider',
-          attr_friendly_name: 'Profile',
+          attr_friendly_name: name,
+          attr_icon: 'mdi:radiator',
+          attr_target_temp_step: 0.5,
+          state_SET: id,
+          state_MODE: modeId,
+          ...climateStates,
+          customAttributes: [
+            ...attributes.map(({ attribute, state }) => ({ attribute, state })),
+            ...labels,
+          ],
         },
       },
-    };
-
-    await check(id, expect);
-  });
-
-  $('state[id=hm-rpc.1.*.1.HUMIDITY]').each(async id => {
-    const name = `${Device.deviceName(id)} Humidity`;
-
-    const expect: Partial<iobJS.StateCommon> = {
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'sensor',
-          name: Lovelace.id(name),
-          attr_device_class: 'humidity',
-          attr_unit_of_measurement: '%',
-          attr_friendly_name: 'Humidity',
-        },
-      },
-    };
-
-    await check(id, expect);
-  });
-
-  $('state[id=hm-rpc.1.*.10.STATE]').each(async id => {
-    const name = `${Device.deviceName(id)} Valve Open`;
-
-    const expect: Partial<iobJS.StateCommon> = {
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'binary_sensor',
-          name: Lovelace.id(name),
-          attr_device_class: 'heat',
-          attr_friendly_name: 'Valve Open',
-        },
-      },
-    };
-
-    await check(id, expect);
-  });
-
-  $('state[id=hm-rpc.1.*.1.LEVEL]').each(async id => {
-    const name = `${Device.deviceName(id)} Valve Open`;
-
-    const expect: Partial<iobJS.StateCommon> = {
-      custom: {
-        [AdapterIds.lovelace]: {
-          enabled: true,
-          entity: 'sensor',
-          name: Lovelace.id(name),
-          attr_device_class: 'energy',
-          attr_unit_of_measurement: '%',
-          attr_friendly_name: 'Valve Open',
-        },
-      },
-    };
-
-    await check(id, expect);
+    });
   });
 }
 
