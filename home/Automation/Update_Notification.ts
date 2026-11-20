@@ -176,16 +176,19 @@ const updates = new Stream<string>(config.indicator).stream
 const upload = await getStateAsync<boolean>(
   config.uploadJavaScriptAdapterState.join('.'),
 );
+
 if (!upload.ack && upload.val === true) {
   Notify.mobile(`Uploading JavaScript adapter after update`);
-
-  await update('javascript');
 
   await setStateAsync(
     config.uploadJavaScriptAdapterState.join('.'),
     false,
     true,
   );
+
+  await update('javascript');
+
+  // We never get here.
 }
 
 onStop(() => [replies, updates].forEach(x => x.unsubscribe()));
