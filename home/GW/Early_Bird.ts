@@ -9,7 +9,7 @@ const config = {
     r.setHours(r.getHours() - 2);
     return r;
   },
-  bathroomHeating: 'hm-rpc.1.000C9A499EE42F.1',
+  bathroomHeating: 'hm-rpc.0.000C9A499EE42F.1',
 };
 
 const heatingPeriod = new Stream<boolean>(config.heatingPeriod).stream;

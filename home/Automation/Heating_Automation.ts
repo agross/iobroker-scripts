@@ -16,11 +16,11 @@ const config = {
     warm: 'scene.0.Heating.Warm',
   },
   thermostats: [
-    'hm-rpc.1.000A1A49A131B3.1', // Bathroom towel warmer
-    'hm-rpc.1.000C9A499EE42F.1', // Bathroom
-    'hm-rpc.1.000C9A499EE1B6.1', // Bedroom
-    'hm-rpc.1.000C9A498DC865.1', // Living room
-    'hm-rpc.1.000C9A499EEBB3.1', // Office
+    'hm-rpc.0.000A1A49A131B3.1', // Bathroom towel warmer
+    'hm-rpc.0.000C9A499EE42F.1', // Bathroom
+    'hm-rpc.0.000C9A499EE1B6.1', // Bedroom
+    'hm-rpc.0.000C9A498DC865.1', // Living room
+    'hm-rpc.0.000C9A499EEBB3.1', // Office
   ],
 };
 

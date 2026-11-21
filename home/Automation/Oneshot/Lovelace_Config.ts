@@ -387,7 +387,7 @@ async function thermostatModeAlias(
 }
 
 function homeMaticThermostats() {
-  $('state[id=hm-rpc.1.*.1.SET_POINT_TEMPERATURE]').each(async id => {
+  $('state[id=hm-rpc.*.1.SET_POINT_TEMPERATURE]').each(async id => {
     const channelId = id.replace(/\.SET_POINT_TEMPERATURE$/, '');
     const deviceId = channelId.replace(/\.1$/, '');
     const profileId = `${channelId}.ACTIVE_PROFILE`;

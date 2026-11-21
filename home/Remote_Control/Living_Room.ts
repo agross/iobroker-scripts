@@ -1,4 +1,4 @@
-const remote = 'hm-rpc.1.000B5A49A07F8D';
+const remote = 'hm-rpc.0.000B5A49A07F8D';
 
 on(
   {

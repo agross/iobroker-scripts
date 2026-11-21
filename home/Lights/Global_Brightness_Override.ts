@@ -13,7 +13,7 @@ import {
 const config = {
   override: ['0_userdata.0', 'Brightness'],
   globalState: () => `${config.override.join('.')}.global`,
-  remote: 'hm-rpc.1.000B5A49A07F8D',
+  remote: 'hm-rpc.0.000B5A49A07F8D',
   change: 5,
 };
 

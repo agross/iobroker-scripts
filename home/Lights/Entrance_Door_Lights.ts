@@ -6,7 +6,7 @@ const config = {
   scene: 'scene.0.Lights.Late_Night_Entry',
   allLightsOff: 'scene.0.Lights.All_Lights_Off',
   // Bathroom Presence Detector
-  brightness: 'hm-rpc.1.000C1A49A87471.1.ILLUMINATION',
+  brightness: 'hm-rpc.0.000C1A49A87471.1.ILLUMINATION',
   presence: '0_userdata.0.presence',
   ignoreIfPresentLongerThan: Temporal.Duration.from({ minutes: 5 }),
 };

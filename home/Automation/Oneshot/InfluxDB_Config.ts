@@ -382,7 +382,7 @@ function homeMaticCommon(enabledDataPoints: {}) {
 }
 
 function homeMaticThermostats(enabledDataPoints: {}) {
-  $('state[id=hm-rpc.1.*.1.ACTUAL_TEMPERATURE]').each(id => {
+  $('state[id=hm-rpc.*.1.ACTUAL_TEMPERATURE]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Current Temperature`,
     });
@@ -390,7 +390,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=hm-rpc.1.*.1.HUMIDITY]').each(id => {
+  $('state[id=hm-rpc.*.1.HUMIDITY]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Humidity`,
     });
@@ -398,7 +398,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=hm-rpc.1.*.1.SET_POINT_TEMPERATURE]').each(id => {
+  $('state[id=hm-rpc.*.1.SET_POINT_TEMPERATURE]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Target Temperature`,
     });
@@ -406,7 +406,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=hm-rpc.1.*.1.LEVEL]').each(id => {
+  $('state[id=hm-rpc.*.1.LEVEL]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Valve Level`,
     });
@@ -414,7 +414,7 @@ function homeMaticThermostats(enabledDataPoints: {}) {
     check(enabledDataPoints, id, expect);
   });
 
-  $('state[id=hm-rpc.1.*.10.STATE]').each(id => {
+  $('state[id=hm-rpc.*.10.STATE]').each(id => {
     const expect = Object.assign({}, config.default, {
       aliasId: `${Device.deviceName(id)} Valve Open`,
     });

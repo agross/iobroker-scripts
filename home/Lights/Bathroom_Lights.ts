@@ -11,9 +11,9 @@ import {
 import { Temporal } from 'temporal-polyfill';
 
 const config = {
-  presence: 'hm-rpc.1.000C1A49A87471.1.PRESENCE_DETECTION_STATE',
+  presence: 'hm-rpc.0.000C1A49A87471.1.PRESENCE_DETECTION_STATE',
   overriddenBy: 'scene.0.Bathroom.Lights_Bright',
-  illumination: 'hm-rpc.1.000C1A49A87471.1.ILLUMINATION',
+  illumination: 'hm-rpc.0.000C1A49A87471.1.ILLUMINATION',
   illuminationThreshold: 20,
   turnOff: 'scene.0.Bathroom.Lights',
   determineScene: () => {
